@@ -7,13 +7,13 @@ text.pack()
 #p = Popen( ['dir'], stdout = PIPE, bufsize =1, universal_newlines=True) 
 #p = Popen('dir/w', shell=True,stdout=PIPE)
 p = Popen(['dir/w'],shell=True ,stdout=PIPE)
-#stdout, stderr = p.communicate()
+out, err = p.communicate()
 #p = call(['dir','/W'])
 #with Popen(['dir'], stdout = PIPE, bufsize=1, universal_newlines =True) as p:
 #x = check_call(['dir','/W'],cwd='./')
 
 #print x
-for line in p.stdout:
-    print line
+for line in out.decode('cp949'):
     text.insert(END, line)
+    print line
 root.mainloop()
