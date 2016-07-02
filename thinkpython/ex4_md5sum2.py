@@ -9,14 +9,15 @@ import os
 
 def walk(dirname):
     ''' Finds the names of all files in dirname and its sub-directories. '''
-    names = list()
+    #----- return [ filenames not directories ]---------------------------
+    filenames = list()
     for name in os.listdir(dirname):
         path = os.path.join(dirname, name)
         if os.path.isfile(path):
-            names.append(path)
+            filenames.append(path)
         else:
-            names.extend( walk(path) )
-    return names
+            filenames.extend( walk(path) )
+    return filenames
 
 def pipe(cmd):
     ''' Runs a command in a subprocess
@@ -47,17 +48,18 @@ def compute_checksums(dirname, suffix):
         dirname: string name of directory to search
         suffix: string suffix to match
         Returns map from checksum to list of files with that checksum
+        { checksum1: [ file1,file2,.. ],checksum2:[file1,file2,...],  .... }
         '''
-    names = walk(dirname)
+    filenames = walk(dirname)
     d = dict()
-    for name in names:
-        if name.endswith(suffix):
-            res, stat = compute_checksum(name)
+    for filename in filenames:
+        if filename.endswith(suffix):
+            res, stat = compute_checksum(filename)
             checksum, _ = res.split()
-            if checksum in d:
-                d[checksum].append(name)
+            if checksum not in d:
+                d[checksum] = [filename]
             else:
-                d[checksum] = [name]
+                d[checksum].append(filename)
     return d
 
 def check_pairs(names):
@@ -79,7 +81,6 @@ def print_duplicates(d):
     d: map from checksum to list of files with that checksum
     '''
     for key, names in d.iteritems():
-        print key, names
         if len(names) > 1:
             print 'The following files have the same checksum:'
             for name in names:

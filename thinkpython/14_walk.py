@@ -34,13 +34,22 @@ def walk2(dirname):
     # dirnames is a list, of names of the subdirectories in dirpath
     # filenames is a list, of names of the non-directory files in dirpath
 
-    for root, dirs, files in os.walk(dirname):
-        print 'root',root
-        print 'dirs',dirs
-        print 'files',files
-#       for filename in files:
-#           print os.path.join(root, filename)
+    ''' find all files in dirname and sub-directories'''
 
-#walk('D:\py\git\works')
-walk2('D:\py\git\works')
+    filenames = list()
+    for dirpath, sub_dirs, files in os.walk(dirname):
+        print '<<---  %s  --->> ' %dirpath
+        for file in files:
+            path = os.path.join(dirpath, file)
+            print path
+            filenames.append(path)
+#       for dir in sub_dirs:
+#           print os.path.join(dirpath, dir)
+    return filenames
+
+if __name__ == '__main__':
+    script_dir = os.path.dirname(__file__)
+#   walk(script_dir)
+#   print walk2(script_dir)
+    walk2(script_dir)
 
