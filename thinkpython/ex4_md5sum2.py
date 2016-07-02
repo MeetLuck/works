@@ -34,11 +34,11 @@ def compute_checksum(filename):
     cmd = 'md5sum ' + filename
     return pipe(cmd)
 
-def check_diff(name1,name2):
+def check_diff(file1,file2):
     ''' Computes the difference between the contents of two files
-    name1, name2 : string of filenames
+    file1, file2 : string of filefiles
     '''
-    cmd = 'diff %s %s' %(name1,name2)
+    cmd = 'diff %s %s' %(file1,file2)
     return pipe(cmd)
 
 
@@ -62,16 +62,16 @@ def compute_checksums(dirname, suffix):
                 d[checksum].append(filename)
     return d
 
-def check_pairs(names):
+def check_pairs(filenames):
     ''' Checks whether any in a list of files differs from others
-        names: [ list of string filenames ]
+        filenames: [ list of string filefilenames ]
         '''
 
-    for name1 in names:
-        for name2 in names:
-            if name1 < name2:
-                res, stat = check_diff(name1,name2)
-                if res:
+    for filename1 in filenames:
+        for filename2 in filenames:
+            if filename1 < filename2:
+                res, stat = check_diff(filename1,filename2)
+                if res: # two files are identical
                     return False
     return True
 
