@@ -69,9 +69,10 @@ def check_pairs(filenames):
 
     for filename1 in filenames:
         for filename2 in filenames:
-            if filename1 < filename2:
-                res, stat = check_diff(filename1,filename2)
-                if res: # two files are identical
+            if filename1 != filename2:
+                cmd = 'diff %s %s' %(filename1, filename2)
+                res, stat = pipe(cmd)
+                if res: # two files are different
                     return False
     return True
 
