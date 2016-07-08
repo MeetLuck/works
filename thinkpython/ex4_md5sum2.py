@@ -64,7 +64,7 @@ def compute_checksums(dirname, suffix):
 
 def check_pairs(filenames):
     ''' Checks whether any in a list of files differs from others
-        filenames: [ list of string filefilenames ]
+        filenames: [ list of string filenames ]
         '''
 
     for filename1 in filenames:
