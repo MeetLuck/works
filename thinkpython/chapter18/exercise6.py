@@ -28,6 +28,10 @@ class PokerHand(Hand):
             self.ranks.count(card.rank)
         self.sets = self.ranks.values()
         self.sets.sort(reverse=True)
+        print '*'*80 +'\n'
+        print 'self.cards:->',self
+        print 'self.suits:->',self.suits
+        print 'self.ranks:->',self.ranks
 
     def has_highcard(self):
         ''' Returns True if this hand has a high card '''
@@ -36,7 +40,10 @@ class PokerHand(Hand):
         ''' Checks whether self.sets contains sets that are at least as big as 
         the requirements in t 
         t: list of int '''
+        print 't: ->',t, '\tsets: ->',self.sets
+        print zip(t,self.sets)
         for need, have in zip(t, self.sets):
+            print 'need,have: (%s,%s)' %(need,have)
             if need > have: return False
         return True
     def has_pair(self):
@@ -54,7 +61,7 @@ class PokerHand(Hand):
         for val in self.suits.values():
             if val >= 5:
                 return True
-            return False
+        return False
     def has_straight(self):
         # make a copy of the rank histogram before we mess with it
         ranks = self.ranks.copy()
@@ -109,8 +116,9 @@ class PokerHand(Hand):
             f = getattr(self, 'has_'+label)
             if f():
                 self.labels.append(label)
+        print self.labels
 
-class PorkerDeck(Deck):
+class PokerDeck(Deck):
     def deal_hands(deck, num_cards = 5, num_hands=10):
         hands = list()
         for i in range(num_hands):
@@ -127,7 +135,7 @@ def main(*args):
     for i in range(n):
         if i % 1000 == 0:
             print i
-        deck = PorkerDeck()
+        deck = PokerDeck()
         deck.shuffle()
         hands = deck.deal_hands(7,7)
         for hand in hands:
@@ -143,4 +151,12 @@ def main(*args):
         print '%s happens one time in %.2f' %(label,p)
 
 if __name__ =='__main__':
-    main(*sys.argv)
+    lhist = Hist()
+    deck = PokerDeck()
+    deck.shuffle()
+    hands = deck.deal_hands(7,7)
+    for hand in hands:
+        print '*'*80 + '\n',hand
+        print hand.labels
+        for label in hand.labels:
+            lhist.count(label)

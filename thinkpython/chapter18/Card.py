@@ -11,7 +11,7 @@ class Card(object):
     def __init__(self, suit = 0, rank = 2):
         self.suit, self.rank = suit, rank
     def __str__(self):
-        return '%s of %s' %( Card.rank_names[self.rank], Card.suit_names[self.suit] )
+        return '%s(%s)' %( Card.rank_names[self.rank], Card.suit_names[self.suit] )
     def __cmp__(self, other):
         card1 = self.suit, self.rank
         card2 = other.suit, other.rank
@@ -29,7 +29,8 @@ class Deck(object):
         res = list()
         for card in self.cards:
             res.append( str(card) )
-        return '\n'.join(res)
+        return str(res)
+#       return '\n'.join(res)
     def add_card(self, card):
         ''' Adds a card to the deck '''
         self.cards.append(card)

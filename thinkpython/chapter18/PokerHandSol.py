@@ -9,7 +9,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 import sys
 
-from Card import *
+from Cardori import *
 
 
 class Hist(dict):
@@ -91,7 +91,7 @@ class PokerHand(Hand):
         for val in self.suits.values():
             if val >= 5:
                 return True
-	return False
+	    return False
 
     def has_straight(self):
         """Checks whether this hand has a straight."""
@@ -222,5 +222,14 @@ def main(*args):
 
         
 if __name__ == '__main__':
-    main(*sys.argv)
+
+    lhist = Hist()
+    deck = PokerDeck()
+    deck.shuffle()
+    hands = deck.deal_hands(7,7)
+    for hand in hands:
+        print '*'*80 + '\n',hand
+        for label in hand.labels:
+            lhist.count(label)
+        print lhist
 
