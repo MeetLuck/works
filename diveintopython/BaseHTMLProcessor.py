@@ -25,5 +25,36 @@ class BaseHTMLProcessor(SGMLParser):
     def handle_charref(self, ref):
         # called for each character reference, e.g. for "&#160;", ref will be "160"
         # Reconstruct the original character reference.
-        self.pieces.append("&#%(ref)s;" %locals()
-
+        self.pieces.append("&#%(ref)s;" %locals() )
+    def handle_entityref(self, ref):
+        # called for each entity reference, e.g. for '&copy;', ref will be 'copy'
+        # Reconstruct the original entity reference
+        self.pieces.append("&%(ref)s" % locals() )
+        # standard HTML entities are closed with a semicolon; other entities are not
+        if htmlentitydefs.entitydefs.has_key(ref):
+            self.pieces.append(';')
+    def handle_data(self,text):
+        # called for each block of plain text, i.e. outside of any tag and
+        # not containing any character or entity references
+        # Store the original text verbatim
+        self.pieces.append(text)
+    def handle_comment(self, text):
+        # called for each HTML comment, e.g. <!-- insert Javascript code here -->
+        # Reconstruct the original comment
+        # It is especially important that the source document enclose client-side
+        # code(like Javascript) within comments so it can pass through this
+        # processor undisturbed; see comments in unkown_starttag for details
+        self.pieces.append("<!--%(text)s-->" % locals() )
+    def handle_pi(self, text):
+        # called for each processing instruction, e.g. <? instruction>
+        # Reconstruct original processing instruction
+        self.pieces.append("<?%(text)s" %locals() )
+    def handle_decl(self,text):
+        # called for the DOCTYPE, if present, e.g.
+        # <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        #       "http://www.w3.org/TR/html14/loose.dtd">
+        # Reconstruct original DOCTYPE
+        self.pieces.append("<!%(text)s" % locals() )
+    def output(self):
+        ''' Return processed HTML as a single string'''
+        return ''.join(self.pieces)
