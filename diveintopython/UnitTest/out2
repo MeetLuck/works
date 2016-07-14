@@ -1,0 +1,106 @@
+<result,no,n> : (I,1,0)
+
+<<<result,no,n>>> : (I,1,0)
+
+<result,no,n> : (I,2,1)
+
+<<<result,no,n>>> : (II,2,1)
+
+<result,no,n> : (I,3,2)
+
+<<<result,no,n>>> : (III,3,2)
+
+<result,no,n> : (IV,4,0)
+
+<<<result,no,n>>> : (IV,4,0)
+
+<result,no,n> : (V,5,0)
+
+<<<result,no,n>>> : (V,5,0)
+
+<result,no,n> : (V,6,1)
+
+<<<result,no,n>>> : (VI,6,1)
+
+<result,no,n> : (V,7,2)
+
+<<<result,no,n>>> : (VII,7,2)
+
+<result,no,n> : (V,8,3)
+
+<<<result,no,n>>> : (VIII,8,3)
+
+<result,no,n> : (IX,9,0)
+
+<<<result,no,n>>> : (IX,9,0)
+
+<result,no,n> : (X,10,0)
+
+<<<result,no,n>>> : (X,10,0)
+
+<result,no,n> : (X,11,1)
+
+<<<result,no,n>>> : (XI,11,1)
+
+<result,no,n> : (X,12,2)
+
+<<<result,no,n>>> : (XII,12,2)
+
+<result,no,n> : (X,13,3)
+
+<<<result,no,n>>> : (XIII,13,3)
+
+<result,no,n> : (X,14,4)
+
+<<<result,no,n>>> : (XIV,14,4)
+
+<result,no,n> : (X,15,5)
+
+<<<result,no,n>>> : (XV,15,5)
+
+<result,no,n> : (X,16,6)
+
+<<<result,no,n>>> : (XVI,16,6)
+
+<result,no,n> : (X,17,7)
+
+<<<result,no,n>>> : (XVII,17,7)
+
+<result,no,n> : (X,18,8)
+
+<<<result,no,n>>> : (XVIII,18,8)
+
+<result,no,n> : (X,19,9)
+
+<<<result,no,n>>> : (XIX,19,9)
+
+<result,no,n> : (X,20,10)
+
+<<<result,no,n>>> : (XX,20,10)
+
+<result,no,n> : (X,21,11)
+
+<<<result,no,n>>> : (XXI,21,11)
+
+<result,no,n> : (X,22,12)
+
+<<<result,no,n>>> : (XXII,22,12)
+
+<result,no,n> : (X,23,13)
+
+<<<result,no,n>>> : (XXIII,23,13)
+
+<result,no,n> : (X,24,14)
+
+<<<result,no,n>>> : (XXIV,24,14)
+
+<result,no,n> : (X,25,15)
+
+<<<result,no,n>>> : (XXV,25,15)
+
+<result,no,n> : (X,26,16)
+
+<<<result,no,n>>> : (XXVI,26,16)
+
+[None, 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI']
+{'XIII': 13, 'XVIII': 18, 'XXV': 25, 'XXII': 22, 'XXIII': 23, 'XII': 12, 'XXIV': 24, 'XXI': 21, 'III': 3, 'XXVI': 26, 'IX': 9, 'XI': 11, 'I': 1, 'VI': 6, 'IV': 4, 'II': 2, 'XX': 20, 'XIV': 14, 'V': 5, 'XIX': 19, 'X': 10, 'XV': 15, 'XVI': 16, 'VII': 7, 'XVII': 17, 'VIII': 8}
