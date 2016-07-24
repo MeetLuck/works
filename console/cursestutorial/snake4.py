@@ -1,20 +1,26 @@
-''' Food and Growth
+''' Global variables
 >>> screen.inch([row,col] ) 'return a character at row,col'
 '''
 import curses, time, random
 
-screen = curses.initscr()
-screen.nodelay(1)
-screen.border()
-curses.noecho()
-curses.curs_set(0)
-dims = screen.getmaxyx()
-height,width = dims[0]-1, dims[1]-1
-curses.start_color()
-curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
 
 def game():
+    screen = curses.initscr()
+    screen.nodelay(1)
+    screen.border()
+    curses.noecho()
+    curses.curs_set(0)
+    dims = screen.getmaxyx()
+    height,width = dims[0]-1, dims[1]-1
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    startlength = 8
+    growlength = 3
+    speeds = {'Easy':0.1, 'Medium':0.06, 'Hard':0.04 }
+    difficulty = 'Medium'
+    acceleration = True
+
     row = col = 2
     head = [row,col]
     body = list()
@@ -25,7 +31,7 @@ def game():
     direction = RIGHT # 0:right, 1:down, 2:left, 3: up
     gameover = False
     foodmade = False
-    length = 5
+    length = startlength
 
     while not gameover:
 
@@ -80,13 +86,33 @@ def game():
             if screen.inch( *head) == ord('@'):
                 foodmade = False
                 body.insert(0,body[0][:])
-                length += 1
+                length += growlength
             else:
                 gameover = True
                 print 'gameover'
                 time.sleep(1)
         screen.move(height,width)
         screen.refresh()
-        time.sleep(0.2)
+        if not acceleration:
+            time.sleep(speeds[difficulty])
+        else:
+            time.sleep( 15 * speeds[difficulty]/len(body) )
+
+    screen.clear()
+    screen.nodelay(0)
+    message0 = 'Game Over'
+    message1 = 'You got {} point'.format( (len(body)-startlength)/growlength )
+    message2 = 'Press Space to play again'
+    message3 = 'Press Enter to quit'
+    screen.addstr(height/2-1,(width-len(message0) )/2, message0)
+    screen.addstr(height/2 , (width-len(message1) )/2, message1)
+    screen.addstr(height/2+1,(width-len(message2) )/2, message2)
+    screen.addstr(height/2+2,(width-len(message3) )/2, message3)
+    screen.refresh()
+    q = screen.getch()
+    if q == 32:
+        screen.clear()
+        game()
+
 game()
 curses.endwin()
