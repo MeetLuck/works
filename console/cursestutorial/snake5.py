@@ -4,14 +4,14 @@
 import curses, time, random
 
 
+screen = curses.initscr()
+dims = screen.getmaxyx()
+height,width = dims[0]-1, dims[1]-1
 def game():
-    screen = curses.initscr()
     screen.nodelay(1)
     screen.border()
     curses.noecho()
     curses.curs_set(0)
-    dims = screen.getmaxyx()
-    height,width = dims[0]-1, dims[1]-1
     curses.start_color()
     curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
@@ -114,9 +114,10 @@ def game():
         screen.clear()
         game()
 
-game()
 def menu():
-    curses.nodelay(0)
+    curses.curs_set(0)
+    screen.nodelay(0)
+    curses.noecho()
     screen.clear()
     selection = -1
     option = 0
@@ -129,8 +130,19 @@ def menu():
         screen.addstr(height/2,width/2-6, 'Game Options',graphics[2])
         screen.addstr(height/2+1,width/2-5, 'High Scores',graphics[3])
         screen.addstr(height/2+2,width/2-2, 'Exit',graphics[4])
-        screen.refresh()
         action = screen.getch()
-        if action == 
+        if action == ord('k'): 
+            option = (option-1)%5      # 0 1 2 3 4 -> 4,3,2,1,0
+        elif action == ord('j'):
+            option = (option+1)%5      # 0,1,2,3,4 -> 1,2,3,4,0
+        elif action == ord('\n'):
+            selection = option
+        screen.addstr(23,10,str(option))
+        screen.addstr(23,15,str(graphics))
+        screen.refresh()
+#       screen.clear()
+        if selection == 0:
+            game()
 
+menu()
 curses.endwin()
