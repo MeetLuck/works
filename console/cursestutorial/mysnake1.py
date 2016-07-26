@@ -14,13 +14,11 @@ class Snake(object):
     difficulties = ['Easy','Medium','Hard']
     difficulty = 'Medium'
     acceleration = True
-    options = [0] * 5
-    options[0] = curses.A_REVERSE
-    startlengths = range(3,21)
-    growlengths = range(1,11)
+#   options = [0] * 5
+#   options[0] = curses.A_REVERSE
     startlength = 8
     growlength = 3
-    length = startlength
+#   length = startlength
     continues = True
 
     def __init__(self):
@@ -32,39 +30,59 @@ class Snake(object):
         curses.start_color()
         curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
         curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-        self.main()
-    def main(self):
+        curses.init_pair(3, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_WHITE, curses.COLOR_BLACK)
+        curses.init_pair(5, curses.COLOR_RED, curses.COLOR_BLACK)
         while self.continues:
-            len_body = self.game()
+            len_body = self.play()
             self.gameover(len_body)
 
     def gameover(self,len_body):
         screen.clear()
-        screen.nodelay(0)
-        message0 = 'Game Over'
-        message1 = 'You got {} point'.format( (len_body-self.startlength)/self.growlength )
-        message2 = 'Press Space to play again'
-        message3 = 'Press Enter to quit'
-        message4 = 'Press M to go to the menu'
-        screen.addstr(self.height/2-1,(self.width-len(message0) )/2, message0)
-        screen.addstr(self.height/2 , (self.width-len(message1) )/2, message1)
-        screen.addstr(self.height/2+1,(self.width-len(message2) )/2, message2)
-        screen.addstr(self.height/2+2,(self.width-len(message3) )/2, message3)
-        screen.addstr(self.height/2+3,(self.width-len(message4) )/2, message4)
+        screen.nodelay(False)
+        message = range(7)
+        message[0] = 'Game Over'
+        message[1] = ' '
+        message[2] = ['You got ',str( (len_body-self.startlength)/self.growlength), ' point']
+        message[3] = ' '
+        message[4] = ['Press ','Space',' to Play Again']
+        message[5] = ['Press ', 'ESC', ' to Exit']
+        message[6] = ['Press ', 'M', ' to go to the Menu']
+        screen.addstr(self.height/2-1-3,(self.width-30)/2, message[0].center(30),curses.color_pair(1)|curses.A_REVERSE )
+        screen.addstr(self.height/2+0-3, (self.width-30)/2, message[1])
+
+        for j in range(2,7):
+            start_pos = self.width/2-25/2
+            for i,msg in enumerate(message[j]):
+                if i==1:
+                    pair_no = 1
+                    attr = curses.A_BOLD
+                else:
+                    pair_no = 0
+                    attr = 0
+                screen.addstr(self.height/2+j-3 , start_pos, message[j][i],curses.color_pair(pair_no)|attr)
+                start_pos += len(msg)
+
         screen.refresh()
 
-        q = screen.getch()
-        if q in [32,10]: # 32,10 = SPACE bar, Enter
-            screen.clear()
-            self.game()
-        elif q in [77,109]: # 77 = m , 109 = M
-            screen.clear()
-            self.menu()
-        return True
 
-    def game(self):
+        while True:
+            q = screen.getch()
+            if q == 32: #in [32,10]: # 32,10 = SPACE bar, Enter
+                self.continues = True
+                break
+            elif q == 27: # ESC
+                self.continues = False
+                break
+            elif q in [77,109]: # 77 = m , 109 = M
+                self.menu()
+                break
+#           return True
+
+    def play(self):
         screen.clear()
         screen.refresh()
+        screen.nodelay(True)
         row = col = 2
         head = [row,col]
         body = list()
@@ -72,6 +90,8 @@ class Snake(object):
         RIGHT,DOWN,LEFT,UP = 0,1,2,3
         direction = RIGHT # 0:right, 1:down, 2:left, 3: up
         gameover = foodmade = False
+        length = self.startlength
+
 
         while not gameover:
 
@@ -87,23 +107,19 @@ class Snake(object):
             '''
             body.insert(0,head[:])
             'delete last X'
-            if len(body) > self.length:
+            if len(body) > length:
                 deadcell = body.pop(-1)
                 screen.addch(deadcell[0],deadcell[1]," ")
             screen.addch(row,col,ord('X'),curses.color_pair(1)|curses.A_REVERSE )
 
             action = screen.getch()
-            if action == ord('k') and direction != DOWN: # 1
-                # action == curses.KEY_UP
+            if action == ord('k') and direction != DOWN: # 1 # action == curses.KEY_UP
                 direction = UP # 3
-            elif action == ord('j') and direction != UP: # 3
-                # action == curses.KEY_DOWN
+            elif action == ord('j') and direction != UP: # 3 # action == curses.KEY_DOWN
                 direction = DOWN # 1 
-            elif action == ord('l') and direction != LEFT: #2
-                # action == curses.KEY_RIGHT
+            elif action == ord('l') and direction != LEFT: #2 # action == curses.KEY_RIGHT
                 direction = RIGHT  # 2
-            elif action == ord('h') and direction != RIGHT:
-                # action == curses.KEY_LEFT
+            elif action == ord('h') and direction != RIGHT: # action == curses.KEY_LEFT
                 direction = LEFT 
 
             if   direction == RIGHT:    col += +1
@@ -117,7 +133,7 @@ class Snake(object):
                 if screen.inch( *head) == ord('@'):
                     foodmade = False
                     body.insert(0,body[0][:])
-                    self.length += self.growlength
+                    length += self.growlength
                 else:
                     gameover = True
 #                   time.sleep(1)
@@ -170,39 +186,6 @@ class Snake(object):
                 self.continues = False
                 return
 
-    def menu_old(self):
-        curses.curs_set(0)
-        screen.nodelay(0)
-        curses.noecho()
-        screen.clear()
-        selection = -1
-        option = 0
-        while selection < 0:
-            graphics = [0] * 5
-            graphics[option] = curses.A_REVERSE
-            screen.addstr(0,self.width/2-3, 'Snake')
-            screen.addstr(self.height/2-2,self.width/2-2, 'Play',graphics[0])
-            screen.addstr(self.height/2-1,self.width/2-6, 'Instructions',graphics[1])
-            screen.addstr(self.height/2,self.width/2-6, 'Game Options',graphics[2])
-            screen.addstr(self.height/2+1,self.width/2-5, 'High Scores',graphics[3])
-            screen.addstr(self.height/2+2,self.width/2-2, 'Exit',graphics[4])
-            action = screen.getch()
-            if action == ord('k'): 
-                option = (option-1)%5      # 0 1 2 3 4 -> 4,3,2,1,0
-            elif action == ord('j'):
-                option = (option+1)%5      # 0,1,2,3,4 -> 1,2,3,4,0
-            elif action == ord('\n'):
-                selection = option
-            screen.addstr(23,10,str(option))
-            screen.addstr(23,15,str(graphics))
-            screen.refresh()
-    #       screen.clear()
-            if selection == 0:
-                self.game()
-            elif selection == 1:
-                self.instructions()
-            elif selection == 2:
-                self.gameoptions()
     def instructions(self):
         screen.clear()
         screen.nodelay(0)
@@ -265,54 +248,6 @@ class Snake(object):
                     self.acceleration = not self.acceleration
                 elif selection == 4 :
                     return
-
-    def gameoptions_old(self):
-        screen.clear()
-        selection = -1
-        option = 0
-        while selection < 4:
-            screen.clear()
-            graphics = [0] * 5
-            graphics[option] = curses.A_REVERSE
-            strings = ['Starting snake length: ' + str(self.startlength),
-                       'Snake Growth rate: ' + str(self.growlength),
-                       'Difficulty: ' + self.difficulty,
-                       'Acceleration: ' + str(self.acceleration),'Exit']
-
-            for z in range(len(strings)):
-                screen.addstr( (self.height - len(strings))/2 + z, (self.width -len(strings[z]))/2,strings[z],
-                               graphics[z])
-            screen.refresh()
-            action = screen.getch()
-            if action == ord('k'):
-                option = (option-1)%5
-            elif action == ord('j'):
-                option = (option+1)%5
-            elif action == ord('\n'):
-                selection = option
-            elif action == ord('l'):
-                if option == 0 and self.startlength<20:
-                    self.startlength += 1
-                elif option == 1 and self.growlength <10:
-                    self.growlength += 1
-            elif action == ord('h'):
-                if option == 0 and self.startlength>3:
-                    self.startlength += -1
-                elif option == 1 and self.growlength>1:
-                    self.growlength += -1
-            if selection == 2: # difficulty rotation
-                if self.difficulty == 'Easy':
-                    self.difficulty = 'Medium'
-                elif self.difficulty == 'Medium':
-                    self.difficulty = 'Hard'
-                else:
-                    self.difficulty = 'Easy'
-
-            elif selection == 3: 
-                self.acceleration = not self.acceleration
-            if selection < 4:
-                selection = -1
-        self.menu()
 
 if __name__ == '__main__':
     snake = Snake()
