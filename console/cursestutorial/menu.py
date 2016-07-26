@@ -49,7 +49,7 @@ def menu():
             option = (option-1)%5      # 4->3->2->0->4
         elif action == ord('j'):
             option = (option+1)%5      # 0->1->2->3->4->0
-        elif action == ord('\n') or action == curses.KEY_SPACE:
+        elif action == ord('\n') or action == ord(' '):
             selection = option
         screen.refresh()
 #       screen.clear()
