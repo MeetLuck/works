@@ -9,7 +9,7 @@ def get_new_joke():
 
 screen = curses.initscr()
 
-# Property initialize the screen
+# Propery initialize the screen
 curses.noecho()
 curses.cbreak()
 curses.curs_set(0)
@@ -41,15 +41,15 @@ screen.chgat(curses.LINES-1,32,1,curses.A_BOLD|curses.color_pair(1))
 # Set up the window to hold the random quotes
 # curses.newwin(nlines, ncols, begin_row, begin_col)
 quote_window = curses.newwin(curses.LINES-2, curses.COLS-2,1,1)
-# set background
-quote_window.bkgd(' ',curses.color_pair(4))
-quote_window.refresh()
+# set background WHITE
+quote_window.bkgd(curses.color_pair(4))
+#quote_window.refresh()
 
 # Draw a border around the main quote window
 quote_window.border(*tuple('+'*8 ) )
 quote_window.addstr(1,1,'Press R to get your first quote')
 
-screen.getch()
+#screen.getch()
 
 # Update the internal window data structures
 screen.noutrefresh()
@@ -67,7 +67,6 @@ while True:
         quote_window.addstr(3,2,get_new_joke())
     elif c == ord('q') or c == ord('Q'):
         break
-
     # Refresh the window from the bottom up
     screen.noutrefresh()
     quote_window.noutrefresh()
