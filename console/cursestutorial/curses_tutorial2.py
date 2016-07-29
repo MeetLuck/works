@@ -22,9 +22,11 @@ if curses.has_colors():
 
 # Initialize the color combinations we're going to use
 curses.init_pair(1,curses.COLOR_RED, curses.COLOR_BLACK)
+curses.init_pair(11,curses.COLOR_RED, curses.COLOR_WHITE)
 curses.init_pair(2,curses.COLOR_GREEN, curses.COLOR_BLACK)
-curses.init_pair(3,curses.COLOR_CYAN, curses.COLOR_BLACK)
+curses.init_pair(3,curses.COLOR_CYAN, curses.COLOR_WHITE)
 curses.init_pair(4,curses.COLOR_BLACK, curses.COLOR_WHITE)
+curses.init_pair(12,curses.COLOR_MAGENTA, curses.COLOR_WHITE)
 
 # BEGIN PROGRAM
 height,width = curses.LINES, curses.COLS
@@ -58,13 +60,27 @@ quote_window.noutrefresh()
 curses.doupdate()
 
 # Create the event loop
+from curses_instruction import get_instruction
+instruction_iter = iter(get_instruction() )
+keywords = ['addstr','getch','refresh', 'clear','noutrefresh' ,'doupdate','echo','cbreak','nocbreak']
+keywords.extend(['chgat','newwin','bkgd','endwin','border','noecho','curs_set'])
+keywords.extend(['initscr','start_color','init_pair','color_pair','keypad'])
 while True:
     c = quote_window.getch()
-    if c == ord('r') or c == ord('R'):
+    try:
+        instruction, code = instruction_iter.next()
+    except StopIteration:
+        break
+    if c != ord('q') and c != ord('Q'):
         quote_window.clear()
-        quote_window.addstr(2,2,'Gettting quote...', curses.color_pair(3) )
+        quote_window.addstr(2,2,instruction, curses.color_pair(11) )
         quote_window.refresh()
-        quote_window.addstr(3,2,get_new_joke())
+        for c in code:
+            quote_window.addstr(3+code.index(c),2,c )
+            for keyword in keywords:
+                if keyword in c:
+                    pos = c.find(keyword)
+                    quote_window.chgat(3+code.index(c),2+pos,len(keyword),curses.color_pair(12))
     elif c == ord('q') or c == ord('Q'):
         break
     # Refresh the window from the bottom up
