@@ -1,0 +1,78 @@
+### i. closures
+> a closure is a function *<u>plus its surrounding environment</u>*.  
+    
+
+```python
+>>> def outer():
+...    a = -99 
+...    b = +99 
+...    def inner(x):
+...        y = a * x
+...        return y
+...    return inner
+
+>>> ax = outer()
+>>> ax
+<function inner at 0x02014B70>
+>>> " introspect function inner "
+>>> ax.func_code.co_freevars
+('a',)
+>>> ax.func_closure
+(<cell at 0x0203D2F0: int object at 0x01F19038>,)
+>>> ax.func_closure[0].cell_contents
+-99
+```
+
+by introspecting inner function, we can see that  
+after the execution of outer function, the local variable `a` and `b` were freed.  
+but its local variable `a` is kept in `inner.func_closures`.  
+it is <u>*as if the outer function's local variable __a__ was not freed*</u>.  
+it is *__closed__* in the inner function's surrounding environment, called func_closures.  
+
+```python
+>>> def ax_b(a=1,b=0):
+...   print "f(x) = {}x + {}".format(a,b) 
+...   def in_ax_b(x):
+...       y = a * x + b
+...       return y
+...   return in_ax_b 
+
+>>> fx = ax_b(a=2,b=1)
+f(x) = 2x + 1
+>>> fx(0)
+1
+>>> fx(1)
+3
+>>> fx(2)
+5
+```
+
+### ii. decorators
+A decorator is a function that takes a function object as an argument,  
+and returns a function object as a return value.  
+decorators are often used to add features to the original_function. Or more precisely, decorators are often used to create a new_function that does roughly what original_function does, but also does things in addition to what original_function does.
+
+[A guide to Python's function decorators](http://thecodeship.com/patterns/guide-to-python-function-decorators/)  
+In the context of design patterns, decorators dynamically alter the functionality of a function, method or class without having to directly use subclasses. This is ideal when you need to extend the functionality of functions that you don't want to modify.
+
+>What you need to know about functions
++ Assign functions to variables
++ Define functions inside other functions
++ Functions can be passed as parameters to other functions
++ Functions can return other functions
++ Inner functions have access to the enclosing scope( a closure)
+
+```python
+def p_decorate():
+   def func_wrapper(text):
+          return "<p>{0}</p>".format(text)
+   return func_wrapper
+def strong_decorate():
+   def func_wrapper(text):
+          return "<strong>{0}</strong>".format(text)
+   return func_wrapper
+
+p_decorated = p_decorate()('it is paraggraph')
+strong_decorated = strong_decorate()(p_decorated)
+print strong_decoarated
+```
