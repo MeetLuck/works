@@ -168,3 +168,104 @@ factorial(3)
 #   <- return factorial(2) = 2
 #<- return factorial(3) = 6
 ```
+### iv. logging elasped time
+```python
+    def logtime(func):
+        def wrapper(*args):
+            start = time.time()
+            val = func(*args)
+            end = time.time()
+            elapsed = end - start
+            print '{} elasped'.format(elapsed)
+            return val
+        return wrapper
+
+    @logtime
+    def summation(n):
+        sum = 0
+        for i in range(1,n+1):
+            sum += i
+        return sum
+
+    print sum(1000)
+```
+>*for recursive function, the decorator logtime  reports elasped time whenever  
+  original function(fib) recursively call wrapper function.  
+  because inside original function(fib) is <function wrapper at 0x...>*.  
+  <u>using decorator with recursive function requires extra caution</u>. 
+
+```python
+    def fib(n):
+        if n==1 or n==0: return 1
+        return fib(n-1) + fib(n-2)
+
+    fib1 = logtime(fib)
+    print fib1(33)
+```
+### v. decorators with arguments
+`original = decorator(original)` <=> `@decorator ...`  
+`original = arg_decorator(*extrarg)(original)` <=> `@arg_decorator(*extrarg)`
+
+step 1. define arg_decorator with extra arguments that returns function decorator   
+  `decorator = arg_decorator(*extrarg)`
+```python
+    def arg_decorator(*extrarg):
+        pass
+        return decorator
+```
+step 2. define decorator inside arg_decorator that takes function as argument
+> `original = decorator(original)`
+
+```python
+    def arg_decorator(*extrarg): # step1
+        def decorator(func):     # step2
+            def wrapper(*args):
+                # do before-processing
+                val = func( *(args+extrarg) ):
+                # do after-processing
+                return val
+            return wrapper      # step2
+        return decorator        # step1
+```
+> eventually, it is the same because arg_decorator(*extrarg) return <function decorator at 0x..>
+> that is, `arg_decorator(*extrarg) == decorator`
+> except `*extrarg` is passed to <function wrapper> with func.
+
+> e.g scale original function's return value
+```python
+    def arg_decorator(scale=1):
+        def decorator(func):
+            def wrapper(*args):
+                print 'scale = {}'.format(scale)
+                val = scale * func(*args) 
+                return val
+            return wrapper
+        return decorator
+
+    @arg_decorator(scale=100)
+    def plus(x,y):
+        return x+y
+
+    @arg_decorator(scale=0.01)
+    def minus(x,y):
+        return x-y
+
+    print plus(1,2)
+    print minus(1,2)
+```
+
+### vii. cascaded decorator
+> original = decorator(original) <=> @decorator(original)
+```python
+    "f = a(f)"
+    @a
+    def f(): pass
+
+    f = a(f) # f = a(f),   f  -> w1
+    f = b(f) # w1 = b(w1), w1 -> w2
+    " is equivalent f = b(a(f))"
+    @b
+    @a
+    def f(): pass
+    "f = c(b(a(f))"
+```
