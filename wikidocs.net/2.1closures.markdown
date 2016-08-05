@@ -29,7 +29,6 @@ after the execution of outer function, the local variable `a` and `b` were freed
 it is <u>*as if the outer function's local variable __a__ was not freed*</u>.  
 
 
-
 ```python
 >>> def ax_b(a=1,b=0):
 ...   print "f(x) = {}x + {}".format(a,b) 
@@ -49,8 +48,18 @@ f(x) = 2x + 1
 ```
 
 ### ii. decorators
-+ decorators <u>*__keep original function clean__*</u>
-+ decorators <u>*__add some functionality to original function__*</u>
+
+__<i style='color:green'>original</i> = decorator(<i style='color:green'>original</i>)__  
+__decorator takes *function as input* and *return function*__
+
+```python
+@decorator
+def original():
+    pass
+```
+
++ decorators *__keep original function clean__*
++ decorators *__add some functionality to original function__*
 
 step 1. define function `original` and function `decorator`
 ```python
@@ -257,15 +266,18 @@ step 2. define decorator inside arg_decorator that takes function as argument
 ### vii. cascaded decorator
 > original = decorator(original) <=> @decorator(original)
 ```python
-    "f = a(f)"
-    @a
+    f = A(f)
+    'is equivalent to'
+    @A
     def f(): pass
 
-    f = a(f) # f = a(f),   f  -> w1
-    f = b(f) # w1 = b(w1), w1 -> w2
-    " is equivalent f = b(a(f))"
-    @b
-    @a
+    f = A(f)      # wrapper1 = A(f),        f = <function wrapper1 at 0x...>
+    f = B(f)      # wrapper2 = B(wrapper1), f = <function wrapper2 at 0x...>
+    'is equivalent to'
+    f = B(A(f))   # f = <function wrapper2 at 0x...>
+    'is equivalent to'
+    @B
+    @A
     def f(): pass
-    "f = c(b(a(f))"
 ```
+### viii. functools
