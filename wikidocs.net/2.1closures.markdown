@@ -48,10 +48,9 @@ f(x) = 2x + 1
 ```
 
 ### ii. decorators
-
-__<i style='color:green'>original</i> = decorator(<i style='color:green'>original</i>)__  
 __decorator takes *function as input* and *return function*__
 
+__<i style='color:green'>original</i> = decorator(<i style='color:green'>original</i>)__  
 ```python
 @decorator
 def original():

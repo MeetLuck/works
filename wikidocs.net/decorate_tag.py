@@ -4,6 +4,11 @@ def strong(text):
 def p(text):
       return "<p>{0}</p>".format(text)
 
+def strong_decorate(func):
+    def strong():
+        return "<strong>{0}</strong>".format( func() )
+    return strong
+
 def get_text():
     return raw_input('enter text: ')
 

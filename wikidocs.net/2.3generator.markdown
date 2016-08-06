@@ -1,3 +1,8 @@
+functions that send back a value and later be resumed by picking up where they left off. Such functions are called generator functions
+```python
+def pi_series():
+    sum = 0
+```
 ```python
 >>> def bank_account(deposited, interest_rate):
 ...    while True:
