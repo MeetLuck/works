@@ -1,0 +1,9 @@
+i. syntax
+`lambda *args, **kwargs: expression`
+ii. usage
+>it's very alike javascript's function expression
+```python
+>>> (lambda x : x**2)(10)       # 10**2 = 100
+>>> (lambda a,b: a % b)(2,3)    # 2%3 = 2 
+>>> (lambda x,y: x**y)(2,3)     # 2**3 = 8
+```

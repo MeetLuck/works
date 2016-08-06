@@ -1,0 +1,17 @@
+### i. syntax
+<h5> `lambda *args, **kwargs: expression`  </h5>
++ *lambda returns __function object__ with no name*   
++ *calling lambda returns __<i style='color:red'>one</i>__ __expression__*  
+
+### ii. usage
+>it's very alike javascript's function expression
+```python
+>>> (lambda x : x**2)(10)       # 10**2 = 100
+>>> (lambda a,b: a % b)(2,3)    # 2%3 = 2 
+>>> (lambda x,y: x**y)(2,3)     # 2**3 = 8
+>>> f = lambda a,b=0: a**2 + b 
+>>> f
+<function <lambda> at 0x02E98BB0>
+>>> f(10)     # 100
+>>> f(10,20)  # 120
+```

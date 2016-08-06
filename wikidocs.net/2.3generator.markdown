@@ -1,0 +1,16 @@
+```python
+>>> def bank_account(deposited, interest_rate):
+...    while True:
+...        calculated_interest = interest_rate * deposited 
+...        received = yield calculated_interest
+...        if received:
+...            deposited += received
+            
+>>> my_account = bank_account(1000,0.05)
+>>> first_year_interest = next(my_account)
+>>> first_year_interest
+50.0
+>>> next_year_interest = my_account.send(first_year_interest + 1000)
+>>> next_year_interest
+102.5
+```

@@ -85,7 +85,7 @@ step 3. <i style="color:red">now, she's gone!!! </i>
 ><i style='color:darkred'>at this point, `original` points to `<function wrapper at 0x...>`   
 therefore `<function original at 0x...>` does not exist in global environment, it's gone!!!  
 so we can not directly call `<function original at 0x...>` any more.  
-but it is kept in `<function wrapper at 0x...>`'s secret place called `func_closure`.  </i>
+but it is kept in `<function wrapper at 0x...>`'s __secret place__ called `func_closure`.  </i>
 
 ```python
 >>> original.func_code.co_varnames
@@ -280,4 +280,91 @@ step 2. define decorator inside arg_decorator that takes function as argument
     @A
     def f(): pass
 ```
-### viii. functools
+### viii. docstring and help
+
+
+>+ `original` does not exist in `globals()` any more,
+that is, `original` is <function wrapper at 0x>,
+`original.__doc__` and `help(original)` are about <function wrapper at 0x...>
+
+```python
+>>> def decorator(func):
+...     def wrapper(*args):
+...         ''' wrapper docstring ... '''
+...         val = func(*args)
+...         return val
+...     return wrapper
+
+>>> def original(*args):
+...     ''' original docstring ... '''
+...     pass
+
+>>> original = decorator(original)
+' wrapper docstring ... '
+>>> original.__doc__
+Help on function wrapper in module __main__:
+
+wrapper(*args)
+    wrapper docstring here
+```
+
+
+>+ name is nothing. it's not real.  
+what's important is __the address the name is pointing to__.
+```python
+>>> def decorator(func):
+...     def wrapper(*args):
+...         ''' wrapper docstring ... '''
+...         val = func(*args)
+...         return val
+...     wrapper.__name__ = func.__name__
+...     wrapper.__doc__ = func.__doc__
+...     return wrapper
+
+>>> def original(*args):
+...     ''' original docstring ... '''
+...     pass
+
+>>> original
+# <function original at 0x02E33XXX>
+>>> original = decorator(original)
+>>> original
+# <function original at 0x02E33YYY>
+# same name but different address
+>>> original.__doc__
+' original docstring ... '
+>>> help(original)
+Help on function original in module __main__:
+
+original(*args)
+    original docstring ...
+```
+
+
+>+ using `funcstools.wraps`
+```python
+from functools import wraps
+>>> def decorator(func):
+...    @wraps(func)
+...    def wrapper(*args):
+...        ''' wrapper docstring ... '''
+...        val = func(*args)
+...        return val
+...    # wrapper.__doc__ = func.__doc__
+...    # wrapper.__name__ = func.__name__
+...    return wrapper
+
+>>> def original(n):
+...    ''' original docstring ... '''
+...    pass
+
+>>> original
+# <function original at 0x02E33XXX>
+>>> original = decorator(original)
+>>> original
+# <function original at 0x02E33YYY>
+# same name but different address
+>>> original(3)
+>>> original.__doc__
+>>> help(original)
+```
