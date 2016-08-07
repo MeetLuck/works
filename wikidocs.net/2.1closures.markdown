@@ -127,7 +127,8 @@ original(3)
 >step 1. define factorial function with functionality that can print recursion depth   
  original factorial code is wrapped in two print functions and recursion depth process code.  
  it works fine but its code not clean!!!
- ```python
+
+```python
 def factorial(n,recursive = [0]):
     print '-> call\t  {}({})\t\trecursion depth = {}'.format(factorial.func_name,n, recursive[0] )
     recursive[0] += +1
@@ -144,6 +145,7 @@ print factorial(5)
 
 > step 2. keep original factorial function clean  
  add printing functionality with decorator
+
 ```python
 def factorial(n):
     ''' after decorated, actually we are calling <function wrapper at 0x..>
@@ -283,8 +285,8 @@ step 2. define decorator inside arg_decorator that takes function as argument
 
 
 >+ `original` does not exist in `globals()` any more,
-that is, `original` is <function wrapper at 0x>,
-`original.__doc__` and `help(original)` are about <function wrapper at 0x...>
+that is, `original` is `<function wrapper at 0x>`,
+`original.__doc__` and `help(original)` are about `<function wrapper at 0x...>`
 
 ```python
 >>> def decorator(func):
