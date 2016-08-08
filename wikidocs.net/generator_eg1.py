@@ -4,6 +4,13 @@
 import os
 cls = lambda : os.system('cls')
 
+def consumer(func):
+  def start(*args,**kwargs):
+     g = func(*args,**kwargs)
+     g.next()
+     return g
+  return start
+
 def bank_account(deposited, interest_rate):
     while True:
         interest = interest_rate * deposited
@@ -43,7 +50,7 @@ def deposit_money(money,account):
 def withraw_money(money,account):
     account.send(money)
 
-def calcuate_account(balance,interest_rate,print_account):
+def Account(balance,interest_rate,print_account):
     try:
         while True:
             deposit = (yield)
@@ -56,23 +63,25 @@ def calcuate_account(balance,interest_rate,print_account):
     except GeneratorExit:
         print_account.close()
 
-def  print_account():
+def  PrintAccount():
     try:
         while True:
             account = yield
             balance,deposit,interest = account
-            print '>> deposited {d}'.format(d = deposit)
+            print '$ deposited {d}'.format(d = deposit)
             print ' old balance = {old}'.format(old = balance-(deposit+interest))
             print ' new balance = {b},interest = {i}'.format(b=balance,i=interest)
     except GeneratorExit:
         print '======== Done ========'
 
-print_g = print_account(); print_g.next()
-account = calcuate_account(10000,0.05,print_g) ; account.next()
-deposit_money(1000,account)
-deposit_money(1000,account)
-deposit_money(10000,account)
-withraw_money(-10000,account)
+print_g = PrintAccount(); print_g.next()
+myaccount = Account(10000,0.05,print_g) ; myaccount.next()
+deposit_money(1000,myaccount)
+deposit_money(1000,myaccount)
+deposit_money(10000,myaccount)
+withraw_money(-10000,myaccount)
+
+'''
 cls = cls()
 cls
 def fib(n,next_co):
@@ -96,4 +105,4 @@ def printer():
 
 p = printer();p.send(None)
 f = fib(10,p)
-
+'''

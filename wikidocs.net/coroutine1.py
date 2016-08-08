@@ -5,22 +5,21 @@ import os
 cls = lambda : os.system('cls')
 
 ################## python coroutine ##############################
-def match(pattern):
+def Match(pattern):
     print "... Looking for '{pattern}'".format(pattern=pattern)
     try:
         while True:
-            s = yield
-            print 'receiving {data}'.format(data = s)
-            print 'processing {data}'.format(data = s)
-            if pattern in s:
-                print '-> found in {s}'.format(s=s)
+            text = yield
+            print 'receiving {text}'.format(text = text)
+            print 'processing {text}'.format(text = text)
+            if pattern in text:
+                print '-> found {pattern} in {text}'.format(pattern=pattern,text=text)
             else:
                 print '... not found ...'
     except GeneratorExit:
         print '===== Done ====='
 
-m = match('work')
-m.next()
+m = Match('work'); m.next()
 m.send("I'm working on it")
 m.send("What are you searching")
 m.send("my generator looking for word 'work'")
@@ -46,7 +45,7 @@ def read(text, next_coroutine):
     next_coroutine.close()
 
 text = 'Commending spending is offending to people pending lending!'
-matcher = match('ing')
+matcher = Match('ing')
 matcher.next()
 read(text, matcher)
 
@@ -103,7 +102,40 @@ s.next()
 c = count_letters(s)
 c.next()
 read(text,c)
+
 cls()
+def MatchA(pattern):
+    import time,random
+    print "... Looking for '{pattern}'".format(pattern=pattern)
+    try:
+        while True:
+            text = yield
+            print 'receiving {text}'.format(text = text)
+            print 'processing {text}'.format(text = text)
+            if pattern in text:
+                time.sleep(random.randint(1,10)/1000)
+                print 'A-> found {pattern} in {text}'.format(pattern=pattern,text=text)
+            else:
+                print 'A ... not found ...'
+    except GeneratorExit:
+        print '===== Done Match A ====='
+
+def MatchB(pattern):
+    import time,random
+    print "... Looking for '{pattern}'".format(pattern=pattern)
+    try:
+        while True:
+            text = yield
+            print 'receiving {text}'.format(text = text)
+            print 'processing {text}'.format(text = text)
+            if pattern in text:
+                time.sleep(random.randint(1,10)/100)
+                print 'B -> found {pattern} in {text}'.format(pattern=pattern,text=text)
+            else:
+                print 'B ... not found ...'
+    except GeneratorExit:
+        print '===== Done Match B ====='
+
 print 'Multitasking'
 def read_to_many(text, coroutines):
     for word in text.split():
@@ -112,6 +144,6 @@ def read_to_many(text, coroutines):
             coroutine.send(word)
     for coroutine in coroutines:
         coroutine.close()
-m = match('ing'); m.next()
-p = match('pe'); p.next()
+m = MatchA('ing'); m.next()
+p = MatchB('pe'); p.next()
 read_to_many(text, [m,p])
