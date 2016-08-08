@@ -73,3 +73,27 @@ deposit_money(1000,account)
 deposit_money(1000,account)
 deposit_money(10000,account)
 withraw_money(-10000,account)
+cls = cls()
+cls
+def fib(n,next_co):
+    a, b = 0, 1
+    try:
+        for i in range(1,n+1):
+    #        yield a
+            a, b = b, a+b
+            next_co.send((i,a))
+    except GeneratorExit:
+        next_co.close()
+
+def printer():
+    try:
+        while True:
+            i,a = yield
+            print 'fib({i}) = {a}'.format(i=i,a=a)
+    except GeneratorExit:
+#       print 'fib({i}) = {a}'.format(i=i,a=a)
+        print '====== Done printing ======='
+
+p = printer();p.send(None)
+f = fib(10,p)
+
