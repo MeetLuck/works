@@ -142,9 +142,9 @@ def menu():
         screen.addstr(height/2+2,width/2-2, 'Exit',graphics[4])
         action = screen.getch()
         if action == ord('k'): 
-            option = (option-1)%5      # 0 1 2 3 4 -> 4,3,2,1,0
+            option = (option-1)%5      # 0 -> 4 -> 3 -> 2 -> 1
         elif action == ord('j'):
-            option = (option+1)%5      # 0,1,2,3,4 -> 1,2,3,4,0
+            option = (option+1)%5      # 0 -> 1 -> 2 -> 3 -> 4
         elif action == ord('\n'):
             selection = option
         screen.addstr(23,10,str(option))

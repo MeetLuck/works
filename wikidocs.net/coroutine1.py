@@ -113,7 +113,7 @@ def MatchA(pattern):
             print 'receiving {text}'.format(text = text)
             print 'processing {text}'.format(text = text)
             if pattern in text:
-                time.sleep(random.randint(1,10)/1000)
+                time.sleep(random.randint(1,10)/1)
                 print 'A-> found {pattern} in {text}'.format(pattern=pattern,text=text)
             else:
                 print 'A ... not found ...'
@@ -142,6 +142,7 @@ def read_to_many(text, coroutines):
         for coroutine in coroutines:
             print "send '{word}' to {coroutine}".format(word=word, coroutine=coroutine.__name__)
             coroutine.send(word)
+    print '=== sending text done ...'
     for coroutine in coroutines:
         coroutine.close()
 m = MatchA('ing'); m.next()
