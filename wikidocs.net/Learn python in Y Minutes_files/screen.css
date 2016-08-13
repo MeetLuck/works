@@ -1,0 +1,184 @@
+@import url( https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700|Roboto+Slab:700|Open+Sans:400,700&subset=latin,latin-ext,cyrillic );
+body {
+	line-height: 22pt; font-family: "Open Sans", sans-serif;
+}
+h1 {
+	font-family: "Roboto Slab", serif;
+}
+h2 {
+	font-family: "Roboto Slab", serif;
+}
+h3 {
+	font-family: "Roboto Slab", serif;
+}
+h4 {
+	font-family: "Roboto Slab", serif;
+}
+h5 {
+	font-family: "Roboto Slab", serif;
+}
+h6 {
+	font-family: "Roboto Slab", serif;
+}
+h1 {
+	margin: 22pt 0px 0px; padding: 0px; line-height: 22pt;
+}
+h2 {
+	margin: 22pt 0px 0px; padding: 0px; line-height: 22pt;
+}
+h3 {
+	margin: 22pt 0px 0px; padding: 0px; line-height: 22pt;
+}
+h4 {
+	margin: 22pt 0px 0px; padding: 0px; line-height: 22pt;
+}
+h5 {
+	margin: 22pt 0px 0px; padding: 0px; line-height: 22pt;
+}
+h6 {
+	margin: 22pt 0px 0px; padding: 0px; line-height: 22pt;
+}
+p {
+	margin: 22pt 0px 0px; padding: 0px; line-height: 22pt;
+}
+li {
+	margin: 22pt 0px 0px; padding: 0px; line-height: 22pt;
+}
+hr {
+	margin: 22pt 0px 0px; padding: 0px; line-height: 22pt;
+}
+li + li {
+	margin-top: 0px;
+}
+.container {
+	margin: 0px auto; max-width: 840px;
+}
+.container {
+	margin: 0px 20px;
+}
+#doc {
+	font-size: 14pt;
+}
+#doc .highlight {
+	line-height: 18pt; font-family: "Ubuntu Mono", monospace; display: block;
+}
+#doc img {
+	max-width: 100%;
+}
+#doc footer {
+	text-align: right; color: rgb(119, 119, 119); margin-top: 60px;
+}
+.highlight {
+	background: rgb(238, 238, 238); margin: 0px; padding: 18pt; overflow-x: auto;
+}
+.c.highlight {
+	font-style: normal;
+}
+.highlight .c1 {
+	font-style: normal;
+}
+.highlight .nb {
+	font-weight: 700;
+}
+.highlight .nf {
+	font-weight: 700;
+}
+.highlight .k {
+	font-weight: 700;
+}
+.highlight .n {
+	color: rgb(51, 51, 51);
+}
+table {
+	width: 100%; margin-top: 22pt;
+}
+th {
+	text-align: left; line-height: 33pt; border-bottom-color: rgb(238, 238, 238); border-bottom-width: 1px; border-bottom-style: solid;
+}
+td {
+	text-align: left; line-height: 33pt; border-bottom-color: rgb(238, 238, 238); border-bottom-width: 1px; border-bottom-style: solid;
+}
+th h1:first-child {
+	margin-top: 0px;
+}
+th h2:first-child {
+	margin-top: 0px;
+}
+th h3:first-child {
+	margin-top: 0px;
+}
+th h4:first-child {
+	margin-top: 0px;
+}
+th h5:first-child {
+	margin-top: 0px;
+}
+th h6:first-child {
+	margin-top: 0px;
+}
+th p:first-child {
+	margin-top: 0px;
+}
+td h1:first-child {
+	margin-top: 0px;
+}
+td h2:first-child {
+	margin-top: 0px;
+}
+td h3:first-child {
+	margin-top: 0px;
+}
+td h4:first-child {
+	margin-top: 0px;
+}
+td h5:first-child {
+	margin-top: 0px;
+}
+td h6:first-child {
+	margin-top: 0px;
+}
+td p:first-child {
+	margin-top: 0px;
+}
+th.name {
+	width: 50%;
+}
+th.lang {
+	width: 50%;
+}
+td.name a {
+	font-size: 1.2em; font-weight: bold;
+}
+td.lang a {
+	background: rgb(238, 238, 238); padding: 0px 5px; border-radius: 3px; text-decoration: none; border-bottom-color: rgb(221, 221, 221); border-bottom-width: 2px; border-bottom-style: solid;
+}
+td.lang a:hover {
+	background: rgb(245, 245, 245);
+}
+td.lang a.selected {
+	background: rgb(255, 255, 153);
+}
+tr {
+	margin-bottom: 10px; border-bottom-color: rgb(238, 238, 238); border-bottom-width: 3px; border-bottom-style: solid; display: block;
+}
+th.name {
+	width: 100%; display: block;
+}
+th.lang {
+	display: none;
+}
+td.name {
+	line-height: 24pt; font-size: 16pt; display: block;
+}
+td.lang {
+	text-align: right; display: block;
+}
+.share {
+	background: rgb(238, 238, 238); padding: 0px 20px; border-radius: 3px; text-align: center; line-height: 40px; border-bottom-color: rgb(221, 221, 221); border-bottom-width: 2px; border-bottom-style: solid; float: right;
+}
+.share .sharemsg {
+	font-weight: bold; display: block;
+}
+.lang-choice {
+	float: right;
+}

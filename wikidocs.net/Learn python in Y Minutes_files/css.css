@@ -1,0 +1,30 @@
+@font-face {
+	font-family: Open Sans;
+	src: local("Open Sans"), local("OpenSans"), url(https://fonts.gstatic.com/s/opensans/v13/uYKcPVoh6c5R0NpdEY5A-Q.woff) format("woff");
+	font-weight: 400;
+	font-style: normal;
+}
+@font-face {
+	font-family: Open Sans;
+	src: local("Open Sans Bold"), local("OpenSans-Bold"), url(https://fonts.gstatic.com/s/opensans/v13/k3k702ZOKiLJc3WVjuplzBsxEYwM7FgeyaSgU71cLG0.woff) format("woff");
+	font-weight: 700;
+	font-style: normal;
+}
+@font-face {
+	font-family: Roboto Slab;
+	src: local("Roboto Slab Bold"), local("RobotoSlab-Bold"), url(https://fonts.gstatic.com/s/robotoslab/v6/dazS1PrQQuCxC3iOAJFEJZXMLUeV6_io0G3F6eXSVcg.woff) format("woff");
+	font-weight: 700;
+	font-style: normal;
+}
+@font-face {
+	font-family: Ubuntu Mono;
+	src: local("Ubuntu Mono"), local("UbuntuMono-Regular"), url(https://fonts.gstatic.com/s/ubuntumono/v6/EgeuS9OtEmA0y_JRo03MQT8E0i7KZn-EPnyo3HZu7kw.woff) format("woff");
+	font-weight: 400;
+	font-style: normal;
+}
+@font-face {
+	font-family: Ubuntu Mono;
+	src: local("Ubuntu Mono Bold"), local("UbuntuMono-Bold"), url(https://fonts.gstatic.com/s/ubuntumono/v6/ceqTZGKHipo8pJj4molytpXMLUeV6_io0G3F6eXSVcg.woff) format("woff");
+	font-weight: 700;
+	font-style: normal;
+}

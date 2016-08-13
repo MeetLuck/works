@@ -1,0 +1,43 @@
+Trying:
+    add(1,2)
+Expecting:
+    3
+ok
+Trying:
+    add(10,20)
+Expecting:
+    30.0
+**********************************************************************
+File "D:\home\git\works\wikidocs.net\doctest_add.py", line 5, in __main__.add
+Failed example:
+    add(10,20)
+Expected:
+    30.0
+Got:
+    30
+Trying:
+    assert add(1,2) == 3
+Expecting nothing
+ok
+Trying:
+    assert add(10,20) == 29 
+Expecting nothing
+**********************************************************************
+File "D:\home\git\works\wikidocs.net\doctest_add.py", line 8, in __main__.add
+Failed example:
+    assert add(10,20) == 29 
+Exception raised:
+    Traceback (most recent call last):
+      File "C:\Python27\lib\doctest.py", line 1315, in __run
+        compileflags, 1) in test.globs
+      File "<doctest __main__.add[3]>", line 1, in <module>
+        assert add(10,20) == 29
+    AssertionError
+1 items had no tests:
+    __main__
+**********************************************************************
+1 items had failures:
+   2 of   4 in __main__.add
+4 tests in 2 items.
+2 passed and 2 failed.
+***Test Failed*** 2 failures.

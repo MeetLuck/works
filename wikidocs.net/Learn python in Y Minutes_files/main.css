@@ -1,0 +1,126 @@
+html {
+	color: rgb(34, 34, 34);
+}
+button {
+	color: rgb(34, 34, 34);
+}
+input {
+	color: rgb(34, 34, 34);
+}
+select {
+	color: rgb(34, 34, 34);
+}
+textarea {
+	color: rgb(34, 34, 34);
+}
+body {
+	line-height: 1.4; font-size: 1em;
+}
+::selection {
+	background: rgb(179, 212, 252); text-shadow: none;
+}
+hr {
+	border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(204, 204, 204) currentColor currentColor; margin: 1em 0px; padding: 0px; height: 1px; display: block;
+}
+img {
+	vertical-align: middle;
+}
+fieldset {
+	margin: 0px; padding: 0px; border: 0px currentColor;
+}
+textarea {
+	resize: vertical;
+}
+.chromeframe {
+	background: rgb(204, 204, 204); margin: 0.2em 0px; padding: 0.2em 0px; color: rgb(0, 0, 0);
+}
+.ir {
+	border: 0px currentColor; overflow: hidden; background-color: transparent;
+}
+.ir::before {
+	width: 0px; height: 100%; display: block; content: "";
+}
+.hidden {
+	display: none !important; visibility: hidden;
+}
+.visuallyhidden {
+	margin: -1px; padding: 0px; border: 0px currentColor; width: 1px; height: 1px; overflow: hidden; position: absolute; cliptop: 0px; clipright: 0px; clipbottom: 0px; clipleft: 0px;
+}
+.focusable.visuallyhidden:active {
+	margin: 0px; width: auto; height: auto; overflow: visible; position: static; clip: auto;
+}
+.focusable.visuallyhidden:focus {
+	margin: 0px; width: auto; height: auto; overflow: visible; position: static; clip: auto;
+}
+.invisible {
+	visibility: hidden;
+}
+.clearfix::before {
+	display: table; content: " ";
+}
+.clearfix::after {
+	display: table; content: " ";
+}
+.clearfix::after {
+	clear: both;
+}
+.clearfix {
+	
+}
+* {
+	color: rgb(0, 0, 0) !important; box-shadow: none !important; text-shadow: none;
+}
+a {
+	text-decoration: underline;
+}
+a:visited {
+	text-decoration: underline;
+}
+a[href]::after {
+	content: " (" attr(href) ")";
+}
+abbr[title]::after {
+	content: " (" attr(title) ")";
+}
+.ir a::after {
+	content: "";
+}
+a[href^='javascript:']::after {
+	content: "";
+}
+a[href^='#']::after {
+	content: "";
+}
+pre {
+	border: 1px solid rgb(153, 153, 153); page-break-inside: avoid;
+}
+blockquote {
+	border: 1px solid rgb(153, 153, 153); page-break-inside: avoid;
+}
+thead {
+	display: table-header-group;
+}
+tr {
+	page-break-inside: avoid;
+}
+img {
+	page-break-inside: avoid;
+}
+img {
+	max-width: 100% !important;
+}
+p {
+	orphans: 3; widows: 3;
+}
+h2 {
+	orphans: 3; widows: 3;
+}
+h3 {
+	orphans: 3; widows: 3;
+}
+h2 {
+	page-break-after: avoid;
+}
+h3 {
+	page-break-after: avoid;
+}

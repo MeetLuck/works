@@ -1,0 +1,183 @@
+.hll {
+	background-color: rgb(255, 255, 204);
+}
+.c {
+	color: rgb(153, 153, 136); font-style: italic;
+}
+.err {
+	color: rgb(166, 23, 23); background-color: rgb(227, 210, 210);
+}
+.k {
+	color: rgb(0, 0, 0); font-weight: bold;
+}
+.o {
+	color: rgb(0, 0, 0); font-weight: bold;
+}
+.cm {
+	color: rgb(153, 153, 136); font-style: italic;
+}
+.cp {
+	color: rgb(153, 153, 153); font-style: italic; font-weight: bold;
+}
+.c1 {
+	color: rgb(153, 153, 136); font-style: italic;
+}
+.cs {
+	color: rgb(153, 153, 153); font-style: italic; font-weight: bold;
+}
+.gd {
+	color: rgb(0, 0, 0); background-color: rgb(255, 221, 221);
+}
+.ge {
+	color: rgb(0, 0, 0); font-style: italic;
+}
+.gr {
+	color: rgb(170, 0, 0);
+}
+.gh {
+	color: rgb(153, 153, 153);
+}
+.gi {
+	color: rgb(0, 0, 0); background-color: rgb(221, 255, 221);
+}
+.go {
+	color: rgb(136, 136, 136);
+}
+.gp {
+	color: rgb(85, 85, 85);
+}
+.gs {
+	font-weight: bold;
+}
+.gu {
+	color: rgb(170, 170, 170);
+}
+.gt {
+	color: rgb(170, 0, 0);
+}
+.kc {
+	color: rgb(0, 0, 0); font-weight: bold;
+}
+.kd {
+	color: rgb(0, 0, 0); font-weight: bold;
+}
+.kn {
+	color: rgb(0, 0, 0); font-weight: bold;
+}
+.kp {
+	color: rgb(0, 0, 0); font-weight: bold;
+}
+.kr {
+	color: rgb(0, 0, 0); font-weight: bold;
+}
+.kt {
+	color: rgb(68, 85, 136); font-weight: bold;
+}
+.m {
+	color: rgb(0, 153, 153);
+}
+.s {
+	color: rgb(208, 16, 64);
+}
+.na {
+	color: rgb(0, 128, 128);
+}
+.nb {
+	color: rgb(0, 134, 179);
+}
+.nc {
+	color: rgb(68, 85, 136); font-weight: bold;
+}
+.no {
+	color: rgb(0, 128, 128);
+}
+.nd {
+	color: rgb(60, 93, 93); font-weight: bold;
+}
+.ni {
+	color: rgb(128, 0, 128);
+}
+.ne {
+	color: rgb(153, 0, 0); font-weight: bold;
+}
+.nf {
+	color: rgb(153, 0, 0); font-weight: bold;
+}
+.nl {
+	color: rgb(153, 0, 0); font-weight: bold;
+}
+.nn {
+	color: rgb(85, 85, 85);
+}
+.nt {
+	color: rgb(0, 0, 128);
+}
+.nv {
+	color: rgb(0, 128, 128);
+}
+.ow {
+	color: rgb(0, 0, 0); font-weight: bold;
+}
+.w {
+	color: rgb(187, 187, 187);
+}
+.mf {
+	color: rgb(0, 153, 153);
+}
+.mh {
+	color: rgb(0, 153, 153);
+}
+.mi {
+	color: rgb(0, 153, 153);
+}
+.mo {
+	color: rgb(0, 153, 153);
+}
+.sb {
+	color: rgb(208, 16, 64);
+}
+.sc {
+	color: rgb(208, 16, 64);
+}
+.sd {
+	color: rgb(208, 16, 64);
+}
+.s2 {
+	color: rgb(208, 16, 64);
+}
+.se {
+	color: rgb(208, 16, 64);
+}
+.sh {
+	color: rgb(208, 16, 64);
+}
+.si {
+	color: rgb(208, 16, 64);
+}
+.sx {
+	color: rgb(208, 16, 64);
+}
+.sr {
+	color: rgb(0, 153, 38);
+}
+.s1 {
+	color: rgb(208, 16, 64);
+}
+.ss {
+	color: rgb(153, 0, 115);
+}
+.bp {
+	color: rgb(153, 153, 153);
+}
+.vc {
+	color: rgb(0, 128, 128);
+}
+.vg {
+	color: rgb(0, 128, 128);
+}
+.vi {
+	color: rgb(0, 128, 128);
+}
+.il {
+	color: rgb(0, 153, 153);
+}

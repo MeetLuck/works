@@ -1,0 +1,258 @@
+article {
+	display: block;
+}
+aside {
+	display: block;
+}
+details {
+	display: block;
+}
+figcaption {
+	display: block;
+}
+figure {
+	display: block;
+}
+footer {
+	display: block;
+}
+header {
+	display: block;
+}
+hgroup {
+	display: block;
+}
+nav {
+	display: block;
+}
+section {
+	display: block;
+}
+summary {
+	display: block;
+}
+audio {
+	display: inline-block;
+}
+canvas {
+	display: inline-block;
+}
+video {
+	display: inline-block;
+}
+audio:not([controls]) {
+	height: 0px; display: none;
+}
+[hidden] {
+	display: none;
+}
+html {
+	font-size: 100%; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;
+}
+html {
+	font-family: sans-serif;
+}
+button {
+	font-family: sans-serif;
+}
+input {
+	font-family: sans-serif;
+}
+select {
+	font-family: sans-serif;
+}
+textarea {
+	font-family: sans-serif;
+}
+body {
+	margin: 0px;
+}
+a:focus {
+	outline: dotted thin;
+}
+a:active {
+	outline: 0px;
+}
+a:hover {
+	outline: 0px;
+}
+h1 {
+	margin: 0.67em 0px; font-size: 2em;
+}
+h2 {
+	margin: 0.83em 0px; font-size: 1.5em;
+}
+h3 {
+	margin: 1em 0px; font-size: 1.17em;
+}
+h4 {
+	margin: 1.33em 0px; font-size: 1em;
+}
+h5 {
+	margin: 1.67em 0px; font-size: 0.83em;
+}
+h6 {
+	margin: 2.33em 0px; font-size: 0.75em;
+}
+abbr[title] {
+	border-bottom-color: currentColor; border-bottom-width: 1px; border-bottom-style: dotted;
+}
+b {
+	font-weight: bold;
+}
+strong {
+	font-weight: bold;
+}
+blockquote {
+	margin: 1em 40px;
+}
+dfn {
+	font-style: italic;
+}
+mark {
+	background: rgb(255, 255, 0); color: rgb(0, 0, 0);
+}
+p {
+	margin: 1em 0px;
+}
+pre {
+	margin: 1em 0px;
+}
+code {
+	font-family: monospace, serif; font-size: 1em; _font-family: "courier new", monospace;
+}
+kbd {
+	font-family: monospace, serif; font-size: 1em; _font-family: "courier new", monospace;
+}
+pre {
+	font-family: monospace, serif; font-size: 1em; _font-family: "courier new", monospace;
+}
+samp {
+	font-family: monospace, serif; font-size: 1em; _font-family: "courier new", monospace;
+}
+pre {
+	white-space: pre-wrap; word-wrap: break-word;
+}
+q {
+	quotes: none;
+}
+q::before {
+	content: none;
+}
+q::after {
+	content: none;
+}
+small {
+	font-size: 80%;
+}
+sub {
+	line-height: 0; font-size: 75%; vertical-align: baseline; position: relative;
+}
+sup {
+	line-height: 0; font-size: 75%; vertical-align: baseline; position: relative;
+}
+sup {
+	top: -0.5em;
+}
+sub {
+	bottom: -0.25em;
+}
+dl {
+	margin: 1em 0px;
+}
+menu {
+	margin: 1em 0px;
+}
+ol {
+	margin: 1em 0px;
+}
+ul {
+	margin: 1em 0px;
+}
+dd {
+	margin: 0px 0px 0px 40px;
+}
+menu {
+	padding: 0px 0px 0px 40px;
+}
+ol {
+	padding: 0px 0px 0px 40px;
+}
+ul {
+	padding: 0px 0px 0px 40px;
+}
+nav ul {
+	list-style: none;
+}
+nav ol {
+	list-style: none;
+}
+img {
+	border: 0px currentColor; -ms-interpolation-mode: bicubic;
+}
+svg:not(:root) {
+	overflow: hidden;
+}
+figure {
+	margin: 0px;
+}
+form {
+	margin: 0px;
+}
+fieldset {
+	margin: 0px 2px; padding: 0.35em 0.62em 0.75em; border: 1px solid rgb(192, 192, 192);
+}
+legend {
+	padding: 0px; border: 0px currentColor; white-space: normal;
+}
+button {
+	margin: 0px; font-size: 100%; vertical-align: baseline;
+}
+input {
+	margin: 0px; font-size: 100%; vertical-align: baseline;
+}
+select {
+	margin: 0px; font-size: 100%; vertical-align: baseline;
+}
+textarea {
+	margin: 0px; font-size: 100%; vertical-align: baseline;
+}
+button {
+	line-height: normal;
+}
+input {
+	line-height: normal;
+}
+button {
+	cursor: pointer; -webkit-appearance: button;
+}
+html input[type='button'] {
+	cursor: pointer; -webkit-appearance: button;
+}
+input[type='reset'] {
+	cursor: pointer; -webkit-appearance: button;
+}
+input[type='submit'] {
+	cursor: pointer; -webkit-appearance: button;
+}
+button[disabled] {
+	cursor: default;
+}
+input[disabled] {
+	cursor: default;
+}
+input[type='checkbox'] {
+	padding: 0px; box-sizing: border-box;
+}
+input[type='radio'] {
+	padding: 0px; box-sizing: border-box;
+}
+input[type='search'] {
+	box-sizing: content-box; -webkit-appearance: textfield; -moz-box-sizing: content-box; -webkit-box-sizing: content-box;
+}
+textarea {
+	overflow: auto; vertical-align: top;
+}
+table {
+	border-collapse: collapse; border-spacing: 0;
+}
