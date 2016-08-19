@@ -44,3 +44,16 @@ print it.send(10)
 print it.send(4)
 print it.send(22)
 print it.send(-1)
+
+cls()
+def receiver():
+    while True:
+        item = (yield 100) + '->'
+        print 'Got', item
+
+recv = receiver()
+print next(recv)
+print recv.send("Hello")
+print recv.send("World")
+
+
