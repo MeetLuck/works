@@ -32,7 +32,7 @@ class CarSprite(pygame.sprite.Sprite):
         self.rect.center = self.position
 # create a car and run
 rect = screen.get_rect()
-car = CarSprite('car2.bmp', rect.center)
+car = CarSprite('car.png', rect.center)
 car_group = pygame.sprite.RenderPlain(car)
 while True:
     # user input
