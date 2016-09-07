@@ -13,10 +13,10 @@ green = 0,255,0
 blue  = 0,0,255
 # set up fonts
 f1 = pygame.font.get_default_font()
-basicfont = pygame.font.Font(f1,30)
-#basicfont = pygame.font.SysFont(None,48)
+#basicfont = pygame.font.Font(f1,30)
+basicfont = pygame.font.SysFont(None,48)
 # set up the text
-text = basicfont.render('Hello world!', True, green, blue)
+text = basicfont.render('Hello world!', True, white, blue)
 textrect = text.get_rect()
 textrect.centerx = windowSurface.get_rect().centerx
 textrect.centery = windowSurface.get_rect().centery
