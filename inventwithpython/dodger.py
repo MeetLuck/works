@@ -1,3 +1,4 @@
+# move_ip(xpixel,ypixel) : move in place 
 import pygame, random, sys
 from pygame.locals import *
 
@@ -6,8 +7,8 @@ windowsize = width,height
 textcolor = 255,255,255
 backgroundcolor=0,0,0
 fps = 40
-badditeminsize,badditemaxsize = 10,40
-badditeminspeed, badditemaxspeed = 1,8
+baddieminsize,baddiemaxsize = 10,40
+baddieminspeed, baddiemaxspeed = 1,8
 addnewbaddierate = 6
 playermoverate = 5
 
@@ -49,7 +50,7 @@ font = pygame.font.SysFont(None,48)
 gameoversound = pygame.mixer.Sound('gameover.wav')
 pygame.mixer.music.load('background.mid')
 # set up images
-playimage = pygame.image.load('player.png')
+playerimage = pygame.image.load('player.png')
 playerRect = playerimage.get_rect()
 baddieimage = pygame.image.load('baddie.png')
 # show the start screen
@@ -65,7 +66,7 @@ while True:
     score = 0
     playerRect.topleft = width/2, height-50
     moveleft = moveright = moveup = movedown = False
-    reversecheat = showcheat = False
+    reversecheat = slowcheat = False
     baddieaddcounter = 0
     pygame.mixer.music.play(-1,0.0)
 
@@ -112,9 +113,9 @@ while True:
             baddieaddcounter += 1
         if baddieaddcounter == addnewbaddierate:
             baddieaddcounter = 0
-            baddiesize = random.ranint(baddieminsize,baddiemaxsize)
+            baddiesize = random.randint(baddieminsize,baddiemaxsize)
             newbaddie = {'rect':pygame.Rect(random.randint(0,width-baddiesize),0-baddiesize, baddiesize,baddiesize),
-                    'speed':random.randint(baddieminspeed,baddemaxspeed),
+                    'speed':random.randint(baddieminspeed,baddiemaxspeed),
                     'surface':pygame.transform.scale(baddieimage,(baddiesize,baddiesize)),
                     }
             baddies.append(newbaddie)
@@ -153,7 +154,7 @@ while True:
         # check if any of the baddies have hit the player
         if playerhashitbaddie(playerRect, baddies):
             if score > topscore:
-                topscore = socre
+                topscore = score
             break
         mainclock.tick(fps)
     # stop the game and show the game over screen
