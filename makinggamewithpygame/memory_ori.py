@@ -4,6 +4,7 @@
 # Released under a "Simplified BSD" license
 
 import random, pygame, sys
+from itertools import product
 from pygame.locals import *
 
 FPS = 30 # frames per second, the general speed of the program
@@ -131,10 +132,7 @@ def generateRevealedBoxesData(val):
 
 def getRandomizedBoard():
     # Get a list of every possible shape in every possible color.
-    icons = []
-    for color in ALLCOLORS:
-        for shape in ALLSHAPES:
-            icons.append( (shape, color) )
+    icons = list( product(ALLSHAPES,ALLCOLORS) )
 
     random.shuffle(icons) # randomize the order of the icons list
     numIconsUsed = int(BOARDWIDTH * BOARDHEIGHT / 2) # calculate how many icons are needed
@@ -146,8 +144,7 @@ def getRandomizedBoard():
     for x in range(BOARDWIDTH):
         column = []
         for y in range(BOARDHEIGHT):
-            column.append(icons[0])
-            del icons[0] # remove the icons as we assign them
+            column.append(icons.pop())
         board.append(column)
     return board
 
@@ -253,10 +250,11 @@ def drawHighlightBox(boxx, boxy):
 def startGameAnimation(board):
     # Randomly reveal the boxes 8 at a time.
     coveredBoxes = generateRevealedBoxesData(False)
-    boxes = []
-    for x in range(BOARDWIDTH):
-        for y in range(BOARDHEIGHT):
-            boxes.append( (x, y) )
+#   boxes = []
+#   for x in range(BOARDWIDTH):
+#       for y in range(BOARDHEIGHT):
+#           boxes.append( (x, y) )
+    boxes = list( product(range(BOARDWIDTH),range(BOARDHEIGHT)) )
     random.shuffle(boxes)
     boxGroups = splitIntoGroupsOf(8, boxes)
 
