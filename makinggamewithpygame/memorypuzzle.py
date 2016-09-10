@@ -123,6 +123,8 @@ def generaterevealedboxesdata(val):
 
 def getrandomizedboard():
     # get a list of every possible shape in every possible color
+    # from itertools import product
+    # icons = list( product(allshapes,allcolors) ) 
     icons = list()
     for color in allcolors:
         for shape in allshapes:
@@ -144,5 +146,66 @@ def getrandomizedboard():
             del icons[0]
         board.append(column)
     return board
+def splitintogroupsof(groupsize,thelist):
+    # splits a list into a list of lists, where inner lists have at
+    # most groupsize number of items
+    results = []
+    for i in range(0, len(thelist),groupsize):
+        result.append(thelist[i : i+groupsize])
+    return result
+
+def lefttopcoordsofbox(boxx,boxy):
+    # convert board coordinates to pixel coordinates
+    left = boxx*(boxsize + gapsize) + xmargin
+    top  = boxx*(boxsize + gapsize) + ymargin
+    return left,top
+def getboxatpixel(x,y):
+    for boxx in range(boardwidth):
+        for boxy in range(boardheight):
+            left,top = lefttopcoordsofbox(boxx,boxy)
+            boxrect = pygame.Rect(left,top,boxsize,boxsize)
+            if boxrect.collidepoint(x,y):
+                return boxx,boxy
+    return None,None
+def drawicon(shape,color,boxx,boxy):
+    quarter = int(boxsize/4)
+    half    = int(boxsize/2)
+    left,top = lefttopcoordsofbox(boxx,boxy)
+    # draw the shapes
+    if shape == donut:
+        pygame.draw.circle(surface,color,(left+half,top+half),half-5)
+        pygame.draw.circle(surface,bgcolor,(left+half,top+half),quarter-5)
+    elif shape == square:
+        pygame.draw.rect(surface,color,(left+quarter,top+quarter,boxsize-half,boxsize-half) )
+    elif shape == diamond:
+        pygame.draw.polygon(surface,color,((left+half,top), (left+boxsize-1,top+half),(left+half,top+boxsize-1),(left,top+half) ) )
+    elif shape == lines:
+        for i in range(0,boxsize,4):
+            pygame.draw.line(surface,color,(left,top+i),(left+i,top))
+            pygame.draw.line(surface,color,(left+i,top+boxsize-1),(left+boxsize-1,top+i))
+    elif shape =- oval:
+        pygame.draw.ellips(surface,color, (left, top+quarter,boxsize,half) )
+def getshapeandcolor(board,boxx,boxy):
+    # shape value for x,y spot is stored in board[x][y][0]
+    # color value for x,y spot is stored in board[x][y][1]
+    return board[boxx][boxy][0], board[boxx][boxy][1]
+
+def drawboxcovers(board,boxes,coverage):
+    # draw boxes being covered/revealed. 'boxes' is a list
+    # of tow-item lists, which have x & y spot of the box
+    for box in boxes:
+        left,top = lefttopcoordsofbox(box[0],box[1])
+        pygame.draw.rect(surface,bgcolor,(left,top,boxsize,boxsize) )
+        shape,color = getshapeandcolor(board, box[0], box[1])
+        drawicon(shape,color,box[0],box[1])
+        if coverage > 0: # only draw the cover if there is an coverage
+            pygame.draw.rect(surface,boxcolor,(left,top,coverage,boxsize) )
+        pygame.display.update()
+        fpsclock.tick(fps)
+def revealboxesanimation(board,boxestoreveal):
+    # do the 'box reveal' animation
+    for coverage in range(boxsize,(-revealspeed)-1,-revealspeed):
+        drawboxcovers(board,boxestoreveal,coverage)
+
 
 
