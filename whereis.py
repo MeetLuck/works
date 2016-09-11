@@ -1,29 +1,67 @@
 import os, sys
+import fnmatch
 
-def finddir(root):
-    abspaths = list()
-    for path in os.listdir(root):
-        abspath = os.path.join(root,path)
-        if os.path.isdir(abspath):
-#           print abspath
-            abspaths.append(abspath)
-    return abspaths[:]
+def _search(path,filename,founds,visited):
+    print '=>',path
+    if path in visited:
+#       print 'already searched',path
+        return
+    if os.path.isdir(path):
+        return
+#       print 'not directory',path
+    p = os.path.join(path,filename)
+    if os.path.exists(p):
+        founds.append('found at -> ' + path)
+    else:
+        print 'not found at ' + path
+    visited.append(path)
+#   print '=> end of _search'
 
-def findfile(filename,paths):
+def search(filename,paths,depth=3):
+#   arg = filename, depth, founds, visited
+    visited = []
+    founds  = []
     for path in paths: 
-#       print path
-        p = os.path.join(path,filename)
-        if os.path.exists(p):
-            print 'found at -> '+ path
+        _search(path,filename,founds,visited)
+        i=0
+        for root, dirs, files in os.walk(path):
+            for dir in normpaths(dirs):
+                _search(os.path.join(path,dir),filename,founds,visited)
+            i += 1
+            if i > 6:
+                break
+    print ' '.join(visited)
+    return founds
+
+def normpaths(paths):
+    # paths become local because assignments 
+    paths = map(os.path.normcase, paths)
+    paths = map(os.path.normpath, paths)
+#   paths = [ os.path.normpath(p) for p in paths ]
+    return paths
 
 # search file in os.environment path
 def main(filename):
-    abspaths = os.environ['path'].split(os.pathsep)
-    roots = ['c:\\program files','c:\\']
-    for root in roots:
-        abspaths.extend( finddir(root) )
-    findfile(filename,abspaths)
+    envpaths = os.environ['path'].split(os.pathsep)
+    userpaths = ['c:\\', 'c:\\program files']
+    envpaths = ['d:\j\home\works\win32']
+#   userpaths = ['c:\python27\lib']
+    envpaths = normpaths(envpaths)
+    userpaths = normpaths(userpaths)
+    
+#   print envpaths
+    searchpaths = list()
+    searchpaths.extend(envpaths)
+    searchpaths.extend(userpaths)
+
+    # search file in search paths
+    founds = search(filename,searchpaths)
+    print '======================'
+    print '\n'.join(founds)
+
 
 if __name__ == '__main__':
-    filename = sys.argv[1]
-    main(filename)
+#   filename = sys.argv[1]
+#   main(filename)
+    main('firefox.exe')
+    main('python.exe')
