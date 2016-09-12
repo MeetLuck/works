@@ -225,7 +225,8 @@ def getShapeAndColor(board,boxx,boxy):
 
 def drawBoxCovers(board,boxes,coverage):
     # draw boxes being covered/revealed.
-    #'boxes' is a list of two-item lists, which have x & y spot of the box
+    #'boxes' is a list of  tuples (X,Y)
+    # boxes = [(boxX1,boxY2),(boxX2,boxY2),...]
     for box in boxes:
         left,top = leftTopCoordsOfBox(box[0],box[1])
         pygame.draw.rect(surface,bgcolor,(left,top,boxsize,boxsize) )
