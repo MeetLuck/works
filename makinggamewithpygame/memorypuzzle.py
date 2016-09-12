@@ -1,4 +1,4 @@
-import pygame, sys, random
+import pygame, sys, random, winsound
 from pygame.locals import *
 from itertools import product
 
@@ -17,18 +17,6 @@ assert (boardwidth * boardheight) % 2 == 0, 'board need to have an even number o
 xmargin = int( (width  - boardwidth*(boxsize+gapsize))/2 )
 ymargin = int( (height - boardheight*(boxsize+gapsize))/2 )
 
-# R G B
-#colors   = pygame.color.THECOLORS
-#gray     = colors['gray']
-#navyblue = colors['navyblue']
-#white    = colors['white']
-#red      = colors['red']
-#green    = colors['green']
-#blue     = colors['blue']
-#yellow   = colors['yellow']
-#orange   = colors['orange']
-#purple   = colors['purple']
-#cyan     = colors['cyan']
 #            R    G    B
 gray     = (100, 100, 100)
 navyblue = ( 60,  60, 100)
@@ -92,14 +80,17 @@ def main():
                 mouseclicked = True
 
         boxx,boxy = getBoxAtPixel(mousex,mousey)
-        if boxx != None and boxy != None:
+        if boxx != None and boxy != None: # check if the mouse is currently over a box.
             # the mouse is currently over a box
             if not revealedBoxes[boxx][boxy]:
                 drawHightlightBox(boxx,boxy)
 
             if not revealedBoxes[boxx][boxy] and mouseclicked:
+                winsound.Beep(500,50)
                 revealBoxesAnimation(mainboard, [(boxx,boxy)])
                 # set the box as revealed
+                # whether icon1 == icon2 or not
+                # whether first selection or second selection
                 revealedBoxes[boxx][boxy] = True
 
                 # the current box was first box clicked
@@ -108,15 +99,20 @@ def main():
                 # the current box was the second box clicked
                 # check if there is a match between the two icons
                 else:
+                # ---> second box clicked ------------------------------------------------------------------
                     icon1shape,icon1color = getShapeAndColor(mainboard,firstselection[0],firstselection[1])
                     icon2shape,icon2color = getShapeAndColor(mainboard,boxx,boxy)
 
                     if icon1shape != icon2shape or icon1color != icon2color:
                         # icons don't match. Re-cover up both selections
-                        pygame.time.wait(1000) # 1000 msec = 1 sec
+                        # set reaveledBoxes(first selction) = False
+                        # set reaveledBoxes(second selction) = False
+                        pygame.time.wait(200) # 1000 msec = 1 sec
                         coverBoxesAnimation(mainboard, [(firstselection[0],firstselection[1]),(boxx,boxy)])
                         revealedBoxes[firstselection[0]][firstselection[1]] = False
                         revealedBoxes[boxx][boxy] = False
+                    elif icon1shape == icon2shape and icon1color==icon2color:
+                        winsound.Beep(880,400)
                     elif hasWon(revealedBoxes): # check if all pairs found
                         gameWonAnimation(mainboard)
                         pygame.time.wait(2000)
@@ -132,7 +128,9 @@ def main():
                         startGameAnimation(mainboard)
 
                     # reset first selection variable
+                    # after second box clicked
                     firstselection = None 
+                #---------> end of second box clicked ---------------------------------------------------
 
             # redraw the screen and wait a clock tick
             pygame.display.update()
@@ -170,14 +168,12 @@ def getRandomizedBoard():
     # create the board data structure, with randomly placed icons
     board = list()
     for x in range(boardwidth):
-        column = list()
+        column = []
         for y in range(boardheight):
-            # remove the icons as we assign them
-            column.append(icons[0])
-            del icons[0]
-            # alternate to column.append(icons.pop())
+            column.append( icons.pop() )
         board.append(column)
     return board
+
 def splitIntoGroupsOf(groupsize,thelist):
     # splits a list into a list of lists, where inner lists have at
     # most groupsize number of items
@@ -193,6 +189,7 @@ def leftTopCoordsOfBox(boxx,boxy):
     return left,top
 
 def getBoxAtPixel(x,y):
+    " Converting from Pixel Coordinates to Box Coordinates "
     # Rect objects have a collidepoint() method that you can pass X and Y coordinates too, and
     # it will return True if the coordinates are inside (that is, collide with) the Rect object's area
     for boxx in range(boardwidth):
@@ -227,8 +224,8 @@ def getShapeAndColor(board,boxx,boxy):
     return board[boxx][boxy][0], board[boxx][boxy][1]
 
 def drawBoxCovers(board,boxes,coverage):
-    # draw boxes being covered/revealed. 'boxes' is a list
-    # of two-item lists, which have x & y spot of the box
+    # draw boxes being covered/revealed.
+    #'boxes' is a list of two-item lists, which have x & y spot of the box
     for box in boxes:
         left,top = leftTopCoordsOfBox(box[0],box[1])
         pygame.draw.rect(surface,bgcolor,(left,top,boxsize,boxsize) )
@@ -237,7 +234,8 @@ def drawBoxCovers(board,boxes,coverage):
         if coverage > 0: # only draw the cover if there is an coverage
             pygame.draw.rect(surface,boxcolor,(left,top,coverage,boxsize) )
     pygame.display.update()
-    fpsclock.tick(fps)
+    print 'draw Box Covers...'
+    fpsclock.tick(fps/10)
 
 def revealBoxesAnimation(board,boxesToReveal):
     # do the 'box reveal' animation

@@ -2,7 +2,7 @@
     depth = 2 -> root, sub(1)
     detph = 3 -> root, sub(1), sub(2)
 '''
-import os
+import os,sys,time
 import fnmatch,winsound
 
 def getsubs(path):
@@ -10,11 +10,15 @@ def getsubs(path):
     subdirs = []
     if 'System Volume' in path:
         return 
-    for name in os.listdir(path):
-        subdir = os.path.join(path,name)
-        if os.path.isdir(subdir):
-            subdirs.append(subdir)
-    root,dirs = path,subdirs
+    try:
+        for name in os.listdir(path):
+            subdir = os.path.join(path,name)
+            if os.path.isdir(subdir):
+                subdirs.append(subdir)
+        root,dirs = path,subdirs
+    except Exception as e:
+        print e, path
+        root,dirs = path,subdirs
     return root,dirs
 
 def mywalk(path,depth):
@@ -61,6 +65,7 @@ def doesExist(path,filename,founds,visited):
     if os.path.exists(p):
         print 'found at -> ' + path
         winsound.Beep(440,300)
+        time.sleep(1)
         founds.append('found at -> ' + path)
     else:
         pass
@@ -109,4 +114,9 @@ def main(filename,depth=0):
     print '\n'.join(founds)
 if __name__ == '__main__':
 #   main('firefox.exe')#,1)
-    main('firefox.exe',1)
+    filename = sys.argv[1]
+    if len(sys.argv)>=3:
+        depth = int(sys.argv[2])
+    else:
+        depth = 1
+    main(filename,depth)
