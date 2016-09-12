@@ -1,34 +1,5 @@
 import os, sys
 import fnmatch,winsound
-''' path +- sub1a +- sub2a +- sub3a
-         |        +- sub2b
-         |        +- sub2c
-         |
-         +- sub1b +- sub2d
-         |        +- sub2e 
-         |
-         +- sub1c
-         |
-'''     
-
-def getsubdirs(path):
-    ' return dirs '
-    subdirs = []
-    for name in os.listdir(path):
-        if os.path.isdir(name):
-            subdir = os.path.join(path,name)
-            subdirs.append(subdir)
-    return subdirs
-
-def mywalk(root,d=3):
-    depth0 = root.count(os.sep) 
-    dirs =  getsubdirs(root)
-    for dir in dirs:
-        depth1 = dir.count(os.sep)
-        if abs(depth1-depth0) > d:
-            break
-        walkdirs.append(dir)
-    dirs = getsubdirs(dir)
 
 def doesExist(path,filename,founds,visited):
     if path in visited or not os.path.isdir(path):

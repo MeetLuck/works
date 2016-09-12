@@ -2,7 +2,7 @@ import pygame, sys, random
 from pygame.locals import *
 from itertools import product
 
-fps = 40
+fps = 80
 resolution = 640,480
 width,height = resolution
 # speed boxes' sliding reveals and covers
