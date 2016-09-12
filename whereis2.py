@@ -11,7 +11,7 @@ import fnmatch,winsound
          |
 '''     
 
-def pathwalk(path):
+def getsubdirs(path):
     ' return dirs '
     subdirs = []
     for name in os.listdir(path):
@@ -20,15 +20,15 @@ def pathwalk(path):
             subdirs.append(subdir)
     return subdirs
 
-def countpath(path):
-    if os.path.isabs(path):
-        path = os.path.basename(path)
-    dirname = os.path.dirname(path)
-    depth = 0
-    while dirname:
-        depth += 1
-        dirname = os.path.dirname(dirname)
-    return depth
+def mywalk(root,d=3):
+    depth0 = root.count(os.sep) 
+    dirs =  getsubdirs(root)
+    for dir in dirs:
+        depth1 = dir.count(os.sep)
+        if abs(depth1-depth0) > d:
+            break
+        walkdirs.append(dir)
+    dirs = getsubdirs(dir)
 
 def doesExist(path,filename,founds,visited):
     if path in visited or not os.path.isdir(path):
@@ -44,19 +44,10 @@ def doesExist(path,filename,founds,visited):
     visited.append(path)
     print '=> end of _search'
 
-def addSub(paths):
-    subpaths = []
-    for path in paths:
-        for root, dirs,files in os.walk(path):
-            for dir in dirs:
-                subpaths.append( os.path.join(root,dir) )
-            break
-    return normpaths(subpaths)
-
 def search(filename,paths,depth=3):
     print 'start search'
     paths = normpaths(paths)
-    paths.extend( addSub(paths) )
+    paths.extend( getsubdirs(path
     print len(paths)
 #   print '\n'.join(paths)
     visited = []
