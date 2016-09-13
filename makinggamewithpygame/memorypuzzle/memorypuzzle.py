@@ -137,6 +137,15 @@ def main():
             fpsclock.tick(fps)
 
 ######## help functions ##############
+# generateRevealedBoxesData(val) : return revealedBoxes
+# getRandomizedBoard() : return [ (shape,color),.. ] 
+# splitIntoGroupsOf(groupsize,thelist):
+#
+#
+#
+#
+#
+#
 def generateRevealedBoxesData(val):
     # [  <--- board Width ----> 
     #  [False,False,False,......],

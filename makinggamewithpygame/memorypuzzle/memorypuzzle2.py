@@ -3,6 +3,14 @@ from pygame.locals import *
 from itertools import product
 # resolution, boardwith, boardhight, colors,...
 from memorypuzzleconstants import *
+class Box:
+    def __init__(self,*arg):
+        # arg is tuple
+        if type(arg[0]) is tuple:  # isinstance(name, tuple)
+            # arg = ( tuple, ) = ( (x,y), )
+            self.x,self.y = arg[0]
+        else: # arg = (x,y)
+            self.x, self.y = arg
 
 def main():
     global fpsclock, surface
@@ -67,8 +75,8 @@ def main():
                     # icons don't match. Re-cover up both selections
                     # set reaveledBoxes(first selction) = False & reaveledBoxes(second selction) = False
                     pygame.time.wait(200) # 1000 msec = 1 sec
-                    coverBoxesAnimation(mainboard, [(firstselection[0],firstselection[1]),(box.x,box.y)])
-                    revealedBoxes[firstselection[0]][firstselection[1]] = False
+                    coverBoxesAnimation(mainboard, [(firstselection.x,firstselection.y),(box.x,box.y)])
+                    revealedBoxes[firstselection.x][firstselection.y] = False
                     revealedBoxes[box.x][box.y] = False
                 elif icon1shape == icon2shape and icon1color==icon2color:
                     winsound.Beep(880,400)
@@ -187,11 +195,12 @@ def drawBoxCovers(board,boxes,coverage):
     # draw boxes being covered/revealed.
     #'boxes' is a list of  tuples (X,Y)
     # boxes = [(boxX1,boxY2),(boxX2,boxY2),...]
-    for box in boxes:
+    for boxXY in boxes:
+        box = Box(boxXY)
         left,top = leftTopCoordsOfBox(box)
         pygame.draw.rect(surface,bgcolor,(left,top,boxsize,boxsize) )
         shape,color = getShapeAndColor(board, box)
-        drawIcon(shape,color,box[0],box[1])
+        drawIcon(shape,color,box)
         if coverage > 0: # only draw the cover if there is an coverage
             pygame.draw.rect(surface,boxcolor,(left,top,coverage,boxsize) )
     pygame.display.update()
@@ -210,16 +219,17 @@ def coverBoxesAnimation(board,boxesToCover):
 
 def drawBoard(board,revealed):
     # draws all of the boxes in their covered or revealed state
-    for box.x in range(boardwidth):
-        for box.y in range(boardheight):
-            left,top = leftTopCoordsOfBox(box.x,box.y)
-            if not revealed[box.x][box.y]:
+    for boxX in range(boardwidth):
+        for boxY in range(boardheight):
+            box = Box(boxX,boxY)
+            left,top = leftTopCoordsOfBox(box)
+            if not revealed[boxX][boxY]:
                 # draw a covered box
                 pygame.draw.rect(surface,boxcolor,(left,top,boxsize,boxsize))
             else:
                 # draw the (revealed) icon
                 shape,color = getShapeAndColor(board,box)
-                drawIcon(shape,color,box.x,box.y)
+                drawIcon(shape,color,box)
 def drawHightlightBox(box):
     left,top = leftTopCoordsOfBox(box)
     pygame.draw.rect(surface,highlightcolor,(left-5,top-5,boxsize+10,boxsize+10),4)
