@@ -1,42 +1,68 @@
-import pygame,sys,random
-import itertools
-from pygame.locals import *
-from constant import *
-surface = pygame.display.set_mode(resolution)
+#import pygame,sys,random
+#import itertools
+#from pygame.locals import *
+#from constant import *
+
+class boardPos:
+    def __init__(self,x,y):
+        self.x,self.y = x,y
 
 class Box:
     def __init__(self,tu): #shape,color):
         self.shape, self.color = tu #shape,color
         self.reveal = False
-    def draw(self):
+
+    def getDisplayPos(self,boardpos):
+        '''
+        convert board coordinates to display coordinates
+        boardpos = boardPos(boardX, boardY)
+        return tuple (displayX, displayY)
+        '''
+        left = boardpos.x * (boxsize + gapsize) + xmargin
+        top  = boardpos.y * (boxsize + gapsize) + ymargin
+        return (left,top)
+
+    def getDisplayPosXY(self,boardX,boardY):
+        return self.getDisplayPos( boardPos(boardX,boardY) )
+
+    def drawXY(self,surface,boardX,boardY):
+        self.draw( surface,boardPos(boardX,boardY) )
+    def draw(self,surface,boardpos):
+        # tuple pos : display Position (x,y)
+        pos = self.getDisplayPos(boardpos)
         if self.reveal:
-            self.drawIcon()
+            self.drawIcon(surface,pos)
         else:
-            self.drawCover()
-    def drawIcon(self):
+            self.drawCover(surface,pos)
+
+    def drawIcon(self,surface,pos):
         quarter = int(boxsize/4)
         half    = int(boxsize/2)
-#       left,top = leftTopCoordsOfBox(boxx,boxy)
+        x,y = pos
         # draw the shapes
         if self.shape == donut:
-            pygame.draw.circle(surface,self.color,(half,half),half-5)
-            pygame.draw.circle(surface,bgcolor,(half,half),quarter-5)
+            pygame.draw.circle(surface,self.color,(x+half,y+half),half-5)
+            pygame.draw.circle(surface,bgcolor,(x+half,y+half),quarter-5)
         elif self.shape == square:
-            pygame.draw.rect(surface,self.color,(quarter,quarter,boxsize-half,boxsize-half) )
+            rect = (x+quarter, y+quarter, boxsize-half, boxsize-half )
+            pygame.draw.rect(surface,self.color,rect)
         elif self.shape == diamond:
-            pygame.draw.polygon(surface,self.color,((half,0), (boxsize-1,half),(half,boxsize-1),(0,half) ) )
+            pointList = (x+half, y), (x+boxsize-1,y+half), (x+half,y+boxsize-1), (x,y+half)
+            pygame.draw.polygon(surface,self.color,pointList)
         elif self.shape == lines:
             for i in range(0,boxsize,4):
-                pygame.draw.line(surface,self.color,(0,i),(i,0))
-                pygame.draw.line(surface,self.color,(i,boxsize-1),(boxsize-1,i))
-        elif shape == oval:
-            pygame.draw.ellipse(surface,self.color, (0, quarter,boxsize,half) )
+                pygame.draw.line(surface,self.color,(x,y+i),(x+i,y))
+                pygame.draw.line(surface,self.color,(x+i,y+boxsize-1),(x+boxsize-1,y+i))
+        elif self.shape == oval:
+            pygame.draw.ellipse(surface,self.color, (x, y+quarter,boxsize,half) )
         pygame.display.update()
-        fpsclock.tick(fps)
-    def drawCover(self):
-        pygame.draw.rect(surface,boxcolor,(0,0,boxsize,boxsize) )
+        #fpsclock.tick(fps)
+
+    def drawCover(self,surface,pos):
+        rect = pos,(boxsize,boxsize)
+        pygame.draw.rect(surface,boxcolor,rect)
         pygame.display.update()
-        fpsclock.tick(fps)
+        #fpsclock.tick(fps)
 
 class Board:
     def __init__(self):
@@ -53,9 +79,21 @@ class Board:
         board = board[:numiconsused] * 2 # [1,2,3]*2 = [1,2,3,1,2,3]
         random.shuffle(board)
         return board
-    def getBoxAtXY(self,x,y):
-        return self.board[ x + boardwidth*y ]
 
+    def drawBoard(self,surface):
+        # draws all of the boxes in their covered or revealed state
+        for index,box in enumerate(self.board):
+            x = index % boardwidth 
+            y = index // boardwidth
+            boardpos = boardPos(x,y)
+            box.draw(surface, boardpos)
+
+    def getBoxPos(self,boardpos):
+        return self.board[ boardpos.x + boardwidth * boardpos.y ]
+
+    def getBoxPosXY(self,boardX,boardY):
+        boardpos = boardPos(boardX,boardY)
+        return self.getBoxPos(boardpos)
 
 if __name__ == '__main__':
     fps = 20
