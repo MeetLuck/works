@@ -16,7 +16,7 @@
   boxY 
 
 '''
-fps = 40
+fps = 20
 resolution = 640,480 ; width,height = resolution
 # speed of boxes' sliding reveals and covers
 revealspeed = 8 #8

@@ -22,27 +22,22 @@ class Box:
     def __init__(self,tu): #shape,color):
         self.shape, self.color = tu #shape,color
         self.revealed = False
-
     def __eq__(self,other):
         if isinstance(other,self.__class__):
             if (self.shape,self.color) == (other.shape,other.color):
                 return True
         return False
-
     def __ne__(self,other):
         return not self.__eq__(other)
-
     def setboardPos(self,boardpos):
         self.boardpos = boardpos
         self.pos = convertToDisplayPos(boardpos)
         self.rect = self.pos, (boxsize, boxsize)
-
     def draw(self,surface):
         if self.revealed:
             self.drawIcon(surface)
         else:
             self.drawCover(surface)
-
     def drawIcon(self,surface):
         quarter,half = int(boxsize/4), int(boxsize/2)
         x,y = self.pos
@@ -64,12 +59,10 @@ class Box:
                 pygame.draw.line(surface,self.color,(x+i,y+boxsize-1),(x+boxsize-1,y+i))
         elif self.shape == oval:
             pygame.draw.ellipse(surface,self.color, (x, y+quarter,boxsize,half) )
-
     def drawCover(self,surface,rect=None):
         if rect == None:
             rect = self.rect
         pygame.draw.rect(surface,boxcolor,rect)
-
     def drawHighlight(self,surface):
         x,y = self.pos
         rect = (x-5,y-5,boxsize+10,boxsize+10)
@@ -83,7 +76,6 @@ class Board:
         for index,box in enumerate(self.board):
             boardpos = self.convertTo2D(index)
             box.setboardPos(boardpos)
-
     def getRandomizedBoard(self):
         # get a list of every possible shape in every possible color
         icons = itertools.product(allshapes,allcolors)
@@ -96,16 +88,12 @@ class Board:
         board = boardhalf + copy.deepcopy(boardhalf)
         random.shuffle(board)
         return board
-
     def drawBoard(self,surface):
-        # draws all of the boxes in their covered or revealeded state
         for box in self.board:
             box.draw(surface)
-
     def coverBoxesAnimation(self,surface,boxes):
         coverages = range(1, boxsize, revealspeed)
-        if boxsize not in coverages:
-            coverages.append(boxsize)
+        if boxsize not in coverages: coverages.append(boxsize)
         for coverage in coverages: 
             if coverage > boxsize: continue
             for box in boxes:
@@ -113,7 +101,6 @@ class Board:
                 box.drawCover(surface,rect)
             pygame.display.update()
             fpsclock.tick(2*fps)
-
     def revealBoxesAnimation(self,surface,boxes):
         coverages = range(boxsize,0,-revealspeed)
         if 0 not in coverages: coverages.append(0)
@@ -125,9 +112,8 @@ class Board:
                     box.drawCover(surface,rect)
             pygame.display.update()
             fpsclock.tick(2*fps)
-
     def startGameAnimation(self,surface):
-        import copy
+        surface.fill(bgcolor)
         self.drawBoard(surface)
         # shallow copy needed here
         # A = [box1,box2,box3] , B = A[:]
@@ -143,7 +129,6 @@ class Board:
             self.coverBoxesAnimation(surface, boxgroup)
             for box in boxgroup:
                 box.revealed = False
-
     def gameWonAnimation(self,surface):
         color1,color2 = lightbgcolor, bgcolor
         for i in range(10):
@@ -152,7 +137,6 @@ class Board:
             self.drawBoard(surface)
             pygame.display.update()
             pygame.time.wait(100)
-
 
     def getBoxAt(self,mouseX,mouseY):
         for box in self.board:

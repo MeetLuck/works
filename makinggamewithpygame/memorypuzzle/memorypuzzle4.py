@@ -1,9 +1,7 @@
 from Component2 import *
 
 def main():
-#   global fpsclock, surface
     pygame.init()
-    #fpsclock = pygame.time.Clock()
     surface = pygame.display.set_mode(resolution)
     pygame.display.set_caption('Memory Game')
 
@@ -67,13 +65,5 @@ def main():
         pygame.display.update()
         fpsclock.tick(fps)
 
-def converBoxesAnimation(surface,board):
-    surface.fill(bgcolor)
-    board.drawBoard(surface)
-
-
 if __name__ == '__main__':
     main()
-
-
-
