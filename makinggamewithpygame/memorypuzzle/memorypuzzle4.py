@@ -1,4 +1,4 @@
-from Component import *
+from Component2 import *
 
 def main():
 #   global fpsclock, surface
@@ -9,7 +9,7 @@ def main():
 
     mainboard = Board()
     surface.fill(bgcolor)
-    #mainboard.startGameAnimation(surface)
+    mainboard.startGameAnimation(surface)
 
     #mouseX,mouseY = 0,0  # mouse point 
     firstbox = None
@@ -28,14 +28,12 @@ def main():
                 mouseX,mouseY = e.pos
                 mouseclicked = True
 
-        # get board coordinate of current mouse point
-        # boardpos = ConvertToBoardPos(mouseX,mouseY)
-        boardpos = mainboard.getBoardPosAt(mouseX,mouseY)
+        # get box at current mouse point
+        box = mainboard.getBoxAt(mouseX,mouseY)
 
         # check if the mouse is currently over a box.
-        if boardpos == None: continue 
+        if box == None: continue 
         #-------------- mouse is over a box ---------------------------------
-        box = mainboard.getBoxAtPos(boardpos)
         if not mouseclicked and not box.revealed:
             box.drawHighlight(surface)
             pygame.display.update()

@@ -16,12 +16,12 @@
   boxY 
 
 '''
-fps = 80
+fps = 40
 resolution = 640,480 ; width,height = resolution
 # speed of boxes' sliding reveals and covers
-revealspeed = 8
+revealspeed = 8 #8
 # size of box height & width
-boxsize = 40
+boxsize = 60
 # size of gap between boxes
 gapsize = 10
 
@@ -50,7 +50,8 @@ lines = 'lines'
 oval = 'oval'
 
 # number of columns and heights of icons(boxes) 
-boardwidth,boardheight = 8,5
+#boardwidth,boardheight = 6,5
+boardwidth,boardheight = 5,4
 assert (boardwidth * boardheight) % 2 == 0, 'board need to have an even number of boxes for pairs of matches'
 xmargin = int( (width  - boardwidth*(boxsize+gapsize))/2 )
 ymargin = int( (height - boardheight*(boxsize+gapsize))/2 )

@@ -1,6 +1,6 @@
 import pygame, sys, random, winsound
 from pygame.locals import *
-import itertools
+import itertools, copy
 from constant import *
 fpsclock = pygame.time.Clock()
 
@@ -38,14 +38,12 @@ class Box:
         self.rect = self.pos, (boxsize, boxsize)
 
     def draw(self,surface):
-        # tuple pos : display Position (x,y)
         if self.revealed:
             self.drawIcon(surface)
         else:
             self.drawCover(surface)
 
     def drawIcon(self,surface):
-        # print 'drawIcon....'
         quarter,half = int(boxsize/4), int(boxsize/2)
         x,y = self.pos
         # draw background rect
@@ -87,7 +85,6 @@ class Board:
             box.setboardPos(boardpos)
 
     def getRandomizedBoard(self):
-        import itertools, copy
         # get a list of every possible shape in every possible color
         icons = itertools.product(allshapes,allcolors)
         boxes = list( itertools.imap(Box,icons)  )
@@ -129,6 +126,24 @@ class Board:
             pygame.display.update()
             fpsclock.tick(2*fps)
 
+    def startGameAnimation(self,surface):
+        import copy
+        self.drawBoard(surface)
+        # shallow copy needed here
+        # A = [box1,box2,box3] , B = A[:]
+        # B = [box2,box1,box3], 'box1 of A' is 'box1 of B'
+        shallowboard = self.board[:] 
+        random.shuffle(shallowboard)
+        boxgroups = groupOf( 8,shallowboard )
+        for boxgroup in boxgroups:
+            for box in boxgroup:
+                box.revealed = True
+            self.revealBoxesAnimation(surface, boxgroup)
+            pygame.time.wait(500)
+            self.coverBoxesAnimation(surface, boxgroup)
+            for box in boxgroup:
+                box.revealed = False
+
     def gameWonAnimation(self,surface):
         color1,color2 = lightbgcolor, bgcolor
         for i in range(10):
@@ -138,45 +153,19 @@ class Board:
             pygame.display.update()
             pygame.time.wait(100)
 
-    def startGameAnimation(self,surface):
-        import copy
-        self.drawBoard(surface)
-        # shallow copy needed here
-        # A = [box1,box2,box3] , B = A[:]
-        # B = [box2,box1,box3], 'box1 of A' is 'box1 of B'
-        shallowboard = self.board[:] 
-        # change box attribute : box.revealed
-        random.shuffle(shallowboard)
-        boxgroups = groupOf( 8,shallowboard )
-        for boxgroup in boxgroups:
-            for box in boxgroup:
-                box.revealed = True   
-            surface.fill(bgcolor)
-            self.drawBoard(surface)
-            pygame.time.wait(500)
-            # reset box.revealed = False
-            for box in boxgroup:
-                box.revealed = False
 
-    def getBoxAtPos(self,boardpos):
-        return self.board[ boardpos.x + boardwidth * boardpos.y ]
-
-    def getBoxAtPosXY(self,boardX,boardY):
-        boardpos = boardPos(boardX,boardY)
-        return self.getBoxAtPos(boardpos)
-    def getBoardPosAt(self,mouseX,mouseY):
+    def getBoxAt(self,mouseX,mouseY):
         for box in self.board:
             boxrect = pygame.Rect(*box.rect)
             if boxrect.collidepoint(mouseX,mouseY):
-                return box.boardpos
+                return box
         # outside of Box
         return None
-    def convertTo1D(self,boardpos):
-        return boardpos.x + boardwidth * boardpos.y
 
     def convertTo2D(self,index):
         x,y = index % boardwidth, index // boardwidth
         return boardPos(x,y) 
+
     def hasWon(self):
         for box in self.board:
             if box.revealed == False:

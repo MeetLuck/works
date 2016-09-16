@@ -22,7 +22,7 @@ def main():
     mainboard = getRandomizedBoard()
     revealedBoxes = generateRevealedBoxesData(False)
     surface.fill(bgcolor)
-    startGameAnimation(mainboard)
+    #startGameAnimation(mainboard)
 
     mousex,mousey = 0,0  # mouse point 
     firstselection = None  # (x,y) of the first box clicked
@@ -244,8 +244,11 @@ def startGameAnimation(board):
     drawBoard(board,coveredboxes)
 
     for boxgroup in boxgroups:
+        print boxgroup
         revealBoxesAnimation(board,boxgroup)
+        pygame.time.wait(1000)
         coverBoxesAnimation(board,boxgroup)
+        pygame.time.wait(1500)
 
 def gameWonAnimation(board):
     # flash the background color when the player has won
