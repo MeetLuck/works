@@ -10,6 +10,7 @@ gitset = 'git remote set-url origin https://meetluck:pjw269505@github.com/meetlu
 ps = subprocess.call(gitset, shell=True)
 ps = subprocess.call('git init', shell=True)
 ps = subprocess.call('git add *', shell=True)
+#ps = subprocess.call('git add -all', shell=True)
 ps = subprocess.call('git status', shell=True)
 ps = subprocess.call("git commit -m '%s'" % lastmodified, shell=True)
 ps = subprocess.call('git push origin master', shell=True)
