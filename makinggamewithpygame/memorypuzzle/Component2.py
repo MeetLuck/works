@@ -38,6 +38,7 @@ class Box:
             self.drawIcon(surface)
         else:
             self.drawCover(surface)
+
     def drawIcon(self,surface):
         quarter,half = int(boxsize/4), int(boxsize/2)
         x,y = self.pos
@@ -59,6 +60,7 @@ class Box:
                 pygame.draw.line(surface,self.color,(x+i,y+boxsize-1),(x+boxsize-1,y+i))
         elif self.shape == oval:
             pygame.draw.ellipse(surface,self.color, (x, y+quarter,boxsize,half) )
+
     def drawCover(self,surface,rect=None):
         if rect == None:
             rect = self.rect
@@ -113,10 +115,10 @@ class Board:
             pygame.display.update()
             fpsclock.tick(2*fps)
     def startGameAnimation(self,surface):
-        surface.fill(bgcolor)
+        #surface.fill(bgcolor)
         self.drawBoard(surface)
         # shallow copy needed here
-        # A = [box1,box2,box3] , B = A[:]
+        # A = [box1,box2,box3] , B = A[:], random.shuffle(B)
         # B = [box2,box1,box3], 'box1 of A' is 'box1 of B'
         shallowboard = self.board[:] 
         random.shuffle(shallowboard)

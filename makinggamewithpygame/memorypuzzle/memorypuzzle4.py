@@ -56,7 +56,7 @@ def main():
                 # reset board
                 mainboard = Board()
                 mainboard.startGameAnimation(surface)
-            elif firstbox == secondbox:
+            if firstbox == secondbox:
                 winsound.Beep(500,20)
             # reset first selection variable  after second box clicked
             firstbox = None 
