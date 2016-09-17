@@ -98,6 +98,7 @@ def getBlankPosition(board):
         for y in range(boardheight):
             if board[x][y] == blank:
                 return (x,y)
+
 def makeMove(board,move):
     blankx,blanky = getBlankPosition(board)
     if move == up:
