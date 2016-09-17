@@ -6,6 +6,7 @@ def main():
     global fpsclock, surface, basicfont, reset_surf, reset_rect,new_surf,new_rect,\
            solve_surf,solve_rect
     pygame.init()
+    fpsclock = pygame.time.Clock()
     surface = pygame.display.set_mode( resolution )
     pygame.display.set_caption('Slide Puzzle')
     basicfont = pygame.font.Font('freesansbold.ttf',basicfontsize)
@@ -40,11 +41,11 @@ def main():
                     blankx,blanky = getBlankPosition(mainboard)
                     if spotx == blankx + 1 and spoty == blanky:
                         slideTo = left
-                    elif spotx == blankx-1 and spoty==balnky:
+                    elif spotx == blankx-1 and spoty==blanky:
                         slideTo = right
                     elif spotx == blankx and spoty==blanky + 1:
                         slideTo = up
-                    elif spotx == balnkx and spoty == blanky -1:
+                    elif spotx == blankx and spoty == blanky -1:
                         slideTo = down
             elif e.type == KEYUP:
                 # check if the user pressed a key to slide a tile
@@ -58,7 +59,7 @@ def main():
                     slideTo = down
         if slideTo:
             # show slide on screen
-            slideAnimation(mainboard,slideTo,'Click tile or press arrow keys to slide.',8)
+            #slideAnimation(mainboard,slideTo,'Click tile or press arrow keys to slide.',8)
             makeMove(mainboard,slideTo)
             allmoves.append(slideTo) # record the slide
         pygame.display.update()
@@ -99,9 +100,6 @@ def getBlankPosition(board):
                 return (x,y)
 def makeMove(board,move):
     blankx,blanky = getBlankPosition(board)
-    print board
-    print move
-    print blankx,blanky
     if move == up:
         board[blankx][blanky], board[blankx][blanky+1]  =  board[blankx][blanky+1], board[blankx][blanky]
     elif move == down:
@@ -114,8 +112,8 @@ def isValidMove(board,move):
     blankx,blanky = getBlankPosition(board)
     return (move == up and blanky != len(board[0])-1) or \
            (move == down and blanky != 0) or \
-           (move == left and blanky != len(board)-1) or \
-           (move == right and blanky != 0)
+           (move == left and blankx != len(board)-1) or \
+           (move == right and blankx != 0)
 def getRandomMove(board,lastMove=None):
     # start with a full list of all four moves
     validMoves = [up,down,left,right]
@@ -148,6 +146,7 @@ def drawTile(tilex,tiley,number, adjx=0,adjy=0):
     # draw a tile at board coordinates tilex and tiley, optionally a few
     # pixels over (determined by adjx and ajdy)
     left,top = getLeftTopOfTile(tilex,tiley)
+    pygame.draw.rect(surface, tilecolor, (left + adjx, top + adjy, tilesize, tilesize))
     textsurf = basicfont.render( str(number), True, textcolor)
     textrect = textsurf.get_rect()
     textrect.center = left + int(tilesize/2) + adjx, top + int(tilesize/2) + adjy
