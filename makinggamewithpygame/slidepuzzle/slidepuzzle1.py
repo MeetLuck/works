@@ -35,7 +35,7 @@ def main():
                         mainboard, solutionSeq = generateNewPuzzle(80) # clicked on New Game button
                         allmoves = []
                     elif solve_rect.collidepoint(e.pos):
-                        resetAnimation(mainboard,solutionSeq+allmoves) # clicked on Solve button
+                        #resetAnimation(mainboard,solutionSeq+allmoves) # clicked on Solve button
                         allmoves = []
                 else: # check if the clicked tile was next to the blank spot
                     blankx,blanky = getBlankPosition(mainboard)

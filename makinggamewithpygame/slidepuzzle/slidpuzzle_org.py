@@ -157,9 +157,6 @@ def getBlankPosition(board):
 def makeMove(board, move):
     # This function does not check if the move is valid.
     blankx, blanky = getBlankPosition(board)
-    print board
-    print move
-    print blankx,blanky
 
     if move == UP:
         board[blankx][blanky], board[blankx][blanky + 1] = board[blankx][blanky + 1], board[blankx][blanky]
