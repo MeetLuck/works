@@ -67,6 +67,7 @@ def main():
         fpsclock.tick(fps)
 
 #------------------- helper functions ----------------------------------------------------------------
+
 def terminate():
     pygame.quit()
     sys.exit()
@@ -126,24 +127,24 @@ def getRandomMove(board,lastMove=None):
         validMoves.remove(left)   # move from LEFT
     # return a random move from the list of remaining moves
     return random.choice(validMoves)
-def getLeftTopOfTile(tileX,tileY):
-    left = xmargin + (tileX*tilesize) + (tileX-1)
-    top  = ymargin + (tileY*tilesize) + (tileY-1)
+def convertToPixelPos(boardX,boardY):
+    left = xmargin + (boardX*tilesize) + (boardX-1)
+    top  = ymargin + (boardY*tilesize) + (boardY-1)
     return (left,top)
-def getSpotClicked(board,x,y):
+def convertToBoardPos(board,mouseX,mouseY):
     # from the x & y pixel coordinates, get the x & y board coordinates
-    for tileX in range(len(board)):
-        for tileY in range(len(board[0])):
-            left,top = getLeftTopOfTile(tileX,tileY)
+    for boardX in range(len(board)):
+        for boardY in range(len(board[0])):
+            left,top = convertToPixelPos(boardX,boardY)
             tileRect = pygame.Rect(left,top,tilesize,tilesize)
-            if tileRect.collidepoint(x,y):
-                return (tileX,tileY)
+            if tileRect.collidepoint(mouseX,mouseY):
+                return (boardX,boardY)
     return (None,None)
 
-def drawTile(tilex,tiley,number, adjx=0,adjy=0):
-    # draw a tile at board coordinates tilex and tiley, optionally a few
+def drawTile(boardX,boardY,number, adjx=0,adjy=0):
+    # draw a tile at board coordinates boardX and boardY, optionally a few
     # pixels over (determined by adjx and ajdy)
-    left,top = getLeftTopOfTile(tilex,tiley)
+    left,top = convertToPixelPos(boardX,boardY)
     pygame.draw.rect(surface, tilecolor, (left + adjx, top + adjy, tilesize, tilesize))
     textsurf = basicfont.render( str(number), True, textcolor)
     textrect = textsurf.get_rect()
@@ -162,14 +163,14 @@ def drawBoard(board,message):
     if message:
         textsurf,textrect = makeText(message,messagecolor,bgcolor,5,5)
         surface.blit(textsurf,textrect)
-    for tilex in range(len(board)):
-        for tiley in range( len(board[0]) ):
-            if board[tilex][tiley]:
-                drawTile(tilex,tiley,board[tilex][tiley])
-    left,top = getLeftTopOfTile(0,0)
-    totalwidth = boardwidth * tilesize
-    totalheight = boardheight * tilesize
-    pygame.draw.rect(surface,bordercolor,(left-5,top-5,totalwidth+11,totalheight+11),4)
+    for boardX in range(len(board)):
+        for boardY in range( len(board[0]) ):
+            if board[boardX][boardY]:
+                drawTile(boardX,boardY,board[boardX][boardY])
+    left,top = convertToPixelPos(0,0)
+    borderwidth = boardwidth * tilesize
+    borderheight = boardheight * tilesize
+    pygame.draw.rect(surface,bordercolor,(left-5,top-5,borderwidth+11,borderheight+11),4)
     surface.blit(new_surf, new_rect)
     surface.blit(solve_surf, solve_rect)
 

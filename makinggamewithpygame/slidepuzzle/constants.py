@@ -1,6 +1,18 @@
+# terminate() to quit game
+# checkForQuit() to check 'quit' condition
+# getStartingBoard() to return board[[1,4,7],[2,5,8],[3,6,None]] 
+# getBlankPosition(board) to return boardpos
+# makeMove(board,move) to move board according to 'up','down','left','right' 
+# isValidMove(board,move) to check validate move
+# getRandomMove(board,lastMove=None) to return a random move from the list of moves 
+# converToPixelPos(boardX,boardY) to convert board coordinates to pixel cooridinates
+# drawTile(boardX,boardY,number,adjx=0,adjy=0) to draw tile
+# makeText(text,color,bgcolor,top,left) to return text surface,textrect
+# drawBoard(board,message) to draw board
+# generateNewPuzzle(numSlides) to return random-like board and sequence
 resolution = 640,480
 width,height = resolution
-boardwidth,boardheight = 4,4
+boardwidth,boardheight = 3,3
 tilesize = 80
 fps = 30
 blank = None

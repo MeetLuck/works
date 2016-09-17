@@ -7,8 +7,8 @@ import pygame, sys, random
 from pygame.locals import *
 
 # Create the constants (go ahead and experiment with different values)
-BOARDWIDTH = 4  # number of columns in the board
-BOARDHEIGHT = 4 # number of rows in the board
+BOARDWIDTH = 3  # number of columns in the board
+BOARDHEIGHT = 3 # number of rows in the board
 TILESIZE = 80
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
@@ -302,7 +302,7 @@ def generateNewPuzzle(numSlides):
     pygame.time.wait(500) # pause 500 milliseconds for effect
     lastMove = None
     for i in range(numSlides):
-        move = getRandomMove(board, lastMove)
+        move = getRandomMove(board, lastMove) # random.choice([ up,down,left,right])
         #slideAnimation(board, move, 'Generating new puzzle...', animationSpeed=int(TILESIZE / 3))
         makeMove(board, move)
         sequence.append(move)
