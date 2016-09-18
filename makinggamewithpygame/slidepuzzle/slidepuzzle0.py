@@ -4,7 +4,7 @@ from constants import *
 
 def main():
     global fpsclock, surface, basicfont, reset_surf, reset_rect,new_surf,new_rect,\
-           solve_surfe,solve_rect
+           solve_surf,solve_rect
     pygame.init()
     surface = pygame.display.set_mode( resolution )
     pygame.display.set_caption('Slide Puzzle')
@@ -170,9 +170,9 @@ def drawBoard(board,message):
             if board[tilex][tiley]:
                 drawTile(tilex,tiley,board[tilex][tiley])
     left,top = getLeftTopOfTile(0,0)
-    iwidth = boardwith * tilesize
+    iwidth = boardwidth * tilesize
     iheight = boardheight * tilesize
-    pygame.draw.rect(surface,boardcolor,(left-5,top-5,iwidth+11,iheight+11),4)
+    pygame.draw.rect(surface,bordercolor,(left-5,top-5,iwidth+11,iheight+11),4)
     surface.blit(reset_surf, reset_rect)
     surface.blit(new_surf, new_rect)
     surface.blit(solve_surf, solve_rect)

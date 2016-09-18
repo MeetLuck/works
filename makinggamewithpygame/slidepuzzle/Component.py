@@ -2,6 +2,7 @@ import pygame, sys, random, itertools
 from pygame.locals import *
 from constants import *
 
+
 def converTo2D(index):
     return boardPos(index%boardwidth, index//boardheight)
 def converTo1D(boardpos):
@@ -29,12 +30,14 @@ class Tile:
         self.x,self.y = self.boardpos.x, self.boardpos.y
         self.pos = converToPixelPos(self.boardpos)
     def drawTile(self, surface,adjx=0,adjy=0): # draw a tile at board coordinates boardpos
-        # optionally a few pixels over (determined by adjx and ajdy)
+        # optionally a few mouses over (determined by adjx and ajdy)
+        basicfont = pygame.font.Font('freesansbold.ttf',basicfontsize)
         x,y = self.pos
         if self.name != None:
             pygame.draw.rect(surface, tilecolor, (x + adjx, y + adjy, tilesize, tilesize))
             textsurf = basicfont.render( str(self.name), True, textcolor)
         else:
+            pygame.draw.rect(surface, bgcolor, (x + adjx, y + adjy, tilesize, tilesize))
             textsurf = basicfont.render( str(self.name), True, blankcolor)
         textrect = textsurf.get_rect()
         textrect.center = x + int(tilesize/2) + adjx, y + int(tilesize/2) + adjy
@@ -46,6 +49,13 @@ class Board:
         self.startboard = self.getStartingBoard()
         self.board = self.startboard[:]
         self.generateNewPuzzle(surface,numSlides=80)
+    def converToBoardPos(self,mouseX,mouseY):
+        # from the mouse coordinates, get the board coordinates
+        for tile in self.startboard:
+            tileRect = pygame.Rect(tile.pos,(tilesize,tilesize))
+            if tileRect.collidepoint(mouseX,mouseY):
+                return tile.boardpos
+        return (None,None)
     def isSolved(self):
         return self.startboard == self.board
     def getBlankTile(self):
@@ -71,7 +81,8 @@ class Board:
                (move == down and blank.y != 0) or \
                (move == left and blank.x != boardwidth-1) or \
                (move == right and blank.x != 0)
-    def makeMoves(self,move):
+    def makeMove(self,move):
+        if not self.isValidMove(move): return
         blank = self.getBlankTile()
         if move == up:    tile = self.getTileAtPosXY(blank.x,blank.y+1)
         if move == down:  tile = self.getTileAtPosXY(blank.x,blank.y-1)
@@ -89,17 +100,18 @@ class Board:
             tile.setBoardPos(index)
         return board
     def generateNewPuzzle(self,surface,numSlides):
-        print self.isSolved()
+        print 'generating New Puzzle',self.isSolved()
         self.sequence = []
         lastmove = None
         for i in range(numSlides):
             move = self.getRandomMove(lastmove)
-            self.makeMoves(move)
+            self.makeMove(move)
             self.sequence.append(move)
             lastmove = move
+        #surface.fill(bgcolor) 
         self.drawBoard(surface)
         pygame.display.update()
-        pygame.time.wait(3500)
+        pygame.time.wait(50)
     def drawBoard(self,surface):
         for tile in self.board:
             tile.drawTile(surface)
@@ -116,18 +128,19 @@ class Board:
             if move == down: rmove = up
             if move == left: rmove = right
             if move == right: rmove = left
-            self.makeMoves(rmove)
-            surface.fill(bgcolor)
+            self.makeMove(rmove)
+            #surface.fill(bgcolor)
             self.drawBoard(surface)
             pygame.display.update()
-            pygame.time.wait(500)
-        print self.isSolved()
+            pygame.time.wait(50)
+        print 'solve Puzzle ... ', self.isSolved()
+    def resetAnimation(self,surface):
+        pass
 
 
 if __name__ == '__main__':
     pygame.init()
     surface = pygame.display.set_mode(resolution)
-    basicfont = pygame.font.Font('freesansbold.ttf',basicfontsize)
     fpsclock = pygame.time.Clock()
     mb = Board(surface)
     print mb.board
@@ -140,7 +153,7 @@ if __name__ == '__main__':
     for i in range(10):
         move = random.choice(moves)
         if mb.isValidMove(move):
-            mb.makeMoves(move)
+            mb.makeMove(move)
             surface.fill(bgcolor)
             mb.drawBoard(surface)
         else:

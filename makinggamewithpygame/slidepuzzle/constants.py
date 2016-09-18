@@ -23,6 +23,7 @@ white = 255,255,255
 blightblue = 0,50,255
 darkturquoise = 3,54,73
 green = 0,204,0
+red = 255,0,0
 
 bgcolor = darkturquoise
 tilecolor = green
