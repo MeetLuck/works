@@ -28,6 +28,7 @@ bgcolor = darkturquoise
 tilecolor = green
 textcolor = white
 bordercolor = blightblue
+blankcolor = list(bgcolor); blankcolor[1] += +10; blankcolor = tuple(blankcolor)
 basicfontsize = 20
 
 buttoncolor = white
