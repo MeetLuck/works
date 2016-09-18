@@ -92,8 +92,6 @@ def main():
                 elif event.key == K_s:
                     clickedButton = GREEN
 
-
-
         if not waitingForInput:
             # play the pattern
             pygame.display.update()

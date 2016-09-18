@@ -5,7 +5,7 @@ flashspeed = 500 # in milliseconds
 flashdelay = 200 # in milliseconds
 buttonsize = 200
 buttongapsize = 20
-timeout = 4 # seconds before game over if no button is pushed.
+timeout = 4 #4 # seconds before game over if no button is pushed.
 
 #                R    G    B
 white        = (255, 255, 255)
