@@ -1,3 +1,5 @@
+import pygame, sys, random, copy
+from pygame.locals import *
 from constants import *
 
 class boardPos:
@@ -47,15 +49,21 @@ class Worm:
         self.worm = [head,body,tail]
         self.direction = direction
         self.generateApple()
+        self.score = 0
 
+    def isDied(self):
+        if self.isHitItself() or self.isHitEdge():
+            if len(self.worm) == 0:
+                return True
+        return False
     def makeMove(self,direction):
         if self.isValidMove(direction): # valid direction
             self.direction = direction 
         else:
             pass # keep going in the last direction
-        if not self.isHitItself() or not self.isHitEdge():
-            self.gameOver()
-            return False
+#       if not self.isHitItself() or not self.isHitEdge():
+#           self.gameOver()
+#           return False
 
         newhead = copy.copy(self.worm[0])
         if not self.hasEaten():
@@ -77,6 +85,7 @@ class Worm:
     def hasEaten(self):
         head = self.worm[0]
         if (self.apple.x,self.apple.y) == (head.x,head.y):
+            self.score += 1
             self.generateApple()
             return True
         return False
@@ -84,27 +93,30 @@ class Worm:
         head = self.worm[0]
         if (head.x,head.y) in self.getPosList()[1:]:
             self.worm.pop()
-        if len(self.worm) == 0:
-            return False
-        return True
+            return True
+        return False
+#       if len(self.worm) == 0:
+#           return False
 
     def isHitEdge(self):
         head = self.worm[0]
         if head.x == -1:
             head.x = boardwidth -1
             self.worm.pop() # remove tail
-        if head.y == -1:
+        elif head.y == -1:
             head.y = boardheight -1
             self.worm.pop() # remove tail
-        if head.x == boardwidth:
+        elif head.x == boardwidth:
             head.x = 0
             self.worm.pop() # remove tail
-        if head.y == boardheight:
+        elif head.y == boardheight:
             head.y = 0
             self.worm.pop() # remove tail
-        if len(self.worm) == 0:
+        else:
             return False
         return True
+#       if len(self.worm) == 0:
+#           return False
 
     def getPosList(self):
         poslist = []
@@ -128,30 +140,39 @@ class Worm:
             if part == self.worm[0]: #if self.worm.index(part) == 0:
                 pygame.draw.rect(surface,blue,part.innerrect)
         self.apple.draw(surface)
-    def gameOver(self):
-        print 'GameOver'
-        gameoverfont = pygame.font.Font('freesansbold.ttf',150)
-        gamesurf = gameoverfont.render('Game',True,white)
-        oversurf = gameoverfont.render('Over',True,white)
-        gamerect = gamesurf.get_rect()
-        overrect = oversurf.get_rect()
-        gamerect.midtop = (width/2, 10)
-        overrect.midtop = (width/2, gamerect.height+10+25)
-
-        surface.blit(gamesurf,gamerect)
-        surface.blit(oversurf,overrect)
-        #drawPressKeyMsg()
-        pygame.display.update()
-        pygame.time.wait(500)
-
+        self.drawScore(surface)
+    def drawScore(self,surface):
+        scorefont = pygame.font.Font('freesansbold.ttf',20)
+        scoresurf = scorefont.render('Score: %s' %self.score, True,white)
+        scorerect = scoresurf.get_rect()
+        scorerect.topleft = (width-120,10)
+        surface.blit(scoresurf,scorerect)
 
 def terminate():
     pygame.quit(); sys.exit()
 
+def drawPressKeyMsg(surface,basicfont):
+    presskey_surf = basicfont.render('Press a key to play', True, darkgray)
+    presskey_rect = presskey_surf.get_rect()
+    presskey_rect.topleft = (width-200,height-30)
+    surface.blit(presskey_surf,presskey_rect)
+
+def checkForKeyPress():
+    if len(pygame.event.get(QUIT)) > 0:
+            terminate()
+    keyUpEvents = pygame.event.get(KEYUP)
+    if len(keyUpEvents) == 0: return None
+    if keyUpEvents[0].key == K_ESCAPE:
+        terminate()
+    return keyUpEvents[0].key # KEYUP event
+
+def drawGrid(surface):
+    for x in range(0,width,cellsize): # draw verticals
+        pygame.draw.line(surface,darkgray,(x,0),(x,height))
+    for y in range(0,height,cellsize): # draw verticals
+        pygame.draw.line(surface,darkgray,(0,y),(width,y))
 
 if __name__ == '__main__':
-    import pygame, sys, random, copy
-    from pygame.locals import *
 
     print right
     pygame.init()
