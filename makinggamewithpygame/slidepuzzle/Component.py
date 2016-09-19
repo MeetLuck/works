@@ -113,8 +113,9 @@ class Board:
         pygame.display.update()
         pygame.time.wait(50)
     def drawBoard(self,surface):
-        for tile in self.board:
-            tile.drawTile(surface)
+        map(lambda tile:tile.drawTile(surface), self.board)
+#       for tile in self.board:
+#           tile.drawTile(surface)
         self.drawBorder(surface)
     def drawBorder(self,surface):
         x,y = converToPixelPos(boardPos(0,0))
