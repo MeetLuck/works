@@ -1,0 +1,1 @@
+chdir /D %HOME%\works
