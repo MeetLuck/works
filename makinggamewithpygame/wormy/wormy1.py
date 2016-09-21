@@ -32,6 +32,7 @@ def runGame(surface):
         drawGrid(surface)
         if worm.isDied(): return
         worm.makeMove(move)
+        worm.checkForCollision()
         worm.draw(surface)
         pygame.display.update()
         fpsclock.tick(fps)
@@ -52,6 +53,35 @@ def showGameOverScreen(surface):
     pygame.display.update()
     pygame.time.wait(500)
     checkForKeyPress()
+    while True:
+        if checkForKeyPress():
+            pygame.event.get()
+            return
+
+def terminate():
+    pygame.quit(); sys.exit()
+
+def drawPressKeyMsg(surface,basicfont):
+    presskey_surf = basicfont.render('Press a key to play', True, darkgray)
+    presskey_rect = presskey_surf.get_rect()
+    presskey_rect.topleft = (width-200,height-30)
+    surface.blit(presskey_surf,presskey_rect)
+
+def checkForKeyPress():
+    if len(pygame.event.get(QUIT)) > 0:
+            terminate()
+    keyUpEvents = pygame.event.get(KEYUP)
+    if len(keyUpEvents) == 0: return None
+    if keyUpEvents[0].key == K_ESCAPE:
+        terminate()
+    return keyUpEvents[0].key # KEYUP event
+
+def drawGrid(surface):
+    gridcolor = (20,20,20)
+    for x in range(0,width,cellsize): # draw verticals
+        pygame.draw.line(surface,gridcolor,(x,0),(x,height))
+    for y in range(0,height,cellsize): # draw verticals
+        pygame.draw.line(surface,gridcolor,(0,y),(width,y))
 
 if __name__ == '__main__':
     main()

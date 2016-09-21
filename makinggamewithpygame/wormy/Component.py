@@ -11,9 +11,14 @@ class boardPos:
 class Element(object):
     def __init__(self,boardpos):
         self.boardpos = boardpos
-        self.x,self.y = self.boardpos.x, self.boardpos.y
+        self.x,self.y = boardpos.x, boardpos.y
+    def __eq__(self,other):
+        return (self.x,self.y) == (other.x,other.y)
     def converToPixelPos(self):
         self.pixelX,self.pixelY = self.x * cellsize, self.y * cellsize
+        return (self.pixelX,self.pixelY)
+    def __str__(self):
+        return '(%s,%s)' %(self.x,self.y)
 
 class WormElement(Element):
     def __init__(self,boardpos):
@@ -24,7 +29,6 @@ class WormElement(Element):
         self.innerrect = pygame.Rect( self.pixelX+4, self.pixelY+4, cellsize-8, cellsize-8 )
         pygame.draw.rect(surface,darkgreen,self.rect)
         pygame.draw.rect(surface,green,self.innerrect)
-        print 'element draw...'
 
 class Apple(Element):
     def __init__(self,boardpos):
@@ -37,35 +41,48 @@ class Apple(Element):
         pygame.draw.rect(surface,red,self.innerrect)
 
 class Worm:
-    def __init__(self,direction=right):
+    def __init__(self):
+        self.direction = right
+        self.score = 0
+        self.worm = []
         startX = random.randint(5,boardwidth-6)
         startY = random.randint(5,boardheight-6)
-        headpos = boardPos(startX,startY)
-        bodypos = boardPos(startX-1,startY)
-        tailpos = boardPos(startX-2,startY)
-        head = WormElement(headpos)
-        body = WormElement(bodypos)
-        tail = WormElement(tailpos)
-        self.worm = [head,body,tail]
-        self.direction = direction
+        for i in range(5):
+            boardpos = boardPos(startX-i,startY)
+            element = WormElement(boardpos)
+            self.worm.append(element)
+        # after worm created
         self.generateApple()
-        self.score = 0
 
     def isDied(self):
-        if self.isHitItself() or self.isHitEdge():
-            if len(self.worm) == 0:
-                return True
+#       if self.isHitItself() or self.isHitEdge():
+        if len(self.worm) == 0:
+            print 'isDied'
+            return True
         return False
+
+    def hasEaten(self):
+        if self.worm[0] == self.apple: # head = self.worm[0]
+            self.score += 1
+            self.generateApple()
+            return True
+        return False
+
     def makeMove(self,direction):
         if self.isValidMove(direction): # valid direction
             self.direction = direction 
         else:
             pass # keep going in the last direction
-#       if not self.isHitItself() or not self.isHitEdge():
-#           self.gameOver()
-#           return False
 
-        newhead = copy.copy(self.worm[0])
+        assert self.isDied()==False, len(self.worm)
+        if len(self.worm) <= 3:
+            print 'warning ...'
+
+        head = self.worm[0]
+        print head
+
+        # make move
+        newhead = copy.copy(head)
         if not self.hasEaten():
             self.worm.pop() # remove tail
         if   self.direction == right: newhead.x += +1
@@ -73,7 +90,28 @@ class Worm:
         elif self.direction == up:    newhead.y += -1
         elif self.direction == down:  newhead.y += +1
         else: raise Exception('no such direction')
-        self.worm.insert(0,newhead)
+        self.worm.insert(0,newhead) # add new head
+
+    def checkForCollision(self): # collision detection
+
+        if self.isHitItself():
+            print 'hit itself...'
+            #pygame.time.wait(2000)
+            self.worm.pop()
+        elif self.isHitEdge(): # hit one of four edges
+            print 'hit edge...'
+            #pygame.time.wait(2000)
+            head = self.worm[0]
+            self.worm.pop() # remove tail
+            # change head position 
+            if head.x == -1:            # hit left wall
+                head.x = boardwidth -1
+            elif head.x == boardwidth:  # hit right wall
+                head.x = 0
+            elif head.y == -1:          # hit top wall
+                head.y = boardheight -1
+            elif head.y == boardheight: # hit bottom wall
+                head.y = 0
 
     def isValidMove(self,direction):
         if (self.direction,direction) == (right,left): return False
@@ -82,46 +120,18 @@ class Worm:
         if (self.direction,direction) == (down,up): return False
         return True
 
-    def hasEaten(self):
-        head = self.worm[0]
-        if (self.apple.x,self.apple.y) == (head.x,head.y):
-            self.score += 1
-            self.generateApple()
-            return True
-        return False
     def isHitItself(self):
         head = self.worm[0]
-        if (head.x,head.y) in self.getPosList()[1:]:
-            self.worm.pop()
-            return True
-        return False
-#       if len(self.worm) == 0:
-#           return False
+        return (head.x,head.y) in self.getPosList()[1:]
 
     def isHitEdge(self):
         head = self.worm[0]
-        if head.x == -1:
-            head.x = boardwidth -1
-            self.worm.pop() # remove tail
-        elif head.y == -1:
-            head.y = boardheight -1
-            self.worm.pop() # remove tail
-        elif head.x == boardwidth:
-            head.x = 0
-            self.worm.pop() # remove tail
-        elif head.y == boardheight:
-            head.y = 0
-            self.worm.pop() # remove tail
-        else:
-            return False
-        return True
-#       if len(self.worm) == 0:
-#           return False
+        return not ( head.x in range(boardwidth) and head.y in range(boardheight) )
 
     def getPosList(self):
         poslist = []
-        for e in self.worm:
-            poslist.append((e.x,e.y))
+        for element in self.worm:
+            poslist.append((element.x,element.y))
         return poslist
 
     def generateApple(self):
@@ -148,29 +158,6 @@ class Worm:
         scorerect.topleft = (width-120,10)
         surface.blit(scoresurf,scorerect)
 
-def terminate():
-    pygame.quit(); sys.exit()
-
-def drawPressKeyMsg(surface,basicfont):
-    presskey_surf = basicfont.render('Press a key to play', True, darkgray)
-    presskey_rect = presskey_surf.get_rect()
-    presskey_rect.topleft = (width-200,height-30)
-    surface.blit(presskey_surf,presskey_rect)
-
-def checkForKeyPress():
-    if len(pygame.event.get(QUIT)) > 0:
-            terminate()
-    keyUpEvents = pygame.event.get(KEYUP)
-    if len(keyUpEvents) == 0: return None
-    if keyUpEvents[0].key == K_ESCAPE:
-        terminate()
-    return keyUpEvents[0].key # KEYUP event
-
-def drawGrid(surface):
-    for x in range(0,width,cellsize): # draw verticals
-        pygame.draw.line(surface,darkgray,(x,0),(x,height))
-    for y in range(0,height,cellsize): # draw verticals
-        pygame.draw.line(surface,darkgray,(0,y),(width,y))
 
 if __name__ == '__main__':
 
