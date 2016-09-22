@@ -6,7 +6,7 @@
 import random, time, pygame, sys
 from pygame.locals import *
 
-FPS = 5 #15 #25
+FPS = 3 #15 #25
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
 BOXSIZE = 20

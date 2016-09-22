@@ -4,6 +4,8 @@ boxsize = 20
 boardwidth,boardheight= 10,20
 blank = '.'
 
+up,down,left,right = 'up','down','left','right'
+
 movesidwaysfreq = 0.15
 movedownfreq = 0.1
 
@@ -23,8 +25,10 @@ lightblue = 20,20,175
 yellow = 155,155,0
 lightyellow = 175,175,20
 
+
 bordercolor = blue
 bgcolor = black
+boardbgcolor = 40,40,40 
 textcolor = white
 textshadowcolor = gray
 colors = blue, green, red, yellow
@@ -139,3 +143,19 @@ pieces = { 'S': s_shape_template,
           'L': l_shape_template,
           'I': o_shape_template,
           'O': t_shape_template }
+
+S = [
+list( 
+  '.....'+
+  '.....'+
+  '..##.'+
+  '.##..'+
+  '.....' ),      
+list(
+'.....'+
+'.#...'+
+'.##..'+
+'..#..'+
+'.....' )
+   ]
+
