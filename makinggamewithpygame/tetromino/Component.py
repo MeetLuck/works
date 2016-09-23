@@ -9,6 +9,9 @@ def converToPixelPos(boardpos):
 def converTo2D(index,width):
     return BoardPos(index % width, index // width)
 
+def converTo1D(boardpos,width):
+    return boardpos.x + width*boardpos.y
+
 def drawBox(surface,index,char):
     if char == blank:
         color = boardbgcolor #220,220,220 #bgcolor
@@ -18,6 +21,28 @@ def drawBox(surface,index,char):
     pixelX,pixelY = converToPixelPos(boardpos)
     rect = pixelX,pixelY,boxsize,boxsize
     pygame.draw.rect(surface,color,rect)
+
+def isOnBoard(boardpos):
+    return 0 <= boardpos.x < boardwidth and boardpos.y < boardheight
+
+def isValidPosition(board,piece,move):
+    # Return True if the piece is within the board and not colliding
+    import copy
+    piece = copy.deepcopy(piece)
+    if move == left:  piece.startpos.x += -1 
+    if move == right: piece.startpos.x += +1 
+    if move == down: piece.startpos.y += +1 
+    if move == None: return True
+    for index,char in enumerate(piece.piece):
+        if char == blank: continue
+        # char = '#'
+        boardpos = piece.converToBoardPos(index) 
+        boardindex = converTo1D(boardpos,boardwidth)
+        if not isOnBoard(boardpos):
+            return False
+        if board[boardindex] != blank:
+            return False
+    return True
 
 class BoardPos:
     def __init__(self,x,y):
@@ -33,21 +58,19 @@ class Piece:
         self.width,self.height = 5,5
         self.piece = S[0]
         self.startpos = BoardPos(3,0)
-        self.startindex = self.startpos.x + self.width * self.startpos.y 
         self.color = random.choice(colors)
     def draw(self,surface):
         for index,char in enumerate(self.piece):
-            print index,char
+            #print index,char
             self.drawBox(surface,index,char)
     def converToBoardPos(self,index):
-        self.x,self.y = converTo2D(index,self.width)
-        self.boardpos = self.startpos + BoardPos(self.x,self.y)
+        self.boardpos = self.startpos + converTo2D(index,self.width)
         return self.boardpos
 
     def drawBox(self,surface,index,char):
         if char == blank:
             color = boardbgcolor[0]*2, boardbgcolor[1]*2, boardbgcolor[2]*2 #120,120,120 #bgcolor
-            print color
+            #print color
         else:
             color = self.color #blue
         boardpos = self.converToBoardPos(index)
@@ -55,34 +78,24 @@ class Piece:
         rect = pixelX,pixelY,boxsize,boxsize
         pygame.draw.rect(surface,color,rect)
 
-    def isOnBoard(self,boardpos):
-        return 0 <= boardpos.x < boardwidth and boardpos.y < boardheight
-
-    def isValidPosition(self,move,board):
-        # Return True if the piece is within the board and not colliding
-        for index,char in self.piece:
-            boardpos = self.startpos + self.converToBoardPos(index) 
-            boardindex = self.startindex + index
-            if char == blank: continue
-            # char = '#'
-            if not self.isOnBoard(boardpos):
-                return False
-            #if board[boardpos.x + self.width*boardpos.y] != blank:
-            if board[boardindex] != blank:
-                return False
-        return True
 
 class Board:
     def __init__(self):
-        self.width = boardwidth
-        self.height = boardheight
-        self.length = self.width * self.height
+        self.width,self.height = boardwidth, boardheight
         self.board = self.generateNewBoard()
+        self.generateNewPiece()
         self.resolution = self.width*boxsize, self.height*boxsize
         self.surface = pygame.Surface(self.resolution)
         self.rect = self.surface.get_rect()
         self.rect.topleft = width/3,30
         self.board[30] = '#'
+
+    def printboard(self):
+        for index, char in enumerate(self.board):
+            if index != 0 and index % self.width == 0:
+                print
+            print index,char,
+        print
 
     def draw(self,displaysurf):
         self.drawBoard()
@@ -93,7 +106,7 @@ class Board:
         for index,char in enumerate(self.board):
             drawBox(self.surface,index,char)
             boardpos = converTo2D(index,self.width)
-            print self.board[index],
+            #print self.board[index],
             if boardpos.x % self.width == 0:
                 print
         
@@ -102,9 +115,20 @@ class Board:
 
     def drawPiece(self):
         self.fallingpiece.draw(self.surface)
-
+    def addToBoard(self,piece):
+        for index,char in enumerate(piece.piece):
+            if char == blank: continue
+            # char = '#'
+            boardpos = piece.converToBoardPos(index)
+            self.board[converTo1D(boardpos,self.width)] = char
     def movePiece(self,move=down):
-        if not self.fallingpiece.isValidPosition(move,self.board): return
+        if not isValidPosition(self.board,self.fallingpiece,move):
+            if move == down:
+                self.addToBoard(self.fallingpiece)
+                self.generateNewPiece()
+            #print 'not valid move',self.fallingpiece.startpos
+            return False
+        print self.fallingpiece.startpos.x, self.fallingpiece.startpos.y
         if move == left:
             self.fallingpiece.startpos.x += -1
         elif move == right:
@@ -112,9 +136,9 @@ class Board:
         elif move == down:
             self.fallingpiece.startpos.y += +1
         else: # move down
-            return
+            return None
     def generateNewBoard(self):
-        return [blank] * self.length
+        return [blank] * self.width * self.height
 
 
 

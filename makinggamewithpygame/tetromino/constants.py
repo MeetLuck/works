@@ -1,4 +1,4 @@
-fps = 25
+fps = 25*2
 width,height = 640,480
 boxsize = 20
 boardwidth,boardheight= 10,20
@@ -9,7 +9,7 @@ up,down,left,right = 'up','down','left','right'
 movesidwaysfreq = 0.15
 movedownfreq = 0.1
 
-xmargin = width - boardwidth * boxsize /2
+xmargin = (width - boardwidth * boxsize) /2
 topmargin = height - boardheight * boxsize - 5
 
 #  R G B

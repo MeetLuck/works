@@ -11,7 +11,7 @@ def main():
     basicfont = pygame.font.Font('freesansbold.ttf',18)
     bigfont = pygame.font.Font('freesansbold.ttf',100)
     pygame.display.set_caption('Tetromino')
-    #showTextScreen('Tetromino')
+    showTextScreen('Tetromino')
     while True:
         if random.randint(0,1) == 0:
             pygame.mixer.music.load('tetrisb.mid')
@@ -20,17 +20,15 @@ def main():
         pygame.mixer.music.play(-1,0.0)
         runGame()
         pygame.mixer.music.stop()
-        #showTextScreen('Game Over')
+        showTextScreen('Game Over')
 
 def runGame():
     # setup variables for the start of the game
     board = getBlankBoard()
-    lastmovedowntime = lastmovesidewaystime = time.time()
-    lastfalltime = time.time()
+    lastmovedowntime = lastmovesidewaystime = lastfalltime = time.time()
     movingdown = movingleft = movingright = False
     score = 0
-    #level, fallfreq = calculateLevelAndFallFreq(score)
-    fallfreq = 0.27 #1/fps
+    level, fallfreq = calculateLevelAndFallFreq(score)
     fallingpiece = getNewPiece()
     nextpiece = getNewPiece()
 
@@ -52,11 +50,13 @@ def runGame():
             elif e.type == KEYDOWN: # moving sideways
                 if e.key == K_LEFT and isValidPosition(board,fallingpiece,adjX=-1):
                     fallingpiece['x'] += -1
-                    movingleft, movingright = True,False
+                    movingleft = True
+                    movingright = False
                     #lastmovesidewaystime = time.time()
-                elif e.key == K_RIGHT and isValidPosition(board,fallingpiece,adjX=+1):
+                elif e.key == K_RIGHT and isValidPosition(board,fallingpiece,adjX=1):
                     fallingpiece['x'] += +1
-                    movingleft, movingright = False,True
+                    movingleft = True
+                    movingright = False
                     #lastmovesidewaystime = time.time()
                 # rotate the piece if there is room to rotate
                 elif e.key == K_UP and isValidPosition(board,fallingpiece,adjX=1):
@@ -64,60 +64,57 @@ def runGame():
                     if not isValidPosition(board,fallingpiece):
                         fallingpiece['rotation'] = (fallingpiece['rotation']-1)%len(pieces[fallingpiece['shape']])
                 # move the piece fall faster with the down key
-#               elif e.key == K_DOWN:
-#                   movingdown = True
-#                   if isValidPosition(board,fallingpiece,adjY=1):
-#                       fallingpiece['y'] += +1
-#                   lastmovingdowntime = time.time()
-#               # move the current piece all the way down
-#               elif e.key == K_SPACE:
-#                   movingdown = movingleft = movingright = False
-#                   for i in range(1, boardheight):
-#                       if not isValidPosition(board,fallingpiece,adjY=i):
-#                           break
-#                       fallingpiece['y'] += i - 1
+                elif e.key == K_DOWN:
+                    movingdown = True
+                    if isValidPosition(board,fallingpiece,adjY=1):
+                        fallingpiece['y'] += +1
+                    lastmovingdowntime = time.time()
+                # move the current piece all the way down
+                elif e.key == K_SPACE:
+                    movingdown = movingleft = movingright = False
+                    for i in range(1, boardheight):
+                        if not isValidPosition(board,fallingpiece,adjY=i):
+                            break
+                        fallingpiece['y'] += i - 1
                 
-            # handle moving the piece because of user input
-#           if movingleft and isValidPosition(board,fallingpiece,adjX=-1):
-#               fallingpiece['x'] -= 1
-#           elif movingright and isValidPosition(board,fallingpiece,adjX=1):
-#               fallingpiece['x'] += 1
-            #lastmovesidewaystime = time.time()
-#           if movingdown and time.time() - lastmovedowntime > movedownfreq and isValidPosition(board,fallingpiece,adjY=1):
-#               fallingpiece['y'] += 1
-#               lastmovedowntime = time.time()
-
-            # let the piece fall if it is time to fall
-            if time.time() - lastfalltime > fallfreq:
-                # see if the piece has landed
-                if not isValidPosition(board,fallingpiece,adjY=1):
-                    # falling piece has landed, set it on the board
-                    addToBoard(board, fallingpiece)
-                    score += removeCompleteLines(board)
-                    #level, fallfreq = calculateLevelAndFallFreq(score)
-                    fallingpiece = None
-                else:
-                    # piece did not land, just move the piece down
-                    print time.time() - lastfalltime
+                # handle moving the piece because of user input
+                if movingleft and isValidPosition(board,fallingpiece,adjX=-1):
+                    fallingpiece['x'] -= 1
+                elif movingright and isValidPosition(board,fallingpiece,adjX=1):
+                    fallingpiece['x'] += 1
+                #lastmovesidewaystime = time.time()
+                if movingdown and time.time() - lastmovedowntime > movedownfreq and isValidPosition(board,fallingpiece,adjY=1):
                     fallingpiece['y'] += 1
-                    lastfalltime = time.time()
-            # drawing everything on the screen
-            displaysurf.fill(bgcolor)
-            drawBoard(board)
-            #drawStatus(score,level)
-            drawNextPiece(nextpiece)
-            if fallingpiece != None:
-                drawPiece(fallingpiece)
-            pygame.display.update()
-            fpsclock.tick(fps)
+                    lastmovedowntime = time.time()
+
+                # let the piece fall if it is time to fall
+                if time.time() - lastfalltime > fallfreq:
+                    # see if the piece has landed
+                    if not isValidPosition(board,fallingpiece,adjY=1):
+                        # falling piece has landed, set it on the board
+                        addToBoard(board, fallingpiece)
+                        score += removeCompleteLines(board)
+                        level, fallfreq = calculateLevelAndFallFreq(score)
+                        fallingpiece = None
+                    else:
+                        # piece did not land, just move the piece down
+                        fallingpiece['y'] += 1
+                        lastfalltime = time.time()
+                # drawing everything on the screen
+                displaysurf.fill(bgcolor)
+                drawBoard(board)
+                drawStatus(score,level)
+                drawNextPiece(nextpiece)
+                if fallingpiece != None:
+                    drawPiece(fallingpiece)
+                pygame.display.update()
+                fpsclock.tick(fps)
 
 def makeTextObjs(text,font,color):
     surf = font.render(text,True,color)
     return surf, surf.get_rect()
-
 def terminate():
     pygame.quit(); sys.exit()
-
 def checkForKeyPress():
     # go through event queue looking for a KEYUP event
     # grab KEYDOWN events to remove them from the event queue

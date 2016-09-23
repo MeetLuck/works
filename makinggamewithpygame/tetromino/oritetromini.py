@@ -6,7 +6,7 @@
 import random, time, pygame, sys
 from pygame.locals import *
 
-FPS = 3 #15 #25
+FPS = 10 #15 #25
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
 BOXSIZE = 20
@@ -186,7 +186,8 @@ def runGame():
     movingLeft = False
     movingRight = False
     score = 0
-    level, fallFreq = calculateLevelAndFallFreq(score)
+    fallFreq = 0.27
+    #level, fallFreq = calculateLevelAndFallFreq(score)
 
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
@@ -204,16 +205,16 @@ def runGame():
         checkForQuit()
         for event in pygame.event.get(): # event handling loop
             if event.type == KEYUP:
-                if (event.key == K_p):
-                    # Pausing the game
-                    DISPLAYSURF.fill(BGCOLOR)
-                    pygame.mixer.music.stop()
-                    showTextScreen('Paused') # pause until a key press
-                    pygame.mixer.music.play(-1, 0.0)
-                    lastFallTime = time.time()
-                    lastMoveDownTime = time.time()
-                    lastMoveSidewaysTime = time.time()
-                elif (event.key == K_LEFT or event.key == K_a):
+#               if (event.key == K_p):
+#                   # Pausing the game
+#                   DISPLAYSURF.fill(BGCOLOR)
+#                   pygame.mixer.music.stop()
+#                   showTextScreen('Paused') # pause until a key press
+#                   pygame.mixer.music.play(-1, 0.0)
+#                   lastFallTime = time.time()
+#                   lastMoveDownTime = time.time()
+#                   lastMoveSidewaysTime = time.time()
+                if (event.key == K_LEFT or event.key == K_a):
                     movingLeft = False
                 elif (event.key == K_RIGHT or event.key == K_d):
                     movingRight = False
@@ -235,21 +236,21 @@ def runGame():
                     lastMoveSidewaysTime = time.time()
 
                 # rotating the piece (if there is room to rotate)
-                elif (event.key == K_UP or event.key == K_w):
-                    fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
-                    if not isValidPosition(board, fallingPiece):
-                        fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
-                elif (event.key == K_q): # rotate the other direction
-                    fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
-                    if not isValidPosition(board, fallingPiece):
-                        fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
+#               elif (event.key == K_UP or event.key == K_w):
+#                   fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
+#                   if not isValidPosition(board, fallingPiece):
+#                       fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
+#               elif (event.key == K_q): # rotate the other direction
+#                   fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
+#                   if not isValidPosition(board, fallingPiece):
+#                       fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
 
                 # making the piece fall faster with the down key
-                elif (event.key == K_DOWN or event.key == K_s):
-                    movingDown = True
-                    if isValidPosition(board, fallingPiece, adjY=1):
-                        fallingPiece['y'] += 1
-                    lastMoveDownTime = time.time()
+#               elif (event.key == K_DOWN or event.key == K_s):
+#                   movingDown = True
+#                   if isValidPosition(board, fallingPiece, adjY=1):
+#                       fallingPiece['y'] += 1
+#                   lastMoveDownTime = time.time()
 
                 # move the current piece all the way down
                 elif event.key == K_SPACE:
@@ -262,16 +263,16 @@ def runGame():
                     fallingPiece['y'] += i - 1
 
         # handle moving the piece because of user input
-        if (movingLeft or movingRight) and time.time() - lastMoveSidewaysTime > MOVESIDEWAYSFREQ:
-            if movingLeft and isValidPosition(board, fallingPiece, adjX=-1):
-                fallingPiece['x'] -= 1
-            elif movingRight and isValidPosition(board, fallingPiece, adjX=1):
-                fallingPiece['x'] += 1
-            lastMoveSidewaysTime = time.time()
+#       if (movingLeft or movingRight) and time.time() - lastMoveSidewaysTime > MOVESIDEWAYSFREQ:
+#           if movingLeft and isValidPosition(board, fallingPiece, adjX=-1):
+#               fallingPiece['x'] -= 1
+#           elif movingRight and isValidPosition(board, fallingPiece, adjX=1):
+#               fallingPiece['x'] += 1
+#           lastMoveSidewaysTime = time.time()
 
-        if movingDown and time.time() - lastMoveDownTime > MOVEDOWNFREQ and isValidPosition(board, fallingPiece, adjY=1):
-            fallingPiece['y'] += 1
-            lastMoveDownTime = time.time()
+#       if movingDown and time.time() - lastMoveDownTime > MOVEDOWNFREQ and isValidPosition(board, fallingPiece, adjY=1):
+#           fallingPiece['y'] += 1
+#           lastMoveDownTime = time.time()
 
         # let the piece fall if it is time to fall
         if time.time() - lastFallTime > fallFreq:
@@ -280,7 +281,7 @@ def runGame():
                 # falling piece has landed, set it on the board
                 addToBoard(board, fallingPiece)
                 score += removeCompleteLines(board)
-                level, fallFreq = calculateLevelAndFallFreq(score)
+                #level, fallFreq = calculateLevelAndFallFreq(score)
                 fallingPiece = None
             else:
                 # piece did not land, just move the piece down
@@ -290,7 +291,7 @@ def runGame():
         # drawing everything on the screen
         DISPLAYSURF.fill(BGCOLOR)
         drawBoard(board)
-        drawStatus(score, level)
+        #drawStatus(score, level)
         drawNextPiece(nextPiece)
         if fallingPiece != None:
             drawPiece(fallingPiece)
