@@ -32,7 +32,6 @@ def runGame():
     while True:
         checkForQuit()
         if not mb.isValidPosition(mb.fallingpiece,None):
-            print mb.fallingpiece.boardpos.x, mb.fallingpiece.boardpos.y
             print 'Game Over'
             return
         for event in pygame.event.get():

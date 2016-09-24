@@ -1,8 +1,8 @@
 from pygame.color import THECOLORS as thecolors
 fps = 25 
-width,height = 640,480
-#width,height = 800,600
-boxsize = 20 
+#width,height = 640,480
+width,height = 800,600
+boxsize = 25 
 boardwidth,boardheight= 10,20
 blank = '.'
 

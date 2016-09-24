@@ -85,7 +85,7 @@ class Board:
         self.resolution = self.width*boxsize, self.height*boxsize
         self.surface = pygame.Surface(self.resolution)
         self.rect = self.surface.get_rect()
-        self.rect.topleft = width/3,30
+        self.rect.topleft = width-2*xmargin,topmargin-20
         self.fallingpiece = self.generateNewPiece()
         self.nextpiece = self.generateNewPiece()
         self.completelines = 0
