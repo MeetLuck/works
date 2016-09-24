@@ -1,5 +1,5 @@
 from pygame.color import THECOLORS as thecolors
-fps = 15 
+fps = 25 
 width,height = 640,480
 #width,height = 800,600
 boxsize = 20 
@@ -43,11 +43,13 @@ bordercolor = 100,100,100 #blue #20,20,20 #blue
 bordercolor2 = 20,20,20 #blue
 bgcolor = black
 boardbgcolor = bgcolor #20,20,20 
-gridcolor = boardbgcolor[0]+20,boardbgcolor[1]+20, boardbgcolor[2]+ 20
-gridcolor2 = boardbgcolor[0]+30,boardbgcolor[1]+30, boardbgcolor[2]+30
+#gridcolor = boardbgcolor[0]+20,boardbgcolor[1]+20, boardbgcolor[2]+ 20
+#gridcolor2 = boardbgcolor[0]+30,boardbgcolor[1]+30, boardbgcolor[2]+30
+gridcolor = boardbgcolor[0]+40,boardbgcolor[1]+40, boardbgcolor[2]+ 40
+gridcolor2 = boardbgcolor[0]+50,boardbgcolor[1]+50, boardbgcolor[2]+50
 textcolor = white
 textshadowcolor = gray
-colors = navyblue,blue #blue, green, red, yellow, purple,pink,cyan,orange,navyblue
+colors = blue, green, red, yellow, purple,pink,cyan,orange,navyblue
 lightcolors = lightblue, lightgreen, lightred, lightyellow
 
 templatewidth,templateheight = 5,5

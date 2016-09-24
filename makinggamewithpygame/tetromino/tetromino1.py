@@ -20,7 +20,7 @@ def main():
         pygame.mixer.music.play(-1,0.0)
         runGame()
         pygame.mixer.music.stop()
-        #showTextScreen('Game Over')
+        showTextScreen('Game Over')
 
 def runGame():
     # setup variables for the start of the game
@@ -29,7 +29,7 @@ def runGame():
     lastfalltime = time.time()
     movingdown = movingleft = movingright = False
     score = 0
-    #level, fallfreq = calculateLevelAndFallFreq(score)
+    level, fallfreq = calculateLevelAndFallFreq(score)
     fallfreq = 30 * (1.0/fps)
     print 'fallfreq', fallfreq
     fallingpiece = getNewPiece()
@@ -51,11 +51,11 @@ def runGame():
             if e.key == K_LEFT and isValidPosition(board,fallingpiece,adjX=-1):
                 fallingpiece['x'] += -1
                 movingleft, movingright = True,False
-                #lastmovesidewaystime = time.time()
+                lastmovesidewaystime = time.time()
             elif e.key == K_RIGHT and isValidPosition(board,fallingpiece,adjX=+1):
                 fallingpiece['x'] += +1
                 movingleft, movingright = False,True
-                #lastmovesidewaystime = time.time()
+                lastmovesidewaystime = time.time()
             # rotate the piece if there is room to rotate
             elif e.key == K_UP and isValidPosition(board,fallingpiece,adjX=1):
                 fallingpiece['rotation'] = (fallingpiece['rotation']+1)%len(pieces[fallingpiece['shape']])
@@ -76,14 +76,14 @@ def runGame():
                     fallingpiece['y'] += i - 1
             
         # handle moving the piece because of user input
-#           if movingleft and isValidPosition(board,fallingpiece,adjX=-1):
-#               fallingpiece['x'] -= 1
-#           elif movingright and isValidPosition(board,fallingpiece,adjX=1):
-#               fallingpiece['x'] += 1
+            if movingleft and isValidPosition(board,fallingpiece,adjX=-1):
+                fallingpiece['x'] -= 1
+            elif movingright and isValidPosition(board,fallingpiece,adjX=1):
+                fallingpiece['x'] += 1
         #lastmovesidewaystime = time.time()
-#           if movingdown and time.time() - lastmovedowntime > movedownfreq and isValidPosition(board,fallingpiece,adjY=1):
-#               fallingpiece['y'] += 1
-#               lastmovedowntime = time.time()
+            if movingdown and time.time() - lastmovedowntime > movedownfreq and isValidPosition(board,fallingpiece,adjY=1):
+                fallingpiece['y'] += 1
+                lastmovedowntime = time.time()
             #---------- end of KEYDOWN ------------------------
             # let the piece fall if it is time to fall
         if time.time() - lastfalltime > fallfreq:

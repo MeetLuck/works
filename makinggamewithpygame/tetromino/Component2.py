@@ -1,5 +1,4 @@
-import pygame, sys, random, time
-import pygame,sys,random
+import pygame, sys, random, time, copy
 from constants2 import *
 from pygame.locals import *
 
@@ -13,18 +12,17 @@ def converTo2D(index,width):
 def converTo1D(boardpos,width):
     return boardpos.x + width*boardpos.y
 
-def drawBox(surface,index,char):
+def drawBox(surface,index,bgcolor,color):
     boardpos = converTo2D(index,boardwidth)
     pixelX,pixelY = converToPixelPos(boardpos)
     # draw box border
     outerrect = pixelX-1,pixelY-1,boxsize+2,boxsize+2
-    pygame.draw.rect(surface,gridcolor,outerrect)
+    pygame.draw.rect(surface,bgcolor,outerrect)
     # draw inner box
     rect = pixelX,pixelY,boxsize,boxsize
     pygame.draw.rect(surface,boardbgcolor,rect)
-    if char == blank: return
+    if color == blank: return
     # draw non-blank box
-    color = char
     rect = pixelX,pixelY,boxsize,boxsize
     pygame.draw.rect(surface,color,rect)
 #   innerrect = pixelX-1,pixelY-1,boxsize-1,boxsize-1
@@ -79,7 +77,9 @@ class Piece:
 
 
 class Board:
-    def __init__(self):
+    def __init__(self,level=1):
+        self.level = level
+        self.fallfreq = (31 - self.level) * (1.0/fps)
         self.width,self.height = boardwidth, boardheight
         self.board = self.generateNewBoard()
         self.resolution = self.width*boxsize, self.height*boxsize
@@ -88,11 +88,13 @@ class Board:
         self.rect.topleft = width/3,30
         self.fallingpiece = self.generateNewPiece()
         self.nextpiece = self.generateNewPiece()
+        self.completelines = 0
+        self.maxlines = 5 + 2 * self.level
+        #self.maxlines = 19 + 10 * self.level
         #self.board[30] = '#'
 
     def generateNewBoard(self):
         return [blank] * self.width * self.height
-        
     def generateNewPiece(self):
         newpiece = Piece()
         return newpiece
@@ -124,7 +126,6 @@ class Board:
 
     def isValidPosition(self,piece,move):
         # Return True if the piece is within the board and not colliding
-        import copy
         piece = copy.deepcopy(piece)
         if move == left:  piece.startpos.x += -1 
         if move == right: piece.startpos.x += +1 
@@ -147,6 +148,7 @@ class Board:
             index = converTo1D(boardpos,self.width)
             if self.board[index] == blank:
                 return
+        self.completelines += 1
         return True
 
     def removeCompleteLines(self):
@@ -171,6 +173,10 @@ class Board:
             else:
                 boardY -= 1 # move on to check next row up
         return numLinesRemoved
+    def completeLevel(self):
+        if self.completelines >= self.maxlines:
+            return True
+        return False
 
     def printboard(self):
         for index, char in enumerate(self.board):
@@ -180,11 +186,14 @@ class Board:
         print
 
     def draw(self,displaysurf):
-        print self.fallingpiece
+        #print self.fallingpiece
         self.drawBorder(displaysurf)
         self.drawBoard()
         self.fallingpiece.draw(self.surface)
         displaysurf.blit(self.surface,self.rect)
+        self.drawLevel(displaysurf)
+        self.drawNextPiece(displaysurf)
+        self.drawStatus(displaysurf)
 
     def drawBorder(self,displaysurf):
         #border_width,border_height = self.width*boxsize+20, self.height*boxsize + 20
@@ -198,10 +207,57 @@ class Board:
 
     def drawBoard(self): #,surface):
         for index,char in enumerate(self.board):
-            drawBox(self.surface,index,char)
+            drawBox(self.surface,index,gridcolor,char)
             #boardpos = converTo2D(index,self.width)
+    def drawStatus(self,displaysurf):
+        basicfont = pygame.font.Font('freesansbold.ttf',15)
+        nextSurf = basicfont.render('completed:', True, textcolor)
+        nextRect = nextSurf.get_rect()
+        h = 120
+        nextRect.topleft = (width - 150, h)
+        displaysurf.blit(nextSurf, nextRect)
+        basicfont = pygame.font.Font('freesansbold.ttf',20)
+        nextSurf = basicfont.render('%d' %self.completelines, True, blue)
+        nextRect = nextSurf.get_rect()
+        nextRect.topleft = (width - 60, h-5)
+        displaysurf.blit(nextSurf, nextRect)
+        basicfont = pygame.font.Font('freesansbold.ttf',15)
+        nextSurf = basicfont.render('left:', True, textcolor)
+        nextRect = nextSurf.get_rect()
+        nextRect.topleft = (width - 150, h+25)
+        displaysurf.blit(nextSurf, nextRect)
+        basicfont = pygame.font.Font('freesansbold.ttf',20)
+        nextSurf = basicfont.render('%d ' %(self.maxlines-self.completelines,), True, blue)
+        nextRect = nextSurf.get_rect()
+        nextRect.topleft = (width - 60, h+20)
+        displaysurf.blit(nextSurf, nextRect)
+    def drawLevel(self,displaysurf):
+        levelfont = pygame.font.Font('freesansbold.ttf',30)
+        levelsurf = levelfont.render('Level: %s' %self.level, True, white)
+        levelrect = levelsurf.get_rect()
+        levelrect.topleft = (width - 150, 50)
+        displaysurf.blit(levelsurf, levelrect)
 
 
+    def drawNextPiece(self,displaysurf):
+        # draw the "next" text
+        basicfont = pygame.font.Font('freesansbold.ttf',18)
+        nextSurf = basicfont.render('Next:', True, textcolor)
+        nextRect = nextSurf.get_rect()
+        nextRect.topleft = (width - 150, 220)
+        displaysurf.blit(nextSurf, nextRect)
+        # draw the "next" piece
+        w = self.nextpiece.width * boxsize + 2 
+        h = self.nextpiece.height * boxsize + 2 
+        nextsurf = pygame.Surface((w,h))
+        nextrect = nextsurf.get_rect()
+        nextrect.topleft = width-150, 250 
+        #nextsurf.fill(white)
+        tmp_piece = copy.deepcopy(self.nextpiece)
+        tmp_piece.startpos = BoardPos(0,0)
+        tmp_piece.draw(nextsurf)
+        displaysurf.blit(nextsurf,nextrect)
+        #drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=100)
 
 
 if __name__ == '__main__':

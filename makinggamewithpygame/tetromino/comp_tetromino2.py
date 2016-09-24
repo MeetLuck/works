@@ -1,5 +1,5 @@
 from Component2 import *
-fps = 35
+#fps = 25
 
 def main():
     global fpsclock, displaysurf, basicfont, bigfont
@@ -22,11 +22,11 @@ def main():
 
 def runGame():
     import copy
-    mb = Board()
     #mb.generateNewPiece()
-    move = None 
+    mb = Board()
+    #fallfreq = 30 * (1.0/fps)
     lastfalltime = time.time()
-    fallfreq = 30 * (1.0/fps)
+    showStartLevel(level=1)
     while True:
         checkForQuit()
         if not mb.isValidPosition(mb.fallingpiece,None):
@@ -54,22 +54,25 @@ def runGame():
             if event.type == KEYUP:
                 move = None
         # drawing everything on the screen
-        if time.time() - lastfalltime > fallfreq:
+        if time.time() - lastfalltime > mb.fallfreq:
             if mb.isValidPosition(mb.fallingpiece,down):
                 mb.movePiece(down)
             else: # landed
                 mb.addToBoard(mb.fallingpiece)
-                numremovedlines = mb.removeCompleteLines()
-                print numremovedlines
+                mb.removeCompleteLines()
                 mb.generateNextPieces()
+            if mb.completeLevel():
+                level = mb.level + 1
+                showStartLevel(level)
+                mb = Board(level)
             lastfalltime = time.time()
                 #mb.fallingpiece = None
 
         displaysurf.fill(bgcolor)
         mb.draw(displaysurf)
         pygame.display.update()
-        #fpsclock.tick(fps)
-        fpsclock.tick(15)
+        fpsclock.tick(fps)
+        #fpsclock.tick(15)
 
 def terminate():
     pygame.quit(); sys.exit()
@@ -83,6 +86,15 @@ def checkForQuit():
         pygame.event.post(e)
 def showTextScreen(text):
     print text
+    pygame.time.wait(5000)
+def showStartLevel(level):
+    bigfont = pygame.font.Font('freesansbold.ttf',50)
+    textsurf = bigfont.render('Level %s' %level,True,blue)
+    textrect = textsurf.get_rect()
+    textrect.topleft = width/2 - 100,height/2-50
+    displaysurf.fill(bgcolor)
+    displaysurf.blit(textsurf,textrect)
+    pygame.display.update()
     pygame.time.wait(5000)
 
 if __name__ == '__main__':

@@ -15,16 +15,16 @@ hkcrnum = _winreg.QueryInfoKey(hkcrkey)[0]
 HKCU = _winreg.ConnectRegistry(None, _winreg.HKEY_CURRENT_USER)
 productpath_cu =  r"Software\Microsoft\Installer\Products"
 uninstallpath_cu =  r"Software\Microsoft\Windows\CurrentVersion\Uninstall"
-#hkcukey1 = _winreg.OpenKey(HKCU, uninstallpath_cu)
-#hkcukey2 = _winreg.OpenKey(HKCU, productpath_cu)
-#hkcunum1 = _winreg.QueryInfoKey(hkcukey1)[0]
-#hkcunum2 = _winreg.QueryInfoKey(hkcukey2)[0]
+hkcukey1 = _winreg.OpenKey(HKCU, uninstallpath_cu)
+hkcukey2 = _winreg.OpenKey(HKCU, productpath_cu)
+hkcunum1 = _winreg.QueryInfoKey(hkcukey1)[0]
+hkcunum2 = _winreg.QueryInfoKey(hkcukey2)[0]
 
 
 print '*** found %d Software for HKLM ***' %hklmnum
 print '*** found %d Products fro HKCR ***' %hkcrnum
-#print '*** found %d Software for current user ***' %hkcunum1
-#print '*** found %d Products for current user ***' %hkcunum2
+print '*** found %d Software for current user ***' %hkcunum1
+print '*** found %d Products for current user ***' %hkcunum2
 print
 
 
