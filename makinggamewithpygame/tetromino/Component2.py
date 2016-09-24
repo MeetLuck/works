@@ -112,7 +112,7 @@ class Board:
             boardpos = piece.converToBoardPos(index)
             self.board[self.converToIndex(boardpos)] = piece.color
 
-    def movePiece(self,move=down):
+    def movePiece(self,move):
         if move == left:
             self.fallingpiece.startpos.x += -1
         elif move == right:

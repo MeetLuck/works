@@ -30,7 +30,8 @@ def runGame():
     movingdown = movingleft = movingright = False
     score = 0
     #level, fallfreq = calculateLevelAndFallFreq(score)
-    fallfreq = 0.27 #1/fps
+    fallfreq = 30 * (1.0/fps)
+    print 'fallfreq', fallfreq
     fallingpiece = getNewPiece()
     nextpiece = getNewPiece()
 
@@ -44,70 +45,67 @@ def runGame():
             if not isValidPosition(board,fallingpiece):
                 return # can't fit a new piece on the board, so game over
         checkForQuit()
-        for e in pygame.event.get():
-            if e.type == KEYUP:
-                if   e.key == K_LEFT:    movingleft = False
-                elif e.key == K_RIGHT:   movingright = False
-                elif e.key == K_DOWN:    movingdown = False
-            elif e.type == KEYDOWN: # moving sideways
-                if e.key == K_LEFT and isValidPosition(board,fallingpiece,adjX=-1):
-                    fallingpiece['x'] += -1
-                    movingleft, movingright = True,False
-                    #lastmovesidewaystime = time.time()
-                elif e.key == K_RIGHT and isValidPosition(board,fallingpiece,adjX=+1):
-                    fallingpiece['x'] += +1
-                    movingleft, movingright = False,True
-                    #lastmovesidewaystime = time.time()
-                # rotate the piece if there is room to rotate
-                elif e.key == K_UP and isValidPosition(board,fallingpiece,adjX=1):
-                    fallingpiece['rotation'] = (fallingpiece['rotation']+1)%len(pieces[fallingpiece['shape']])
-                    if not isValidPosition(board,fallingpiece):
-                        fallingpiece['rotation'] = (fallingpiece['rotation']-1)%len(pieces[fallingpiece['shape']])
-                # move the piece fall faster with the down key
-#               elif e.key == K_DOWN:
-#                   movingdown = True
-#                   if isValidPosition(board,fallingpiece,adjY=1):
-#                       fallingpiece['y'] += +1
-#                   lastmovingdowntime = time.time()
-#               # move the current piece all the way down
-#               elif e.key == K_SPACE:
-#                   movingdown = movingleft = movingright = False
-#                   for i in range(1, boardheight):
-#                       if not isValidPosition(board,fallingpiece,adjY=i):
-#                           break
-#                       fallingpiece['y'] += i - 1
-                
-            # handle moving the piece because of user input
+        for e in pygame.event.get(KEYUP):
+            movingleft = movingright = movingdown = False
+        for e in pygame.event.get(KEYDOWN): # moving sideways
+            if e.key == K_LEFT and isValidPosition(board,fallingpiece,adjX=-1):
+                fallingpiece['x'] += -1
+                movingleft, movingright = True,False
+                #lastmovesidewaystime = time.time()
+            elif e.key == K_RIGHT and isValidPosition(board,fallingpiece,adjX=+1):
+                fallingpiece['x'] += +1
+                movingleft, movingright = False,True
+                #lastmovesidewaystime = time.time()
+            # rotate the piece if there is room to rotate
+            elif e.key == K_UP and isValidPosition(board,fallingpiece,adjX=1):
+                fallingpiece['rotation'] = (fallingpiece['rotation']+1)%len(pieces[fallingpiece['shape']])
+                if not isValidPosition(board,fallingpiece):
+                    fallingpiece['rotation'] = (fallingpiece['rotation']-1)%len(pieces[fallingpiece['shape']])
+            # move the piece fall faster with the down key
+            elif e.key == K_DOWN:
+                movingdown = True
+                if isValidPosition(board,fallingpiece,adjY=1):
+                    fallingpiece['y'] += +1
+                lastmovingdowntime = time.time()
+            # move the current piece all the way down
+            elif e.key == K_SPACE:
+                movingdown = movingleft = movingright = False
+                for i in range(1, boardheight):
+                    if not isValidPosition(board,fallingpiece,adjY=i):
+                        break
+                    fallingpiece['y'] += i - 1
+            
+        # handle moving the piece because of user input
 #           if movingleft and isValidPosition(board,fallingpiece,adjX=-1):
 #               fallingpiece['x'] -= 1
 #           elif movingright and isValidPosition(board,fallingpiece,adjX=1):
 #               fallingpiece['x'] += 1
-            #lastmovesidewaystime = time.time()
+        #lastmovesidewaystime = time.time()
 #           if movingdown and time.time() - lastmovedowntime > movedownfreq and isValidPosition(board,fallingpiece,adjY=1):
 #               fallingpiece['y'] += 1
 #               lastmovedowntime = time.time()
-
+            #---------- end of KEYDOWN ------------------------
             # let the piece fall if it is time to fall
-            if time.time() - lastfalltime > fallfreq:
-                # see if the piece has landed
-                if not isValidPosition(board,fallingpiece,adjY=1):
-                    # falling piece has landed, set it on the board
-                    addToBoard(board, fallingpiece)
-                    score += removeCompleteLines(board)
-                    #level, fallfreq = calculateLevelAndFallFreq(score)
-                    fallingpiece = None
-                else:
-                    # piece did not land, just move the piece down
-                    print time.time() - lastfalltime
-                    fallingpiece['y'] += 1
-                    lastfalltime = time.time()
-            # drawing everything on the screen
-            displaysurf.fill(bgcolor)
-            drawBoard(board)
-            #drawStatus(score,level)
-            drawNextPiece(nextpiece)
-            if fallingpiece != None:
-                drawPiece(fallingpiece)
+        if time.time() - lastfalltime > fallfreq:
+            # see if the piece has landed
+            if not isValidPosition(board,fallingpiece,adjY=1):
+                # falling piece has landed, set it on the board
+                addToBoard(board, fallingpiece)
+                score += removeCompleteLines(board)
+                #level, fallfreq = calculateLevelAndFallFreq(score)
+                fallingpiece = None
+            else:
+                # piece did not land, just move the piece down
+                print time.time() - lastfalltime
+                fallingpiece['y'] += 1
+                lastfalltime = time.time()
+        # drawing everything on the screen
+        displaysurf.fill(bgcolor)
+        drawBoard(board)
+        #drawStatus(score,level)
+        drawNextPiece(nextpiece)
+        if fallingpiece != None:
+            drawPiece(fallingpiece)
             pygame.display.update()
             fpsclock.tick(fps)
 
@@ -269,6 +267,13 @@ def drawNextPiece(piece):
     rect = surf.get_rect()
     displaysurf.blit(surf,rect)
     drawPiece(piece,pixelx=width-120,pixely=100)
+
+def checkForKEYUP():
+    for e in pygame.event.get(KEYUP):
+        if   e.key == K_LEFT:    movingleft = False
+        elif e.key == K_RIGHT:   movingright = False
+        elif e.key == K_DOWN:    movingdown = False
+    return movingleft,movingright,movingdown
 
 if __name__ == '__main__':
     main()

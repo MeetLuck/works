@@ -1,4 +1,4 @@
-from Component import *
+from Component2 import *
 fps = 35
 
 def main():
@@ -30,28 +30,28 @@ def runGame():
     while True:
         checkForQuit()
         if not mb.isValidPosition(mb.fallingpiece,None):
-            print mb.fallingpiece.boardpos.x,mbfallingpiece.boardpos.y
+            print mb.fallingpiece.boardpos.x, mb.fallingpiece.boardpos.y
             print 'Game Over'
             return
-        for e in pygame.event.get():
-            if e.type == KEYDOWN:
-                if e.key == K_LEFT and mb.isValidPosition(mb.fallingpiece,left):
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_LEFT and mb.isValidPosition(mb.fallingpiece,left):
                     mb.movePiece(left)
-                elif e.key == K_RIGHT and mb.isValidPosition(mb.fallingpiece,right):
+                elif event.key == K_RIGHT and mb.isValidPosition(mb.fallingpiece,right):
                     mb.movePiece(right)
-                elif e.key == K_DOWN and mb.isValidPosition(mb.fallingpiece,down):
+                elif event.key == K_DOWN and mb.isValidPosition(mb.fallingpiece,down):
                     mb.movePiece(down)
-                elif e.key == K_UP and mb.isValidPosition(mb.fallingpiece,up):
+                elif event.key == K_UP and mb.isValidPosition(mb.fallingpiece,up):
                     print 'rotating..'
                     mb.fallingpiece.rotate()
-                elif e.key == K_SPACE:
+                elif event.key == K_SPACE:
                     while True:
                         if not mb.isValidPosition(mb.fallingpiece,down):
                             break
                         mb.movePiece(down)
             # move the piece fall faster with the down key
             # add code here ...
-            if e.type == KEYUP:
+            if event.type == KEYUP:
                 move = None
         # drawing everything on the screen
         if time.time() - lastfalltime > fallfreq:

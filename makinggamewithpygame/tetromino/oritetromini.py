@@ -227,19 +227,19 @@ def runGame():
                     fallingPiece['x'] -= 1
                     movingLeft = True
                     movingRight = False
-                    lastMoveSidewaysTime = time.time()
+                    #lastMoveSidewaysTime = time.time()
 
                 elif (event.key == K_RIGHT or event.key == K_d) and isValidPosition(board, fallingPiece, adjX=1):
                     fallingPiece['x'] += 1
                     movingRight = True
                     movingLeft = False
-                    lastMoveSidewaysTime = time.time()
+                    #lastMoveSidewaysTime = time.time()
 
                 # rotating the piece (if there is room to rotate)
-#               elif (event.key == K_UP or event.key == K_w):
-#                   fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
-#                   if not isValidPosition(board, fallingPiece):
-#                       fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
+                elif (event.key == K_UP or event.key == K_w):
+                    fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
+                    if not isValidPosition(board, fallingPiece):
+                        fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
 #               elif (event.key == K_q): # rotate the other direction
 #                   fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
 #                   if not isValidPosition(board, fallingPiece):

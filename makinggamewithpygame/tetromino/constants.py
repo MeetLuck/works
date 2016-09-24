@@ -1,4 +1,4 @@
-fps = 25*2
+fps = 15 
 width,height = 640,480
 boxsize = 20
 boardwidth,boardheight= 10,20
@@ -36,16 +36,16 @@ lightcolors = lightblue, lightgreen, lightred, lightyellow
 
 templatewidth,templateheight = 5,5
 
-s_shape_template = [['.....',
+s_shape_template = [ '.....'+
+                     '.....'+
+                     '..OO.'+
+                     '.OO..'+
                      '.....',
-                     '..OO.',
-                     '.OO..',
-                     '.....'],
-                    ['.....',
-                     '..O..',
-                     '..OO.',
-                     '...O.',
-                     '.....']]
+                     '.....'+
+                     '..O..'+
+                     '..OO.'+
+                     '...O.'+
+                     '.....']
 
 z_shape_template = [['.....',
                      '.....',
