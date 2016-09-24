@@ -15,16 +15,16 @@ def converTo1D(boardpos,width):
 def drawBox(surface,index,bgcolor,color):
     boardpos = converTo2D(index,boardwidth)
     pixelX,pixelY = converToPixelPos(boardpos)
-    # draw box border
-    outerrect = pixelX-1,pixelY-1,boxsize+2,boxsize+2
-    pygame.draw.rect(surface,bgcolor,outerrect)
-    # draw inner box
     rect = pixelX,pixelY,boxsize,boxsize
     pygame.draw.rect(surface,boardbgcolor,rect)
     if color == blank: return
     # draw non-blank box
-    rect = pixelX,pixelY,boxsize,boxsize
-    pygame.draw.rect(surface,color,rect)
+    darkcolor = converToDarkColor(color)
+    shadowrect = pixelX+1,pixelY+1,boxsize-1,boxsize-1
+    pygame.draw.rect(surface,darkcolor,shadowrect)
+    # draw inner box
+    outerrect = pixelX+1,pixelY+1,boxsize-4,boxsize-4
+    pygame.draw.rect(surface,color,outerrect)
 #   innerrect = pixelX-1,pixelY-1,boxsize-1,boxsize-1
 #   pygame.draw.rect(surface,color,innerrect)
 
@@ -79,7 +79,7 @@ class Piece:
 class Board:
     def __init__(self,level=1):
         self.level = level
-        self.fallfreq = (31 - self.level) * (1.0/fps)
+        self.setSpeed()
         self.width,self.height = boardwidth, boardheight
         self.board = self.generateNewBoard()
         self.resolution = self.width*boxsize, self.height*boxsize
@@ -89,9 +89,20 @@ class Board:
         self.fallingpiece = self.generateNewPiece()
         self.nextpiece = self.generateNewPiece()
         self.completelines = 0
-        self.maxlines = 5 + 2 * self.level
+        self.maxlines = 1 + 1 * (self.level-1)
         #self.maxlines = 19 + 10 * self.level
         #self.board[30] = '#'
+    def setSpeed(self):
+        tp = 1.0/fps
+        if 1<= self.level <= 5:
+            speedup = self.level + 4
+        elif 6<= self.level <= 10:
+            speedup = self.level + 7 
+        elif 11<= self.level <= 15:
+            speedup = self.level + 10 
+        else:
+            sppedup = 25
+        self.fallfreq = (31 - speedup) * tp
 
     def generateNewBoard(self):
         return [blank] * self.width * self.height
@@ -210,42 +221,39 @@ class Board:
             drawBox(self.surface,index,gridcolor,char)
             #boardpos = converTo2D(index,self.width)
     def drawStatus(self,displaysurf):
-        basicfont = pygame.font.Font('freesansbold.ttf',15)
-        nextSurf = basicfont.render('completed:', True, textcolor)
-        nextRect = nextSurf.get_rect()
-        h = 120
-        nextRect.topleft = (width - 150, h)
-        displaysurf.blit(nextSurf, nextRect)
-        basicfont = pygame.font.Font('freesansbold.ttf',20)
-        nextSurf = basicfont.render('%d' %self.completelines, True, blue)
-        nextRect = nextSurf.get_rect()
-        nextRect.topleft = (width - 60, h-5)
-        displaysurf.blit(nextSurf, nextRect)
-        basicfont = pygame.font.Font('freesansbold.ttf',15)
-        nextSurf = basicfont.render('left:', True, textcolor)
-        nextRect = nextSurf.get_rect()
-        nextRect.topleft = (width - 150, h+25)
-        displaysurf.blit(nextSurf, nextRect)
-        basicfont = pygame.font.Font('freesansbold.ttf',20)
-        nextSurf = basicfont.render('%d ' %(self.maxlines-self.completelines,), True, blue)
-        nextRect = nextSurf.get_rect()
-        nextRect.topleft = (width - 60, h+20)
-        displaysurf.blit(nextSurf, nextRect)
+        starty = 150
+        lightcolor = 'orange4'
+        color = 'orange'
+        #  completed : 
+        textsurf,textrect = getText(text='completed : ', fontsize=18, color=lightcolor)
+        textrect.topleft = width - 150, starty
+        displaysurf.blit(textsurf,textrect)
+        # completed : number
+        textsurf,textrect = getText(text='%d' %self.completelines, fontsize=18, color=color)
+        textrect.topleft = width - 40, starty
+        displaysurf.blit(textsurf,textrect)
+
+        # left : 
+        textsurf,textrect = getText(text='left : ',fontsize=18, color=lightcolor)
+        textrect.topleft = width - 150, starty+25
+        displaysurf.blit(textsurf,textrect)
+        # left : number 
+        textsurf,textrect = getText(text='%d' %(self.maxlines-self.completelines), fontsize=18, color=color)
+        textrect.topleft = width - 100, starty+25
+        displaysurf.blit(textsurf,textrect)
+
     def drawLevel(self,displaysurf):
-        levelfont = pygame.font.Font('freesansbold.ttf',30)
-        levelsurf = levelfont.render('Level: %s' %self.level, True, white)
-        levelrect = levelsurf.get_rect()
-        levelrect.topleft = (width - 150, 50)
-        displaysurf.blit(levelsurf, levelrect)
+        # Level : 
+        textsurf,textrect = getText(text='Level : %d' %self.level, fontsize=35, color='orange3')
+        textrect.topleft = width - 160, 80 
+        displaysurf.blit(textsurf,textrect)
 
 
     def drawNextPiece(self,displaysurf):
-        # draw the "next" text
-        basicfont = pygame.font.Font('freesansbold.ttf',18)
-        nextSurf = basicfont.render('Next:', True, textcolor)
-        nextRect = nextSurf.get_rect()
-        nextRect.topleft = (width - 150, 220)
-        displaysurf.blit(nextSurf, nextRect)
+        # next : 
+        textsurf,textrect = getText(text='Next : ', fontsize=18, color='orange')
+        textrect.topleft = width - 150, 220 
+        displaysurf.blit(textsurf,textrect)
         # draw the "next" piece
         w = self.nextpiece.width * boxsize + 2 
         h = self.nextpiece.height * boxsize + 2 
@@ -258,6 +266,17 @@ class Board:
         tmp_piece.draw(nextsurf)
         displaysurf.blit(nextsurf,nextrect)
         #drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=100)
+
+def getText(text,font='freesansbold.ttf',fontsize=20,color='white',bgcolor='black'):
+    fontobj = pygame.font.Font(font,fontsize)
+    textsurf = fontobj.render(text,True,pygame.Color(color),pygame.Color(bgcolor))
+    textrect = textsurf.get_rect()
+    return textsurf,textrect 
+
+def converToDarkColor(color):
+    r,g,b,a = color
+    lightcolor = r*0.9,g*0.9,b*0.9,a
+    return lightcolor
 
 
 if __name__ == '__main__':

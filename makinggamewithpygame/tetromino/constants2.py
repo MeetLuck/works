@@ -20,13 +20,19 @@ gray = thecolors['gray']
 black = thecolors['black']
 red = thecolors['red']
 blue = thecolors['blue']
+skyblue = thecolors['skyblue']
+steelblue = thecolors['steelblue']
+royalblue = thecolors['royalblue']
 green = thecolors['green']
 yellow = thecolors['yellow']
 purple = thecolors['purple']
-orange = thecolors['orange']
-cyan = thecolors['cyan']
+orange = thecolors['darkorange']
+#lightorange = thecolors['lightorange']
+cyan = thecolors['darkcyan']
 pink = thecolors['pink']
-navyblue = thecolors['navyblue']
+tan= thecolors['tan']
+khaki= thecolors['khaki']
+yellowgreen= thecolors['yellowgreen']
 #purple = 255,255,255 #gray = 185,185,185 #black = 0,0,0
 #red = 155,0,0 #green = 0, 155, 0 #blue = 0,0,155
 #yellow = 155,155,0 #purple = 160,32,240 #pink   = 255,192,203
@@ -49,7 +55,7 @@ gridcolor = boardbgcolor[0]+40,boardbgcolor[1]+40, boardbgcolor[2]+ 40
 gridcolor2 = boardbgcolor[0]+50,boardbgcolor[1]+50, boardbgcolor[2]+50
 textcolor = white
 textshadowcolor = gray
-colors = blue, green, red, yellow, purple,pink,cyan,orange,navyblue
+colors = red,orange,pink,yellow, green, purple, blue, cyan, khaki, tan, yellowgreen,royalblue,skyblue,steelblue
 lightcolors = lightblue, lightgreen, lightred, lightyellow
 
 templatewidth,templateheight = 5,5

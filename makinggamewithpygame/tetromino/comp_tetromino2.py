@@ -11,10 +11,12 @@ def main():
     pygame.display.set_caption('Tetromino')
     #showTextScreen('Tetromino')
     while True:
-        if random.randint(0,1) == 0:
-            pygame.mixer.music.load('tetrisb.mid')
-        else:
-            pygame.mixer.music.load('tetrisc.mid')
+#       if random.randint(0,1) == 0:
+#           pygame.mixer.music.load('tetrisb.mid')
+#       else:
+#           pygame.mixer.load('mz_545_3_format0')
+#           #pygame.mixer.music.load('tetrisc.mid')
+        pygame.mixer.music.load('mz_545_3_format0.mid')
         pygame.mixer.music.play(-1,0.0)
         runGame()
         pygame.mixer.music.stop()
@@ -88,14 +90,28 @@ def showTextScreen(text):
     print text
     pygame.time.wait(5000)
 def showStartLevel(level):
-    bigfont = pygame.font.Font('freesansbold.ttf',50)
-    textsurf = bigfont.render('Level %s' %level,True,blue)
-    textrect = textsurf.get_rect()
-    textrect.topleft = width/2 - 100,height/2-50
-    displaysurf.fill(bgcolor)
+    textsurf,textrect = getText(text='Level %s' %level, fontsize=60, color='orange')
+    textrect.topleft = width/2 - 100,height/2-60
+    displaysurf.blit(textsurf,textrect)
+    textsurf,textrect = getText(text='Press a key to start', fontsize=30, color='orange4')
+    textrect.topleft = width/2 - 150,height/2+30
     displaysurf.blit(textsurf,textrect)
     pygame.display.update()
-    pygame.time.wait(5000)
+    pygame.time.wait(1000)
+    while True:
+        if checkForKeyPress():
+            return
+
+def checkForKeyPress():
+    # Go through event queue looking for a KEYUP event.
+    # Grab KEYDOWN events to remove them from the event queue.
+    checkForQuit()
+
+    for event in pygame.event.get([KEYDOWN, KEYUP]):
+        if event.type == KEYDOWN:
+            continue
+        return event.key
+    return None
 
 if __name__ == '__main__':
     main()
