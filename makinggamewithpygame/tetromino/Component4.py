@@ -6,6 +6,13 @@ def converTo2D(index,width):
     return BoardPos(index % width, index // width)
 def converTo1D(boardpos,width):
     return boardpos.x + width*boardpos.y
+def getValue(list2D,x,y):
+    'list of lists : [ row1,row2,...,rowN]'
+    return list2D[y][x]
+def isOnBoard(boardpos):
+    return 0 <= boardpos.x < boardwidth and boardpos.y < boardheight
+#def rotate(lst):
+#    return lst.insert(0,lst.pop())
 
 def drawBox(surface,boardpos,bgcolor,gridcolor,color):
     '''
@@ -25,17 +32,13 @@ def drawBox(surface,boardpos,bgcolor,gridcolor,color):
     if color == blank: return
     #----- draw non-blank box ------------------
     # draw shadow box
-    darkcolor = converToDarkColor(color)
+    darkcolor = getDarkColor(color,90)
     shadowrect = pixelX+1,pixelY+1,boxsize-1,boxsize-1
     pygame.draw.rect(surface,darkcolor,shadowrect)
     # draw inner box
     outerrect = pixelX+1,pixelY+1,boxsize-4,boxsize-4
     pygame.draw.rect(surface,color,outerrect)
 
-def isOnBoard(boardpos):
-    return 0 <= boardpos.x < boardwidth and boardpos.y < boardheight
-def rotate(lst):
-    return lst.insert(0,lst.pop())
 
 class BoardPos:
     def __init__(self,x,y):
@@ -47,19 +50,16 @@ class Piece:
     shapes = [tetrisS,tetrisZ,tetrisI,tetrisO,tetrisJ,tetrisL,tetrisT]
     def __init__(self):
         self.shape = random.choice(self.shapes)
-        self.width,self.height = 4,4
+        self.width,self.height = 5,5
         self.pieces = []
-        t = self.shape
+        t = self.shape[:]
         for i in range(4):
             t = rotate90(t)
-            self.pieces.append(t)
-
-        for p in self.pieces:
+            self.pieces.append(t[:])
+        for piece in self.pieces:
             print '*'*80
-            for y in range(4): # row
-                for x in range(4):
-                    print p[x][y],
-                print 
+            for row in piece:
+                print ''.join(row)
         self.piece = random.choice(self.pieces) #print 'piece : ',self.piece
         self.startpos = BoardPos(3,-2)
         self.color = random.choice(colors)
@@ -67,14 +67,15 @@ class Piece:
         self.piece = rotate90(self.piece)
     def converToBoardPos(self,x,y):
         return self.startpos + BoardPos(x,y)
-
+    def getValue(self,x,y):
+        return getValue(self.piece,x,y)
     def draw(self,surface):
-        for x in range(self.width):
-            for y in range(self.height):
+        for x in range(self.width):      # col
+            for y in range(self.height): # row
                 boardpos = self.converToBoardPos(x,y)
-                char = self.piece[x][y]
+                char = self.getValue(x,y) #[y][x]
                 if char != blank: char = self.color 
-                drawBox(surface,boardpos,bgcolor,bordercolor,char)
+                drawBox(surface,boardpos,bgcolor,gridcolor2,char)
 
 class Board:
     def __init__(self,level=1):
@@ -105,32 +106,32 @@ class Board:
         self.fallfreq = (31 - speedup) * tp
 
     def generateNewBoard(self):
-        return [blank] * self.width * self.height
+            return [ [blank]*self.width for row in range(self.height) ]
     def generateNewPiece(self):
-        newpiece = Piece()
-        return newpiece
+        return Piece()
     def converToBoardPos(self,index):
         return converTo2D(index,self.width)
     def converToIndex(self,boardpos):
         return converTo1D(boardpos,self.width)
-
+    def getValue(self,x,y):
+        return getValue(self.board,x,y)
+    def setValue(self,boardpos,value):
+        self.board[boardpos.y][boardpos.x] = value 
     def generateNextPieces(self):
         self.fallingpiece = self.nextpiece
         self.nextpiece = self.generateNewPiece()
         p = self.fallingpiece
-        for y in range(p.height): # row
-            for x in range(p.width): # col
-                print p.piece[x][y],
-            print 
-
+        for row in p.piece:
+            print ''.join(row)
     def addToBoard(self,piece):
         for x in range(piece.width):
             for y in range(piece.height):
-                char = piece.piece[x][y]
+                char =  piece.getValue(x,y) # char = piece.piece[y][x]
                 if char == blank: continue
                 # char = '#'
                 boardpos = piece.converToBoardPos(x,y)
-                self.board[self.converToIndex(boardpos)] = piece.color
+                self.setValue(boardpos,piece.color)
+                # self.board[self.converToIndex(boardpos)] = piece.color
 
     def movePiece(self,move):
         if move == left:
@@ -149,23 +150,21 @@ class Board:
         if move == right: cpiece.startpos.x += +1 
         if move == down:  cpiece.startpos.y += +1 
         if move == up:    cpiece.rotate()
+
         for x in range(cpiece.width):
-            for y in range(cpiece.height):
+            for y in range(cpiece.height): # height
                 boardpos = cpiece.converToBoardPos(x,y) 
                 isAboveBoard = boardpos.y < 0
-                if isAboveBoard or cpiece.piece[x][y] == blank: continue
+                if isAboveBoard or cpiece.getValue(x,y) == blank: continue
                 # char = '#'
-                boardindex = self.converToIndex(boardpos) #converTo1D(boardpos,boardwidth)
                 if not isOnBoard(boardpos):
                     return False
-                if self.board[boardindex] != blank:
+                if self.getValue(boardpos.x,boardpos.y) != blank:
                     return False
         return True
     def isCompleteLine(self,boardY):
         for x in range(0,boardwidth):
-            boardpos = BoardPos(x,boardY)
-            index = converTo1D(boardpos,self.width)
-            if self.board[index] == blank:
+            if self.getValue(x,boardY) == blank:
                 return
         self.completelines += 1
         return True
@@ -178,17 +177,10 @@ class Board:
         while boardY >= 0:
             if self.isCompleteLine(boardY):
                 # Remove the line and pull boxes down by one line.
-                for x in range(boardwidth):
-                    boardpos = BoardPos(0,boardY)
-                    index = converTo1D(boardpos,self.width)
-                    del self.board[index]
+                del self.board[boardY]
                 # Set very top line to blank.
-                for x in range(self.width):
-                    self.board.insert(0,blank)
+                self.board.insert(0, [blank]*self.width)
                 numLinesRemoved += 1
-                # Note on the next iteration of the loop, y is the same.
-                # This is so that if the line that was pulled down is also
-                # complete, it will be removed.
             else:
                 boardY -= 1 # move on to check next row up
         return numLinesRemoved
@@ -198,11 +190,8 @@ class Board:
         return False
 
     def printboard(self):
-        for index, char in enumerate(self.board):
-            if index != 0 and index % self.width == 0:
-                print
-            print index,char,
-        print
+        for row in self.board:
+            print ''.join(row)
 
     def draw(self,displaysurf):
         #print self.fallingpiece
@@ -218,16 +207,18 @@ class Board:
         #border_width,border_height = self.width*boxsize+20, self.height*boxsize + 20
         w,h = self.resolution
         x,y = self.rect.topleft
-        border_rect = x-5,y-5, w+10,h+10
-        pygame.draw.rect(displaysurf,bordercolor,border_rect)
-        border_rect = x-4,y-4, w+8,h+8
+        border_rect = x-3,y-3, w+6,h+6
+        pygame.draw.rect(displaysurf,bordercolor1,border_rect)
+        border_rect = x-2,y-2, w+4,h+4
         pygame.draw.rect(displaysurf,bordercolor2,border_rect)
 
 
     def drawBoard(self): #,surface):
-        for index,char in enumerate(self.board):
-            boardpos = converTo2D(index,boardwidth)
-            drawBox(self.surface,boardpos,bgcolor,gridcolor,char)
+        for x in range(self.width):
+            for y in range(self.height):
+                char = self.getValue(x,y)
+                boardpos = BoardPos(x,y)
+                drawBox(self.surface,boardpos,bgcolor,gridcolor1,char)
     def drawStatus(self,displaysurf):
         starty = 150
         lightcolor = 'orange4'
@@ -281,9 +272,9 @@ def getText(text,font='freesansbold.ttf',fontsize=20,color='white',bgcolor='blac
     textrect = textsurf.get_rect()
     return textsurf,textrect 
 
-def converToDarkColor(color):
+def getDarkColor(color,percent):
     r,g,b,a = color
-    darkcolor = r*0.9,g*0.9,b*0.9,a
+    darkcolor = r*percent/100.0,g*percent/100.0,b*percent/100,a
     return darkcolor
 
 

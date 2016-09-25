@@ -28,13 +28,14 @@ c4 = khaki,yellowgreen \
    = pyColor('khaki'), pyColor('yellowgreen')
 colors = [ color for color in c1+c2+c3+c4]
 
-bordercolor = 40,40,40 #blue #20,20,20 #blue
-bordercolor2 = 15,15,15 #blue
-gridcolor = bordercolor2
+bordercolor1 = 55,55,25 #40,40,50 #blue #20,20,20 #blue
+bordercolor2 = 45,45,25 #blue
+gridcolor1 = 35,35,35
+gridcolor2 = 50,50,50
 bgcolor   = black
+#boardbgcolor = bgcolor #20,20,20 
 textcolor = white
 textshadowcolor = gray
-boardbgcolor = bgcolor #20,20,20 
 #gridcolor = boardbgcolor[0]+40,boardbgcolor[1]+40, boardbgcolor[2]+ 40
 #gridcolor2 = boardbgcolor[0]+50,boardbgcolor[1]+50, boardbgcolor[2]+50
 
@@ -42,12 +43,14 @@ boardbgcolor = bgcolor #20,20,20
 
 tetrisS = [
     list(  '.....' ),
+    list(  '.....' ),
     list(  '..OO.' ),
     list(  '.OO..' ),
     list(  '.....' )
    ]
 
 tetrisZ = [
+    list( '.....' ),
     list( '.....' ),
     list( '.OO..' ),
     list( '..OO.' ),
@@ -59,9 +62,11 @@ tetrisI = [
     list( '..O..' ),
     list( '..O..' ),
     list( '..O..' ),
+    list( '.....' )
 ]
 
 tetrisO = [
+    list( '.....' ),
     list( '.....' ),
     list( '.OO..' ),
     list( '.OO..' ),
@@ -73,12 +78,14 @@ tetrisJ = [
     list( '.O...' ),
     list( '.OOO.' ),
     list( '.....' ),
+    list( '.....' )
 ]
 
 tetrisL = [
     list( '.....' ),
     list( '...O.' ),
     list( '.OOO.' ),
+    list( '.....' ),
     list( '.....' )
 ]
 
@@ -87,4 +94,6 @@ tetrisT = [
     list( '..O..' ),
     list( '.OOO.' ),
     list( '.....' ),
+    list( '.....' )
 ]
+

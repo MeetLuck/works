@@ -92,7 +92,7 @@ def showStartLevel(level):
     textsurf,textrect = getText(text='Level %s' %level, fontsize=60, color='orange')
     textrect.topleft = screenwidth/2 - 100,screenheight/2-60
     displaysurf.blit(textsurf,textrect)
-    textsurf,textrect = getText(text='Press a key to start', fontsize=30, color='orange4')
+    textsurf,textrect = getText(text='Press a key to start', fontsize=30, color='orange3')
     textrect.topleft = screenwidth/2 - 150,screenheight/2+30
     displaysurf.blit(textsurf,textrect)
     pygame.display.update()

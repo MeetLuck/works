@@ -70,31 +70,25 @@ if __name__ == '__main__':
     for row in t:
         print row
     '''
-    t = tetrisZ
+    t = tetrisZ[:]
     pieces = []
     for row in t:
-        for x in row: 
-            print x,
-        print 
+        print ''.join(row)
     print '-'*80
     print '-'*80
 #   t1 = rotate90(t)
 #   for row in t1:
 #       print row
     import copy
-    for i in range(5):
+    for i in range(4):
         t = rotate90(t)
-        for row in t:
-            print row
-        pieces.append(copy.copy(t))
-        print
-        print
+#       for row in t:
+#           print ''.join(row)
+        pieces.append(t[:])
+#       print
+#       print
 
     for p in pieces:
         print '*'*80
-        #print p
         for row in p:
-#           print row
-            for x in row: 
-                print x,
-            print 
+            print ''.join(row)
