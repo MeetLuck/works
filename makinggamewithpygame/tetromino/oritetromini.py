@@ -227,13 +227,13 @@ def runGame():
                     fallingPiece['x'] -= 1
                     movingLeft = True
                     movingRight = False
-                    #lastMoveSidewaysTime = time.time()
+                    lastMoveSidewaysTime = time.time()
 
                 elif (event.key == K_RIGHT or event.key == K_d) and isValidPosition(board, fallingPiece, adjX=1):
                     fallingPiece['x'] += 1
                     movingRight = True
                     movingLeft = False
-                    #lastMoveSidewaysTime = time.time()
+                    lastMoveSidewaysTime = time.time()
 
                 # rotating the piece (if there is room to rotate)
                 elif (event.key == K_UP or event.key == K_w):
@@ -340,7 +340,7 @@ def showTextScreen(text):
     DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
 
     while checkForKeyPress() == None:
-        #pygame.display.update()
+        pygame.display.update()
         FPSCLOCK.tick()
 
 
@@ -351,7 +351,6 @@ def checkForQuit():
         if event.key == K_ESCAPE:
             terminate() # terminate if the KEYUP event was for the Esc key
         pygame.event.post(event) # put the other KEYUP event objects back
-
 
 def calculateLevelAndFallFreq(score):
     # Based on the score, return the level the player is on and

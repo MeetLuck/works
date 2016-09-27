@@ -24,56 +24,58 @@ def main():
 
 def runGame():
     import copy
-    #mb.generateNewPiece()
     mb = Board()
-    #fallfreq = 30 * (1.0/fps)
     lastfalltime = time.time()
+    displaysurf.fill(screenbgcolor)
     showStartLevel(level=1)
+    starttime = time.time()
     while True:
         checkForQuit()
-        if not mb.isValidPosition(mb.fallingpiece,None):
+        if not mb.isValidPosition(mb.fallingpiece):
             print 'Game Over'
             return
-        for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                if event.key == K_LEFT and mb.isValidPosition(mb.fallingpiece,left):
-                    mb.movePiece(left)
-                elif event.key == K_RIGHT and mb.isValidPosition(mb.fallingpiece,right):
-                    mb.movePiece(right)
-                elif event.key == K_DOWN and mb.isValidPosition(mb.fallingpiece,down):
-                    mb.movePiece(down)
-                elif event.key == K_UP and mb.isValidPosition(mb.fallingpiece,up):
-                    print 'rotating..'
-                    mb.fallingpiece.rotate()
-                elif event.key == K_SPACE:
-                    while True:
-                        if not mb.isValidPosition(mb.fallingpiece,down):
-                            break
-                        mb.movePiece(down)
-            # move the piece fall faster with the down key
+        for event in pygame.event.get(KEYDOWN): #if event.type == KEYDOWN:
+            if event.key == K_LEFT and mb.isValidPosition(mb.fallingpiece, moveX = -1):
+                mb.movePiece(moveX = -1)
+            elif event.key == K_RIGHT and mb.isValidPosition(mb.fallingpiece, moveX = +1):
+                mb.movePiece(moveX = +1)
+            elif event.key == K_DOWN and mb.isValidPosition(mb.fallingpiece, moveY = +1):
+                mb.movePiece(moveY = +1)
+            elif event.key == K_UP and mb.isValidPosition(mb.fallingpiece,moveY = -1): # rotate if moveY=-1
+                print 'rotating..'
+                mb.fallingpiece.rotate()
+            elif event.key == K_SPACE:
+                while True:
+                    if not mb.isValidPosition(mb.fallingpiece, moveY = +1):
+                        break
+                    mb.movePiece(moveY = +1)
             # add code here ...
-            if event.type == KEYUP:
-                move = None
-        # drawing everything on the screen
+        for event in pygame.event.get(KEYUP): 
+            pass
+
+        # let the piece fall naturally
         if time.time() - lastfalltime > mb.fallfreq:
-            if mb.isValidPosition(mb.fallingpiece,down):
-                mb.movePiece(down)
+            if mb.isValidPosition(mb.fallingpiece, moveY = +1):
+                mb.movePiece(moveY = +1)
             else: # landed
                 mb.addToBoard(mb.fallingpiece)
                 mb.removeCompleteLines()
                 mb.generateNextPieces()
-            if mb.completeLevel():
-                level = mb.level + 1
-                showStartLevel(level)
-                mb = Board(level)
             lastfalltime = time.time()
-                #mb.fallingpiece = None
 
-        displaysurf.fill(bgcolor)
-        mb.draw(displaysurf)
+        # drawing everything on the screen
+        displaysurf.fill(screenbgcolor)
+        mb.draw(displaysurf,starttime)
         pygame.display.update()
         fpsclock.tick(fps)
-        #fpsclock.tick(15)
+
+        # start Next Level
+        if mb.completeLevel():
+            pygame.time.delay(1000)
+            level = mb.level + 1
+            showStartLevel(level)
+            mb = Board(level)
+
 
 def terminate():
     pygame.quit(); sys.exit()
@@ -89,14 +91,28 @@ def showTextScreen(text):
     print text
     pygame.time.wait(5000)
 def showStartLevel(level):
-    textsurf,textrect = getText(text='Level %s' %level, fontsize=60, color='orange')
-    textrect.topleft = screenwidth/2 - 100,screenheight/2-60
+    # draw Level 1 : text drop shadow 
+    #textcolor = 0,100,20,255 
+    textcolor = getDarkColor('darkgreen',110)
+    shadowcolor = getDarkColor(textcolor,70)
+    textsurf,textrect = getTextObj(text='LEVEL %s' %level, fontsize=60, color=shadowcolor)
+    textrect.center = screenwidth/2, screenheight/2 - 40
     displaysurf.blit(textsurf,textrect)
-    textsurf,textrect = getText(text='Press a key to start', fontsize=30, color='orange3')
-    textrect.topleft = screenwidth/2 - 150,screenheight/2+30
+    # draw Level 1 : text 
+    #textcolor = getDarkColor(pygame.Color(shadowcolor),140)
+    r,g,b,a = shadowcolor
+    br = 10
+    #textcolor = r+br,g+br,+b+br,a
+    textsurf,textrect = getTextObj(text='LEVEL %s' %level, fontsize=60, color=textcolor)
+    textrect.center = screenwidth/2 - 3, screenheight/2 - 40 - 3
+    displaysurf.blit(textsurf,textrect)
+    # draw Press a key to start
+    color = getDarkColor(textcolor,70) 
+    textsurf,textrect = getTextObj(text='Press a key to start', fontsize=30, color=color)
+    textrect.center = screenwidth/2, screenheight/2 + 40
     displaysurf.blit(textsurf,textrect)
     pygame.display.update()
-    pygame.time.wait(1000)
+    pygame.time.wait(500)
     while True:
         if checkForKeyPress():
             return
