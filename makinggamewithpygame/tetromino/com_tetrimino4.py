@@ -29,6 +29,7 @@ def runGame():
     displaysurf.fill(screenbgcolor)
     showStartLevel(level=1)
     starttime = time.time()
+    completesound = pygame.mixer.Sound('blip2.wav')
     while True:
         checkForQuit()
         if not mb.isValidPosition(mb.fallingpiece):
