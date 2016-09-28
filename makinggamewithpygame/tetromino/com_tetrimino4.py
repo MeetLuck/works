@@ -42,7 +42,7 @@ def runGame():
                 mb.movePiece(moveX = +1)
             elif event.key == K_DOWN and mb.isValidPosition(mb.fallingpiece, moveY = +1):
                 mb.movePiece(moveY = +1)
-            elif event.key == K_UP and mb.isValidPosition(mb.fallingpiece,moveY = -1): # rotate if moveY=-1
+            elif event.key == K_UP and mb.isValidPosition(mb.fallingpiece,rotate=True): # rotate if moveY=-1
                 print 'rotating..'
                 mb.fallingpiece.rotate()
             elif event.key == K_SPACE:

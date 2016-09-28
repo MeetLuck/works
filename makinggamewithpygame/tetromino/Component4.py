@@ -140,18 +140,22 @@ class Board:
         self.fallingpiece.startpos.x += moveX
         self.fallingpiece.startpos.y += moveY
 
-    def isValidPosition(self,piece,moveX=0,moveY=0):
+    def isValidPosition(self,piece,moveX=0,moveY=0,rotate=False):
         # Return True if the piece is within the board and not colliding
         cpiece = copy.deepcopy(piece)
         cpiece.startpos.x += moveX
         cpiece.startpos.y += moveY
-        if (moveX,moveY) == (0,-1): cpiece.rotate()
+        #if (moveX,moveY) == (0,-1): cpiece.rotate()
+        if rotate and (moveX,moveY)==(0,0):
+            cpiece.rotate()
 
         for x in range(cpiece.width):
             for y in range(cpiece.height): # height
                 boardpos = cpiece.converToBoardPos(x,y) 
                 isAboveBoard = boardpos.y < 0
-                if isAboveBoard or cpiece.getValue(x,y) == blank: continue
+                if isAboveBoard or cpiece.getValue(x,y) == blank:
+                    if isAboveBoard: print boardpos.y
+                    continue
                 # not blank box,char = '#'
                 if not isOnBoard(boardpos):
                     return False
