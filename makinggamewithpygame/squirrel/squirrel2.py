@@ -112,13 +112,7 @@ def runGame():
                 if event.key in (K_UP,K_w):         moveDown,moveUp = False,True
                 elif event.key in (K_DOWN, K_s):    moveDown,moveUp = True, False
                 elif event.key in (K_LEFT,K_a):     moveLeft,moveRight = True,False
-                    if playerObj.facing == right: # change player image
-                        playerObj.surface = pygame.transform.scale(l_squir_img, (playerObj.size,playerObj.size))
-                        playerObj.facing = left
                 elif event.key in (K_RIGHT,K_d):    moveLeft,moveRight = False,True
-                    if playerObj.facing == left: # change player image
-                        playerObj.surface = pygame.transform.scale(r_squir_img, (playerObj.size,playerObj.size))
-                        playerObj.facing = right
                 elif winMode and event.key == K_r:
                     return
             elif event.type == KEYUP:

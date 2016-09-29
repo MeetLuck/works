@@ -49,6 +49,12 @@ class Player(Squirrel):
             self.bounce += 1
         if self.bounce > bouncerate:
             self.bounce = 0
+        if moveX == -moverate and self.facing == right: # change player image
+                self.surface = pygame.transform.scale(l_squir_img, (self.size,self.size))
+                self.facing = left
+        if moveX == +moverate and self.facing == left: # change player image
+            self.surface = pygame.transform.scale(r_squir_img, (self.size,self.size))
+            self.facing = right
 
     def draw(self,surface,camerax,cameray):
         self.rect = pygame.Rect(
