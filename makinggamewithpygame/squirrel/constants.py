@@ -2,30 +2,34 @@ import pygame, sys, random,time, math
 from pygame.locals import *
 
 fps = 30
-winwidth,winheight = 640,480
+winwidth,winheight = 320,200
+#winwidth,winheight = 640,480
+#winwidth,winheight = 800,600
 grasscolor = 24,255,0
 white = 255,255,255
 red = 255,0,0
 
-cameraslack = 90 # how far from the center the squirrel moves before moving the screen
+cameraslack = 30#90 # how far from the center the squirrel moves before moving the screen
 moverate = 9 # how fast the player moves
 bouncerate = 6 # how fast the player bounces(large is slower)
 bounceheight = 30 # how high the player bounces
-startsize = 25 # how big the player starts off
-winsize =300 # how big the player needs to be to win
+startsize = 20 # how big the player starts off
+winsize = 100 # how big the player needs to be to win
 invulntime = 2 # how long the player is invulnerable after hit in seconds
 gameovertime = 4 # how long the 'game over' text stays on the screen in seconds
 maxhealth = 3 # how much health the player starts with
 
 numgrass = 80 # number of grass objects in the active area
 numsquirrels = 30 # number of squirrels in the active area
-squirrelminspeed = 3 # slowest squirrel spped
-squirrelmaxspeed = 7 # fastest squirrel speed
+squirrelminspeed = 1#3 # slowest squirrel spped
+squirrelmaxspeed = 5#7 # fastest squirrel speed
 dirchangefreq = 2 # %chance of direction change per frame
 left,right = 'left','right'
 
 l_squir_img = pygame.image.load('squirrel.png')
 r_squir_img = pygame.transform.flip(l_squir_img,True, False)
+l_player_img = pygame.image.load('player.png')
+r_player_img = pygame.transform.flip(l_player_img,True, False)
 
 '''
 this program has three data structures to represent the player, enemy squirrels, and grass background objects.
