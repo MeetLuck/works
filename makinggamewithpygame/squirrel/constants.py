@@ -2,8 +2,8 @@ import pygame, sys, random,time, math
 from pygame.locals import *
 
 fps = 30
-winwidth,winheight = 320,200
-#winwidth,winheight = 640,480
+#winwidth,winheight = 320,200
+winwidth,winheight = 640,480
 #winwidth,winheight = 800,600
 grasscolor = 24,255,0
 white = 255,255,255
