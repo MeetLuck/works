@@ -380,6 +380,7 @@ def startScreen():
 
     # Position the title image.
     titleRect = IMAGESDICT['title'].get_rect()
+    print IMAGESDICT['title']
     topCoord = 50 # topCoord tracks where to position the top of the text
     titleRect.top = topCoord
     titleRect.centerx = HALF_WINWIDTH

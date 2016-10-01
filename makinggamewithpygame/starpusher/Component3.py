@@ -1,5 +1,18 @@
 from constants import *
 
+class Level:
+    def __init__(self,start,stars,mapobj,goals):
+        self.player = start
+        self.stars  = stars
+        self.map    = mapobj
+        self.goals  = goals
+        self.width  = len(self.map[0])
+        self.height = len(self.map)
+        self.stepcounter = 0
+        self.gamestate = {'player':self.player,
+                            'stepcounter':self.stepcounter,
+                            'stars': self.stars }
+
 def getValue(lst,x,y):
     return lst[y][x]
 
@@ -58,7 +71,10 @@ def readLevelsFile(filename):
                         'mapobj':mapobj,
                         'goals':goals,
                         'startstate':gamestateobj }
-            levels.append(levelobj)
+            start = startx,starty
+            level = Level(start,stars,mapobj,goals)
+            levels.append(level)
+            #levels.append(levelobj)
             # reset the variables for reading the next map
             singlelevel = []
             mapobj = []
@@ -123,7 +139,7 @@ def drawMap(mapobj,gamestateobj,goals):
 def isLevelFinished(levelobj,gamestateobj):
     ''' return True if all the goals have stars in them '''
     print 'isLevelFinshed'
-    for goal in levelobj['goals']:
+    for goal in levelobj.goals:
         if goal not in gamestateobj['stars']:
             # found a space with a goal but no star on it
             return False
@@ -149,12 +165,18 @@ def decorateMap(mapobj,startxy):
         returns the decorated map object '''
 
     startx,starty = startxy
+    print startxy
     mapobjcopy = copy.deepcopy(mapobj)
     # remove the non-wall characters form the map data
-    for x in range(len(mapobjcopy)):
-        for y in range(len(mapobjcopy[0]) ):
-            if mapobjcopy[x][y] in ('$','.','@','+','*'):
-                mapobjcopy[x][y] = ' '
+    for y,row in enumerate(mapobjcopy):
+        for x,col in enumerate(row):
+            val = col 
+            if val in ('$','.','@','+','*'):
+                mapobjcopy[y][x] = ' '
+#   for x in range(len(mapobjcopy)):
+#       for y in range(len(mapobjcopy[0]) ):
+#           if mapobjcopy[x][y] in 
+#               mapobjcopy[x][y] = ' '
     # flood fill to determine inside/outside floor tiles
     floodFill(mapobjcopy, startx,starty,' ', 'o')
     # convert the adjoined walls into corner tiles
