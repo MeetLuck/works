@@ -4,17 +4,82 @@ class Level:
     def __init__(self,start,stars,mapobj,goals):
         self.player = start
         self.stars  = stars
-        self.map    = mapobj
+        self.starmap    = mapobj
         self.goals  = goals
-        self.width  = len(self.map[0])
-        self.height = len(self.map)
+        self.width  = len(self.starmap[0])
+        self.height = len(self.starmap)
         self.stepcounter = 0
         self.gamestate = {'player':self.player,
                             'stepcounter':self.stepcounter,
                             'stars': self.stars }
 
-def getValue(lst,x,y):
-    return lst[y][x]
+    def isLevelFinished(self):
+        ''' return True if all the goals have stars in them '''
+        print 'isLevelFinshed'
+        for goal in self.goals:
+            if goal not in self.stars: # found a space with a goal but no star on it
+                return False
+        return True
+    def isWall(self,x,y):
+        ''' returns True if the (x,y) position on the map is a wall, otherwise return False '''
+        if x< 0 or x >= self.width or y<0 or y>=self.height:
+            return False
+        #elif mapobj[x][y] in ('#','x'):
+        elif self.getValue(x,y) in ('#','x'):
+            return True
+        return False
+
+    def isBlocked(self,x,y):
+        ''' returns True if (x,y) position on the map is blocked by a wall or start,
+            otherwise return False. '''
+        if self.isWall(x,y):
+            return True
+        #elif x<0 or x>=len(mapobj) or y<0 or y>=len(mapobj[x]):
+        elif x<0 or x>=self.width or y<0 or y>=self.height:
+            return True  # x,y is not actually on the map
+        elif (x, y) in self.stars:
+            return True # a star is blocking
+
+        return False
+
+    def makeMove(self,playermoveto):
+        ''' given a map and game state object, see if it is possible for the player to make the given move.
+            if it is, then change the player's position(and the position of any pushed start).
+            if not, do nothing
+            returns True if the player moved, otherwise False. '''
+        # make sure the player can move in the direction they want
+        playerx,playery = self.player #gamestateobj['player']
+        stars = self.stars #gamestateobj['stars']
+        # the code for handling each of the directions
+        if playermoveto   == up:        xoffset,yoffset = 0, -1
+        elif playermoveto == down:      xoffset,yoffset = 0, +1
+        elif playermoveto == left:      xoffset,yoffset = -1,0
+        elif playermoveto == right:     xoffset,yoffset = +1,0
+
+        print 'before',playerx,playery,repr(self.getValue(playerx,playery))
+        # update player position
+        playerx += xoffset
+        playery += yoffset
+        print 'after',playerx,playery,repr(self.getValue(playerx,playery))
+        
+        # see if the  player can move in that direction
+        if self.isWall(playerx,playery): #playerx+xoffset,playery+yoffset):
+            return False
+        if (playerx,playery) in self.stars:
+            # there is a star in the way, see if the player can push it
+            if self.isBlocked(playerx+xoffset,playery+yoffset):
+                return False
+            # move the star
+            ind = self.stars.index( (playerx,playery) ) # get stars position
+            self.stars[ind] = self.stars[ind][0] + xoffset, self.stars[ind][1]+yoffset
+        # move the player upwards
+        #gamestateobj['player'] = playerx,playery
+        self.player = playerx,playery
+        #print self.player, self.stars
+        return True
+
+    def getValue(self,x,y):
+        return self.starmap[y][x]
 
 def readLevelsFile(filename):
     assert os.path.exists(filename), 'Cannot find the level file: %s' % filename
@@ -63,22 +128,12 @@ def readLevelsFile(filename):
                         stars.append((x,y))
 
             # create level object and starting game state object
-            gamestateobj = {'player':(startx,starty),
-                            'stepcounter':0,
-                            'stars': stars }
-            levelobj = {'width':maxwidth,
-                        'height': len(mapobj),
-                        'mapobj':mapobj,
-                        'goals':goals,
-                        'startstate':gamestateobj }
             start = startx,starty
             level = Level(start,stars,mapobj,goals)
             levels.append(level)
-            #levels.append(levelobj)
             # reset the variables for reading the next map
             singlelevel = []
             mapobj = []
-            gamestateobj = {}
             levelNum += 1
     return levels
 
@@ -97,65 +152,65 @@ def floodFill(mapobj,x,y,oldcharacter,newcharacter):
     if y > 0  and mapobj[x][y-1] == oldcharacter:
         floodFill(mapobj,x,y-1,oldcharacter, newcharacter) # call up
 
-def drawMap(mapobj,gamestateobj,goals):
+def drawMap(level):
     ''' draws the map to a surface object, including the player and stars.
         this does not call pygame.display.update(), nor does it draw the Level and Steps text '''
     # mapsurf will be the single surface object that the tiles are drawn on,
     # so that it is easy to position the entire map on the displaysurf.
     # first, the width and height must be calculated
-    mapsurfwidth = len(mapobj) * tilewidth
-    mapsurfheight = ( len(mapobj[0]) -1) * (tileheight - tilefloorheight) + tileheight
+    mapsurfwidth = level.width * tilewidth
+    #mapsurfheight = level.height * tileheight
+    mapsurfheight = (level.height-1)*tilefloorheight + tileheight
+
     mapsurf = pygame.Surface( (mapsurfwidth,mapsurfheight))
     mapsurf.fill(bgcolor)
 
     # draw the tile sprites onto this surface
-    for x in range(len(mapobj)):
-        for y in range(len(mapobj[x])):
-            spacerect = pygame.Rect( (x*tilewidth,y*(tileheight-tilefloorheight),tilewidth,tileheight) )
-            if mapobj[x][y] in tilemapping:
-                basetile = tilemapping[mapobj[x][y]]
-            elif mapobj[x][y] in outsidedecomapping:
-                basetile = tilemapping[' ']
+#   for x in range(level.width):
+#       for y in range(level.height):
+    for y,row in enumerate(level.starmap):
+        for x,val in enumerate(row): # val = col
+            char = level.getValue(x,y)
+            assert val==char, 'OOOOPs'
+            spacerect = pygame.Rect( (x*tilewidth,y*tilefloorheight,tilewidth,tileheight) )
+            if char == '#': # in tilemapping.keys():
+                #basetile = tilemapping['#']
+                basetile = images.wall
+                assert (x,y) != (4,5), char
+            elif char == ' ':
+                basetile = images.insidefloor
+                #basetile = tilemapping[' ']
+                #print x,y,repr(char)
+                basetile = tilemapping[char]
+#           elif char in outsidedecomapping:
+#               basetile = tilemapping[' ']
             # first draw the base ground/wall tile
             mapsurf.blit(basetile, spacerect)
-            if mapobj[x][y] in outsidedecomapping:
+            if char in outsidedecomapping:
                 # draw any tree/rock decorations that are on this tile
-                mapsurf.blit(outsidedecomapping[mapobj[x][y]],spacerect)
-            elif (x,y) in gamestateobj['stars']:
-                if (x,y) in goals:
+                mapsurf.blit(outsidedecomapping[char],spacerect)
+            elif (x,y) in level.stars:
+                if (x,y) in level.goals:
                     # a goal and star are on this space, draw goal first
                     mapsurf.blit(images.coveredgoal,spacerect)
                 # then draw the star sprite
                 mapsurf.blit(images.star,spacerect)
-            elif (x,y) in goals:
+            elif (x,y) in level.goals:
+                assert char == '.',char
+                pass
                 # draw a goal without a star on it
-                mapsurf.blit(images.uncoveredgoal,spacerect)
+                #mapsurf.blit(images.uncoveredgoal,spacerect)
             # last draw the player on the board
-            if (x,y) == gamestateobj['player']:
+            if (x,y) == level.player:
                 # note currentimage referes to a key in 'playerimages' which 
                 # has the specific player image 
                 mapsurf.blit(playerimages[currentimage],spacerect)
     return mapsurf
-def isLevelFinished(levelobj,gamestateobj):
-    ''' return True if all the goals have stars in them '''
-    print 'isLevelFinshed'
-    for goal in levelobj.goals:
-        if goal not in gamestateobj['stars']:
-            # found a space with a goal but no star on it
-            return False
-    return True
 
 def terminate():
     pygame.quit(); sys.exit()
 
 
-def isWall(mapobj,x,y):
-    ''' returns True if the (x,y) position on the map is a wall, otherwise return False '''
-    if x< 0 or x >= len(mapobj) or y<0 or y>=len(mapobj[x]):
-        return False
-    elif mapobj[x][y] in ('#','x'):
-        return True
-    return False
 def decorateMap(mapobj,startxy):
     ''' makes a copy of the given map object and modifies it
         here is what is done to it.
@@ -173,10 +228,6 @@ def decorateMap(mapobj,startxy):
             val = col 
             if val in ('$','.','@','+','*'):
                 mapobjcopy[y][x] = ' '
-#   for x in range(len(mapobjcopy)):
-#       for y in range(len(mapobjcopy[0]) ):
-#           if mapobjcopy[x][y] in 
-#               mapobjcopy[x][y] = ' '
     # flood fill to determine inside/outside floor tiles
     floodFill(mapobjcopy, startx,starty,' ', 'o')
     # convert the adjoined walls into corner tiles
@@ -192,46 +243,8 @@ def decorateMap(mapobj,startxy):
                 mapobjcopy[x][y] = random.choice( list(outsidedecomapping.keys()) )
     return mapobjcopy
 
-def isBlocked(mapobj,gamestateobj,x,y):
-    ''' returns True if (x,y) position on the map is blocked by a wall or start,
-        otherwise return False. '''
-    if isWall(mapobj,x,y):
-        return True
-    elif x<0 or x>=len(mapobj) or y<0 or y>=len(mapobj[x]):
-        return True # a star is blocking
-    return False
+#def isBlocked(mapobj,gamestateobj,x,y):
 
-def makeMove(mapobj,gamestateobj,playermoveto):
-    ''' given a map and game state object, see if it is possible for the player to make the given move.
-        if it is, then change the player's position(and the position of any pushed start).
-        if not, do nothing
-        returns True if the player moved, otherwise False. '''
-    # make sure the player can move in the direction they want
-    playerx,playery = gamestateobj['player']
-    stars = gamestateobj['stars']
-    # the code for handling each of the directions
-    if playermoveto   == up:        xoffset,yoffset = 0, -1
-    elif playermoveto == down:      xoffset,yoffset = 0, +1
-    elif playermoveto == left:      xoffset,yoffset = -1,0
-    elif playermoveto == right:     xoffset,yoffset = +1,0
-
-    # update player position
-    playerx += xoffset
-    playery += yoffset
-    
-    # see if the  player can move in that direction
-    if isWall(mapobj,playerx,playery): #playerx+xoffset,playery+yoffset):
-        return False
-    if (playerx,playery) in stars:
-        # there is a star in the way, see if the player can push it
-        if isBlocked(mapobj,gamestateobj,playerx+xoffset,playery+yoffset):
-            return False
-        # move the star
-        ind = stars.index( (playerx,playery) ) # get stars position
-        stars[ind] = stars[ind][0] + xoffset, stars[ind][1]+yoffset
-    # move the player upwards
-    gamestateobj['player'] = playerx,playery
-    return True
 
 def startScreen():
     ''' display the start screen(which has the title and instructions) until key pressed

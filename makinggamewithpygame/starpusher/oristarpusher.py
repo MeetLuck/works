@@ -569,7 +569,8 @@ def drawMap(mapObj, gameStateObj, goals):
                 mapSurf.blit(IMAGESDICT['star'], spaceRect)
             elif (x, y) in goals:
                 # Draw a goal without a star on it.
-                mapSurf.blit(IMAGESDICT['uncovered goal'], spaceRect)
+                print x,y
+                #mapSurf.blit(IMAGESDICT['uncovered goal'], spaceRect)
 
             # Last draw the player on the board.
             if (x, y) == gameStateObj['player']:

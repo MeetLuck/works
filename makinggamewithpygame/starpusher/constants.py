@@ -5,8 +5,8 @@ winwidth,winheight = 800,600
 wincenter = halfwinwidth,halfwinheight = winwidth/2,winheight/2
 # total width and height of each tile in pixels
 tilewidth = 50
-tileheight = 85
-tilefloorheight = 45
+tileheight = 50
+tilefloorheight = 50
 
 camspeed = 5 # how many pixels per frame the camera moves
 # the percentage of outdoor titles that have additional decoration
@@ -26,6 +26,7 @@ pygame.display.set_caption('Star Pusher')
 basicfont = pygame.font.Font('freesansbold.ttf',18)
 # a global dict value that will contain all the pygame suface objects returned by
 # pygame.image.load()
+
 class images:
     uncoveredgoal =  pygame.image.load('RedSelector.png')
     coveredgoal  =  pygame.image.load('Selector.png')
@@ -51,8 +52,8 @@ class images:
 
 tilemapping = {'x':images.corner,
                 '#':images.wall,
-                'o':images.insidefloor,
-                ' ':images.outsidefloor }
+                ' ':images.insidefloor }
+#               'o':images.outsidefloor }
 outsidedecomapping = {'1':images.rock,
                       '2':images.shorttree,
                       '3':images.talltree,

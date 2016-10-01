@@ -4,11 +4,8 @@ def main():
     startScreen() # show the title screen until the user presses a key
     levels = readLevelsFile('starPusherLevels.txt')
     currentlevelindex = 0
-    # the main game loop. this loop runs a singlelevel, when the user finshes that level,
-    # the next/previous level is loaded
-    while True:
-        # run the level to actually start playing the game
-        result = runLevel(levels,currentlevelindex)
+    while True: # this loop runs a singlelevel
+        result = runLevel(levels,currentlevelindex) # run the level to actually start playing the game
         if result in ('solved','next'): # goto the next level
             currentlevelindex += 1
             if currentlevelindex >= len(levels): # there are no more levels, go back to the first one
@@ -23,26 +20,23 @@ def main():
 def runLevel(levels,levelNum):
     global currentimage
     level = levels[levelNum]
-    map = decorateMap(level.map, level.player)
     gamestate = copy.deepcopy(level.gamestate)
-    mapneedsredraw = True # set to True to call drawMap()
     levelsurf = basicfont.render('Level %s of %s' % (levelNum + 1, len(levels)), 1, textcolor)
     levelrect = levelsurf.get_rect()
     levelrect.bottomleft = 20, winheight-35
-    mapwidth = len(map) * tilewidth
-    mapheight = (len(map[0])-1)*(tileheight-tilefloorheight)  + tileheight
 
     levelIsComplete = False
     # track how much the camera has moved
     cameraoffsetX,cameraoffsetY = 0,0
+    for row in level.starmap:
+        print ''.join(row)
 
     while True:
         # reset the variables
         playermoveto = None
         keypressed = False
         for event in pygame.event.get():
-            if event.type == QUIT:
-                terminate()
+            if event.type == QUIT: terminate()
             elif event.type == KEYDOWN:
                 keypressed = True
                 if event.key == K_LEFT:         playermoveto = left
@@ -53,38 +47,31 @@ def runLevel(levels,levelNum):
                 elif event.key == K_b:          return 'back'
                 elif event.key == K_ESCAPE:     terminate()
                 elif event.key == K_BACKSPACE:  return 'reset' # reset level
-                elif event.key == K_p:
-                    # change the player image to the next one
+                elif event.key == K_p: # change the player image to the next one
                     currentimage += 1
-                    if currentimage > len(playerimages):
-                        # after the last player image, use the first one
+                    if currentimage > len(playerimages): # after the last player image, use the first one
                         currentimage = 0
-                    mapneedsredraw = True
+                    #mapneedsredraw = True
             elif event.type == KEYUP:
                 pass
         if playermoveto != None: # and not levelIsComplete:
             # if player pushed a key to move, make the move
             # if possible and push any star that are pushable
-            moved = makeMove(map,gamestate,playermoveto)
-            if moved:
-                # increment the step counter
+            moved = level.makeMove(playermoveto)
+            if moved: # increment the step counter
+                print moved
                 gamestate['stepcounter'] += 1
-                mapneedsredraw = True
-            if isLevelFinished(level,gamestate):
-                # level is solved, we should show the solved image
-                print 'level is completed', levelIsComplete
+            if level.isLevelFinished(): # level is solved, we should show the solved image
                 levelIsComplete = True
                 keypressed = False
 
         displaysurf.fill(bgcolor)
 
-        if mapneedsredraw:
-            mapsurf = drawMap(map,gamestate,level.goals)
-            mapneedsredraw = False
-
+        #if mapneedsredraw:
+        mapsurf = drawMap(level)
         # adjust mapsurf's rect object based on the camera offset
         mapsurfrect = mapsurf.get_rect()
-        mapsurfrect.center = halfwinwidth+cameraoffsetX, halfwinheight+cameraoffsetY
+        mapsurfrect.center = halfwinwidth, halfwinheight
         displaysurf.blit(mapsurf,mapsurfrect)
         displaysurf.blit(levelsurf,levelrect)
         stepsurf = basicfont.render('Steps: %s' % gamestate['stepcounter'],1,textcolor)
@@ -96,7 +83,6 @@ def runLevel(levels,levelNum):
             solvedrect = images.solved.get_rect()
             solvedrect.center = wincenter
             displaysurf.blit(images.solved,solvedrect)
-            print 'runLevel : level is completed'
             if keypressed:
                 return 'solved'
         pygame.display.update()
@@ -104,19 +90,3 @@ def runLevel(levels,levelNum):
 
 if __name__ == '__main__':
     main()
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
