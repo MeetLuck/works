@@ -49,7 +49,7 @@ def main():
                   'ugly tree':pygame.image.load('Tree_Ugly.png') }
     # these dict values are global, and map the character that appears in the level file
     # to the surface object it represents
-    titlemapping = {'x':imagesdict['corner'],
+    tilemapping = {'x':imagesdict['corner'],
                     '#':imagesdict['wall'],
                     'o':imagesdict['inside floor'],
                     ' ':imagesdict['outside floor'] }
@@ -65,7 +65,7 @@ def main():
     startScreen() # show the title screen until the user presses a key
     # read in the levles from the text file. See the readLevelsFile() for details on the format
     # of this file and how to make your own levels
-    levels = readLevesFile('starPusherLevels.txt')
+    levels = readLevelsFile('starPusherLevels.txt')
     currentlevelindex = 0
     # the main game loop. this loop runs a singlelevel, when the user finshes that level,
     # the next/previous level is loaded
