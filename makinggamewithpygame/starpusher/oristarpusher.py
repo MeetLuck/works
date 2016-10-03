@@ -221,9 +221,10 @@ def runLevel(levels, levelNum):
 
         DISPLAYSURF.fill(BGCOLOR)
 
-        if mapNeedsRedraw:
-            mapSurf = drawMap(mapObj, gameStateObj, levelObj['goals'])
-            mapNeedsRedraw = False
+#       if mapNeedsRedraw:
+#           mapSurf = drawMap(mapObj, gameStateObj, levelObj['goals'])
+#           mapNeedsRedraw = False
+        mapSurf = drawMap(mapObj, gameStateObj, levelObj['goals'])
 
         if cameraUp and cameraOffsetY < MAX_CAM_X_PAN:
             cameraOffsetY += CAM_MOVE_SPEED
@@ -570,7 +571,7 @@ def drawMap(mapObj, gameStateObj, goals):
             elif (x, y) in goals:
                 # Draw a goal without a star on it.
                 print x,y
-                #mapSurf.blit(IMAGESDICT['uncovered goal'], spaceRect)
+                mapSurf.blit(IMAGESDICT['uncovered goal'], spaceRect)
 
             # Last draw the player on the board.
             if (x, y) == gameStateObj['player']:
