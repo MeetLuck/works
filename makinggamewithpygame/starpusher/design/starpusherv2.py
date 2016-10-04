@@ -57,7 +57,7 @@ def runLevel(levels,levelNum):
         #------------ draw Level -------------------
         #level.printMap()
         displaysurf.fill(bgcolor)
-        mapsurf = level.drawMap()
+        mapsurf = level.draw()
         maprect = mapsurf.get_rect()
         maprect.center = halfwinwidth,halfwinheight
         displaysurf.blit(mapsurf,maprect)
