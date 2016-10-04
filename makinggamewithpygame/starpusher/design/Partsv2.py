@@ -2,19 +2,16 @@ from constants import *
 class Level:
     def __init__(self,rawmap):
         self.rawmap = rawmap # keep original
-        self.setupMap() # get goals position
+        self.width, self.height = len(self.rawmap[0]), len(self.rawmap)
         self.setupSurface()
-        self.lastmaps = []
-        self.laststeps= []
-        self.steps = 0
-        self.decorateMap()
+        # initialize level
+        self.reset()
     def setupSurface(self):
-        surfwidth  = self.width * tilewidth      # tileheight
-        #surfheight = self.height * tileheight    #(self.height-1)*tilefloorheight + tileheight
+        surfwidth  = self.width * tilewidth      
         surfheight = (self.height-1)*tilefloorheight + tileheight
         self.surface = pygame.Surface( (surfwidth,surfheight) )
     def setupMap(self):
-        ''' get goals position and process star map '''
+        # get goals position and make starmap
         self.starmap = copy.deepcopy(self.rawmap)
         self.goals = []
         for y,row in enumerate(self.starmap):
@@ -27,15 +24,15 @@ class Level:
                 elif char == '.':   # only goal
                     self.starmap[y][x] = ' '
                 self.goals.append((x,y))
-        # get starmap's width & height
-        self.width = len(self.starmap[0])
-        self.height = len(self.starmap)
     def reset(self):
-        self.setupMap()
         self.steps = 0
+        self.lastmaps = []
+        self.laststeps= []
+        self.setupMap()
+        self.decorateMap() # only for drawing 
     def restoreLastGameState(self):
         if not self.lastmaps : return
-        self.starmap = self.lastmaps.pop() #self.printMap()
+        self.starmap = self.lastmaps.pop()
         self.steps = self.laststeps.pop()
     def printMap(self,themap=None):
         if themap == None: themap = self.starmap
@@ -49,8 +46,8 @@ class Level:
         return None
     def getChar(self,x,y):
         return self.starmap[y][x]
-    def setChar(self,tu,val):
-        x,y = tu; self.starmap[y][x] = val
+    def setChar(self,pos,val):
+        x,y = pos; self.starmap[y][x] = val
     def isWall(self,x,y):
         if x<0 or y<0 or x>self.width-1 or y>self.height-1: return False
         return self.getChar(x,y) == '#'
@@ -64,30 +61,32 @@ class Level:
     def makeMove(self,moveTo):
         lastmap = copy.deepcopy(self.starmap)
         laststep = self.steps
-        # oldPlayer = player's old pos
-        # newPlayer = player's new pos
+        # oldPlayer = player's old position
+        # newPlayer = player's new position
         oldPlayer= playerX,playerY = self.getPlayer()
         if moveTo == left:  xoffset,yoffset = -1,0
         if moveTo == right: xoffset,yoffset = +1,0
         if moveTo == up:    xoffset,yoffset = 0,-1
         if moveTo == down:  xoffset,yoffset = 0,+1
         # move player if possible
-        playerX += xoffset
+        playerX += xoffset   # '@' -> '$' ->' '  ==>  ' ' -> '@' ->'$'
         playerY += yoffset
-        newPlayer= (playerX,playerY)
+        newPlayer = (playerX, playerY)
+        newStar   = (playerX+xoffset, playerY+yoffset)
+        # if it is valid move, move star & player
         if self.isWall(*newPlayer): return False
         if self.isSpace(*newPlayer):
+            # move player
             self.setChar(newPlayer,'@')
             self.setChar(oldPlayer,' ')
         elif self.isStar(*newPlayer):
-            newStar= playerX+xoffset,playerY+yoffset
             if self.isWall(*newStar) or self.isStar(*newStar):
                 return False
             # push star and move player 
             self.setChar(newStar,'$')
             self.setChar(newPlayer,'@')
             self.setChar(oldPlayer,' ')
-        # it is valid move, save last star map
+        # save last starmap
         self.steps += 1
         self.laststeps.append(laststep)
         self.lastmaps.append(lastmap) 
@@ -105,14 +104,11 @@ class Level:
         for y,row in enumerate(self.decomap):
             for x,char in enumerate(row):
                 if char in ('@','$'): self.decomap[y][x] = ' '
-
         # flood fill to determine inside/outside floor tiles
         floodfill(self.decomap, playerpos,' ', 'o')
-
         # convert the adjoined walls into corner tiles
         #      #          #        x #       # x
         #      x #      # x        #           #
-
         for y,row in enumerate(self.decomap):
             for x,char in enumerate(row):
                 if char != '#': continue
