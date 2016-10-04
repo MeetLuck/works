@@ -7,6 +7,7 @@ class Level:
         self.lastmaps = []
         self.laststeps= []
         self.steps = 0
+        self.decorateMap()
     def setupSurface(self):
         surfwidth  = self.width * tilewidth      # tileheight
         #surfheight = self.height * tileheight    #(self.height-1)*tilefloorheight + tileheight
@@ -94,13 +95,29 @@ class Level:
 
         # copy starmap
         self.decomap = copy.deepcopy(self.starmap)
+        for y,row in enumerate(self.decomap):
+            for x,char in enumerate(row):
+                if char == '@': playerpos = (x,y)
+        print playerpos
+
 
         # flood fill to determine inside/outside floor tiles
-        floodFill(self.decomap, startx,starty,' ', 'o')
+        floodfill(self.decomap, playerpos,' ', 'o')
 
         # convert the adjoined walls into corner tiles
         #      #          #        x #       # x
         #      x #      # x        #           #
+
+        for y,row in enumerate(self.decomap):
+            for x,char in enumerate(row):
+                # remove player,stars,golas
+                if char in ('@','$'): self.decomap[y][x] = ' '
+                # convert into corner tiles
+                if (char, self.decomap[y][x+1],self.decomap[y-1][x]) == ('#','#','#') or \
+                   (char, self.decomap[y][x-1],self.decomap[y-1][x]) == ('#','#','#') or\
+                   (char, self.decomap[y][x+1],self.decomap[y+1][x]) == ('#','#','#') or\
+                   (char, self.decomap[y][x-1],self.decomap[y+1][x]) == ('#','#','#'):
+                    self.decomap[y][x] = 'x'
 
 
     def drawrectangle(self,surface,color,x,y,width=tilewidth,height=tileheight):  
@@ -171,15 +188,15 @@ def floodfill(amap,pos,old,new):
     x,y = pos
     width,height = len(amap[0]),len(amap)
     if x<0 or y<0 or x>width-1 or y>height-1: return
-    if amap[y][x] == old: ampa[y][x] = new # x,y pos
+    if amap[y][x] == old: amap[y][x] = new # x,y pos
     # check left
-    if x > 0 and amap[y][x-1] == old : floodfill(amap,(x-1,y),old,new)
+    if x > 0 and amap[y][x-1] == old :      floodfill(amap,(x-1,y),old,new)
     # check right
     if x < width-1 and amap[y][x+1] == old: floodfill(amap,(x+1,y),old,new)
     # check up
-    if y > 0 : floodfill(ampa,(x,y-1),old,new)
+    if y > 0 and amap[y-1][x]:              floodfill(amap,(x,y-1),old,new)
     # check down
-    if y < height-1: floodfill(amap,(x,y+1),old,new)
+    if y < height-1 and amap[y][x]:         floodfill(amap,(x,y+1),old,new)
 
 
 if __name__ == '__main__':
@@ -189,3 +206,4 @@ if __name__ == '__main__':
     for level in levels[:3]:
         level.printMap(level.rawmap)
         level.printMap()
+        level.printMap(level.decomap)
