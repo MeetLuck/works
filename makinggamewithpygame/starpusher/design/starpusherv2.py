@@ -1,4 +1,4 @@
-from Partsv1 import *
+from Partsv2 import *
 
 def main():
     levels = readLevelsFile('..\\starPusherLevels.txt')

@@ -1,10 +1,10 @@
 import pygame,sys,random,os,copy
 from pygame.locals import *
 
-fps = 30
+fps = 15 #30
 winwidth,winheight = 800,600
 wincenter = halfwinwidth,halfwinheight = winwidth/2,winheight/2
-tilewidth,tileheight = 40,40 #50,85
+tilewidth,tileheight = 50,85 #50,85
 tilefloorheight = 40
 
 # the percentage of outdoor titles that have additional decoration on them such as tree or rock

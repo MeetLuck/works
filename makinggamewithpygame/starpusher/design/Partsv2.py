@@ -87,6 +87,21 @@ class Level:
         self.laststeps.append(laststep)
         self.lastmaps.append(lastmap) 
         return True
+    def decorateMap(self):
+        # walls that are cornders turned into corner walls => 'x'
+        # inside/outside dictiontion made by floodfill function  => 'o': inside, ' ': outside
+        # tree/rock decorations are randomly added to the outside tiles
+
+        # copy starmap
+        self.decomap = copy.deepcopy(self.starmap)
+
+        # flood fill to determine inside/outside floor tiles
+        floodFill(self.decomap, startx,starty,' ', 'o')
+
+        # convert the adjoined walls into corner tiles
+        #      #          #        x #       # x
+        #      x #      # x        #           #
+
 
     def drawrectangle(self,surface,color,x,y,width=tilewidth,height=tileheight):  
         x,y = x*tilewidth,y*tileheight
@@ -152,6 +167,19 @@ def readLevelsFile(filename):
             rawmap = []
     return levels
 
+def floodfill(amap,pos,old,new):
+    x,y = pos
+    width,height = len(amap[0]),len(amap)
+    if x<0 or y<0 or x>width-1 or y>height-1: return
+    if amap[y][x] == old: ampa[y][x] = new # x,y pos
+    # check left
+    if x > 0 and amap[y][x-1] == old : floodfill(amap,(x-1,y),old,new)
+    # check right
+    if x < width-1 and amap[y][x+1] == old: floodfill(amap,(x+1,y),old,new)
+    # check up
+    if y > 0 : floodfill(ampa,(x,y-1),old,new)
+    # check down
+    if y < height-1: floodfill(amap,(x,y+1),old,new)
 
 
 if __name__ == '__main__':

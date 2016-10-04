@@ -16,7 +16,7 @@ def main():
 #       else:
 #           pygame.mixer.load('mz_545_3_format0')
 #           #pygame.mixer.music.load('tetrisc.mid')
-        pygame.mixer.music.load('mz_545_3_format0.mid')
+        pygame.mixer.music.load('..\\images\\mz_545_3_format0.mid')
         pygame.mixer.music.play(-1,0.0)
         runGame()
         pygame.mixer.music.stop()
