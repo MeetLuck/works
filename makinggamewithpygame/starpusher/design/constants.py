@@ -26,8 +26,13 @@ up,down,left,right = 'up','down','left','right'
 pygame.init()
 fpsclock = pygame.time.Clock()
 displaysurf = pygame.display.set_mode( (winwidth,winheight))
+#displaysurf = displaysurf.convert()
 pygame.display.set_caption('Star Pusher')
 basicfont = pygame.font.Font('freesansbold.ttf',18)
+clementi = '..\\images\\clementi\\'
+midilist = []
+for i in range(1,12):
+    midilist.append(clementi + str(i)+'.mid')
 
 # a global dict value that will contain all the pygame suface objects returned by
 class images:

@@ -1,6 +1,9 @@
 from constants import *
 
-class LevelView:
+class LevelView(object):
+#   def __init__(self):
+#       print 'LevelView => ',self
+#       self.a =1
     def drawWall(self,x,y):
         surf = images.wall
         self.surface.blit(surf,self.spacerect)
@@ -44,7 +47,8 @@ class LevelView:
                 if char == 'o': self.drawInsideFloor(x,y)
                 if char == ' ': self.drawOutsideFloor(x,y)
                 #self.drawrectangle(surface,gray,x,y)
-class LevelModel:
+
+class LevelModel(object):
     def __init__(self,rawmap):
         self.rawmap = rawmap # keep original
         self.width, self.height = len(self.rawmap[0]), len(self.rawmap)
@@ -55,6 +59,7 @@ class LevelModel:
         surfwidth  = self.width * tilewidth      
         surfheight = (self.height-1)*tilefloorheight + tileheight
         self.surface = pygame.Surface( (surfwidth,surfheight) )
+        self.surface = self.surface.convert()
     def setupMap(self):
         # get goals position and make starmap
         self.starmap = copy.deepcopy(self.rawmap)
@@ -164,69 +169,88 @@ class LevelModel:
                    self.isWall(x-1,y) and self.isWall(x,y+1):
                     self.decomap[y][x] = 'x'
 
-def Level(LevelModel,LeveView):
+class Level(LevelModel,LevelView):
+    movesound1 = pygame.mixer.Sound('drippy.wav')
+    movesound2 = pygame.mixer.Sound('move.wav')
 
     def __init__(self,rawmap):
-        LevelModel.__init__(rawmap)
-        levelIsComplete = False
-        self.printMap()
+        LevelModel.__init__(self,rawmap)
+        LevelView.__init__(self)
+        self.levelIsComplete = False
+        #self.printMap()
         self.reset()
-        movesound1 = pygame.mixer.Sound('drippy.wav')
-        movesound2 = pygame.mixer.Sound('move.wav')
 
-    def processEvent(self):
-        for event in pygame.event.get():
-            if event.type == QUIT: terminate()
-            elif event.type == KEYDOWN:
-                self.keypressed = True
-                if event.key == K_ESCAPE:       terminate()
-                elif event.key == K_LEFT:       self.playermoveTo = left
-                elif event.key == K_RIGHT:      self.playermoveTo = right
-                elif event.key == K_UP:         self.playermoveTo = up
-                elif event.key == K_DOWN:       self.playermoveTo = down
-                elif event.key == K_n:          return 'next'
-                elif event.key == K_b:          return 'back'
-                elif event.key == K_BACKSPACE:  return 'reset' # reset level
-                elif event.key == K_z:          self.restoreLastGameState()
+    def processKeyEvent(self):
+        for event in pygame.event.get(QUIT): #if event.type == QUIT: 
+            pygame.quit(); sys.exit()
+        for event in pygame.event.get(KEYDOWN): #elif event.type == KEYDOWN:
+            self.keypressed = True
+            if event.key == K_ESCAPE:       pygame.quit(); sys.exit()
+            elif event.key == K_LEFT:       self.playermoveTo = left
+            elif event.key == K_RIGHT:      self.playermoveTo = right
+            elif event.key == K_UP:         self.playermoveTo = up
+            elif event.key == K_DOWN:       self.playermoveTo = down
+            elif event.key == K_BACKSPACE:  self.reset() 
+            elif event.key == K_n:          return 'next'
+            elif event.key == K_b:          return 'back'
+            elif event.key == K_z:          self.restoreLastGameState()
+        for event in pygame.event.get(KEYUP): #elif event.type == KEYDOWN:
+            pass
+            #self.keypressed = False
+        return None
 
-    def mainloop(self):
-
+    def runLevel(self):
         while True:
             self.playermoveTo = None
             self.keypressed = False
-            state = self.processEvent()
-            if playermoveTo != None:
-                movesound1.play()
-                self.makeMove(playermoveTo)
-
+            result = self.processKeyEvent()
+            if result: return result
+            if self.playermoveTo != None:
+                self.movesound1.play()
+                self.makeMove(self.playermoveTo)
+                os.system('cls'); self.printMap()
                 if self.isFinished():
                     print 'Level Completed'
                     self.levelIsComplete = True
                     self.keypressed = False
 
-        #------------ draw Level -------------------
-        #level.printMap()
-        displaysurf.fill(bgcolor)
-        mapsurf = level.draw()
-        maprect = mapsurf.get_rect()
-        maprect.center = halfwinwidth,halfwinheight
-        displaysurf.blit(mapsurf,maprect)
-        drawStepCounter(displaysurf,level.steps)
-        drawLevelNumber(displaysurf,levelNum,levels)
-        # --------- draw solved screen ------------
-        if levelIsComplete:
-            solvedrect = images.solved.get_rect()
-            solvedrect.center = wincenter
-            displaysurf.blit(images.solved,solvedrect)
-            if keypressed:
-                return 'solved'
-        pygame.display.update()
-        fpsclock.tick(fps)
-
+            #------------ draw Level -------------------
+            displaysurf.fill(bgcolor)
+            mapsurf = self.draw()
+            maprect = mapsurf.get_rect()
+            maprect.center = halfwinwidth,halfwinheight
+            displaysurf.blit(mapsurf,maprect)
+            #drawStepCounter(displaysurf,level.steps)
+            #drawLevelNumber(displaysurf,levelNum,levels)
+            # --------- draw solved screen ------------
+            if self.levelIsComplete:
+                solvedrect = images.solved.get_rect()
+                solvedrect.center = wincenter
+                displaysurf.blit(images.solved,solvedrect)
+                if self.keypressed:
+                    return 'solved'
+            pygame.display.update()
+            fpsclock.tick(fps)
+def main():
+    levels = readLevelsFile('..\\starPusherLevels.txt')[:30]
+    os.system('cls')
+    print len(levels)
+    levelNo = 0
+    #pygame.mixer.music.load('..\\images\\mz_545_3_format0.mid')
+    #pygame.mixer.music.play(-1,0.0)
+    while True:
+        pygame.mixer.music.load(random.choice(midilist))
+        pygame.mixer.music.play(-1,0.0)
+        level = levels[levelNo]
+        result = level.runLevel()
+        if result in ('solved','next') and levelNo != len(levels)-1:
+            levelNo += 1
+        elif result == 'back' and levelNo != 0:
+            levelNo += -1
+        pygame.mixer.music.stop()
 
 def readLevelsFile(filename):
     assert os.path.exists(filename),'Not found %s' %filename
-
     mapfile = open(filename,'r')
     lines = mapfile.readlines() + ['\r\n']
     mapfile.close()
@@ -245,12 +269,14 @@ def readLevelsFile(filename):
                 rawmap[lineno] += ' ' * (maxwidth - len(line))
             # convert string to list
             # [ [' ','#','#','#',...], [' ','#',...], ... ]
+            #rawmap = map(list,rawmap)
             rawmap = map(list,rawmap)
             # create level
-            level = Level(rawmap) 
+            level = Level(rawmap)
             levels.append(level)
             # reset the variable for reading the next map
             rawmap = []
+            level = []
     return levels
 
 def floodfill(amap,pos,old,new):
@@ -268,8 +294,9 @@ def floodfill(amap,pos,old,new):
     # check down
     if y < height-1 and amap[y+1][x] == old:    floodfill(amap,(x,y+1),old,new)
 
-
 if __name__ == '__main__':
+    main()
+    '''
     os.system('cls')
     levels = readLevelsFile('..\\starPusherLevels.txt')
     print 'Levels\n'
@@ -284,4 +311,5 @@ if __name__ == '__main__':
         displaysurf.blit(mapsurf,maprect)
         pygame.display.update()
         pygame.time.wait(5000)
+    '''
 
