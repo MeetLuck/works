@@ -11,10 +11,51 @@ comname = os.environ['COMPUTERNAME']
  
 f1 = open('c:\\windows\\system32\\drivers\\etc\\hlylog','w')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\hlylogwarning','w')
-f1.close(); f2.close()
+f3 = open('c:\\windows\\system32\\drivers\\etc\\hlylogerror','w')
+f1.close(); f2.close(); f3.close()
 f1 = open('c:\\windows\\system32\\drivers\\etc\\hlylog','a')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\hlylogwarning','a')
+f3 = open('c:\\windows\\system32\\drivers\\etc\\hlylogerror','a')
+def getServiceStatus(status):
+    svcType, svcState, svcControls, err, svcErr, svcCP, svcWH = status
+    if svcState==win32service.SERVICE_STOPPED:
+        print "The service is stopped", svcType
+        return 'stopped'
+    elif svcState==win32service.SERVICE_STOP_PENDING:
+        print "The service is stopping", svcType
+        return 'stopping'
 
+def checkDrnSvc():
+    pass
+def checkRevSvc():
+    hscm = win32service.OpenSCManager(None, None, win32service.SC_MANAGER_ALL_ACCESS)
+    print hscm
+    try:
+        revhs = win32service.OpenService(hscm, "revsvc", win32service.SERVICE_ALL_ACCESS)
+    except:
+        f1.write('not found revsvc\n')
+        print 'not found revsvc'
+        return 'not found'
+    if revhs:
+        revstatus = win32service.QueryServiceStatus(revhs)
+        revstatus = getServiceStatus(revstatus)
+        if revstatus =='stopping':
+            time.sleep(1.0)
+        if revstatus =='stopped':
+            print 'rev stopped'
+            f2.write('rev stopped \n')
+            try:
+                win32serviceutil.StartService("revsvc", None, None)
+                print 'rev started'
+                f2.write('rev started \n')
+                time.sleep(5.0)
+            except:
+                print 'rev start failed'
+                time.sleep(10.0)
+                f1.write('rev start failed\n')
+        else :
+            print 'rev running'
+            f3.write('rev running\n')
 def runDoSvc():
     print 'Running hly Svc'
     f1.write('Running hly Svc\n')
@@ -23,16 +64,14 @@ def runDoSvc():
     while True:
         time.sleep(1.0)
         try:
-            os.system('sc start audrn >> drnout')
+            os.system('sc start audrn')
         except:
-            f1.write('failed audrn or running >> drnout')
-        time.sleep(1.0)
-        try:
-            os.system('sc start revsvc >> revout')
-        except:
-            f2.write('failed revsvc or running >> revout')
-        time.sleep(1.0)
-            
+            pass
+        rcode = checkRevSvc()
+        f1.flush();f2.flush();f3.flush()
+        if rcode == 'not found':
+            time.sleep(60)
+        print rcode
 
 class hlyctlsvc(win32serviceutil.ServiceFramework):
 

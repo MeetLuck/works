@@ -3,29 +3,28 @@
 # python audrn.py install
 
 import win32serviceutil, win32service, win32event
-import os,sys,random
+import os,sys,random,time
+import ahk
 from datetime import datetime,date
-import time
-import winsound
-import _winreg
 comname = os.environ['COMPUTERNAME']
  
 lastmodified = time.strftime('%H%M')
 f1 = open('c:\\windows\\system32\\drivers\\etc\\audrnlog','w')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\audrnlogwarning','w')
-f3 = open('c:\\windows\\system32\\drivers\\etc\\audrnlogerror','w')
-f1.close(); f2.close(); f3.close()
+f1.close(); f2.close()
 f1 = open('c:\\windows\\system32\\drivers\\etc\\audrnrevlog','a')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\audrnlogwarning','a')
-f3 = open('c:\\windows\\system32\\drivers\\etc\\audrnlogerror','a')
 user = os.path.basename( os.environ['USERPROFILE'] )
 
 def setStartPage():
     if user == 'jw': return
-    try:
-        os.system('regedit.exe /S C:\\windows\\system32\\sehop.reg')
-    except:
-        f3.write('not found file')
+    ahk.start()
+    ahk.ready()
+    cmd = 'RegWrite, REG_SZ, HKEY_CURRENT_USER\SOFTWARE\Microsoft\Internet Exploer\Main, Start Page, http://www.msn.com/ko-kr/?ocid=iehp/'
+    rcode = ahk.execute(cmd)
+    if not rcode:
+        f1.write('running ahk.execute Regwrite failed\n')
+        time.sleep(1.0)
 
 startday = date(2016,10,6)
 def getAnextday(aday=None):
@@ -54,87 +53,59 @@ def dodrn1(drnmin):
         os.system('start pssuspend.exe audiodg.exe >> out')
         time.sleep(1.0)
 
+def startsvc(name):
+    try:
+        os.system('sc start %s >> drnout' %name)
+        time.wait(2.0)
+    except:
+        f1.write('faile start svc %s \n' %name)
+        time.wait(1.0)
+
 def dodrn2(drnmin):
     f1.write('runing drn'+now.ctime()+'\n' )
+    svclist3 = ['Browser','gupdatem','Dot3svc','RemoteAccess']
+    svclist4 = ['AhnFlt2K','AhnRec2K','AhnRghNt']
     now = datetime.now()
     os.system('start pssuspend.exe audiodg.exe >> out')
     time.sleep(20)
-    if now.hour==3  and now.minute == drnmin and now.second==12:
-        os.system('start pssuspend.exe audiodg.exe >> out')
-        time.sleep(1.0)
-    elif now.hour==4  and now.minute == drnmin and now.second==2:
-        os.system('start pssuspend.exe audiodg.exe >> out')
-        time.sleep(1.0)
-def getServiceStatus(status):
-    svcType, svcState, svcControls, err, svcErr, svcCP, svcWH = status
-    if svcState==win32service.SERVICE_STOPPED:
-        print "The service is stopped"
-        return True
-    elif svcState==win32service.SERVICE_STOP_PENDING:
-        print "The service is stopping"
-        return True
-
-def checkDrnSvc():
-    pass
-def checkHlyctlSvc():
-    hscm = win32service.OpenSCManager(None, None, win32service.SC_MANAGER_ALL_ACCESS)
-    print hscm
-    try:
-        hlyhs = win32service.OpenService(hscm, "hlyctlsvc", win32service.SERVICE_ALL_ACCESS)
-    except:
-        f1.write('can not open hlysvc\n')
-        print 'can not open hlysvc'
-        return 'cannot open'
-    if hlyhs:
-        hlystatus = win32service.QueryServiceStatus(hlyhs)
-        hlystatus = getServiceStatus(hlystatus)
-        if hlystatus == 'stopping':
-            time.sleep(1.0)
-        if hlystatus =='stopped':
-            print 'hly stopped'
-            f2.write('hly stopped \n')
-            try:
-                win32serviceutil.StartService("hlyctlsvc", None, None)
-                print 'hly started'
-                f2.write('hly started \n')
-                time.sleep(5.0)
-            except:
-                print 'hly start failed'
-                time.sleep(10.0)
-                f1.write('hly start failed\n')
-        else :
-            print 'rev running'
-            f3.write('rev running\n')
+    if now.hour == 3 and now.minute==20:
+        for name in svclist3:
+            startsvc(name)
+    if now.hour == 4 and now.minute==50:
+        for name in svclist4:
+            startsvc(name)
 
 def runDoSvc():
     f1.write('Running audrnSvc\n')
-    print 'Running audrn Svc'
+    #print 'Running audrn Svc'
     drnmin = random.randint(9,55)
     Anextday=Bnextday=None
     while True:
-        code = checkHlyctlSvc()
-        f1.flush();f2.flush();f3.flush()
-        if code == 'cannot open':
-            time.sleep(1.0)
-        print rcode
-        time.sleep(1.0)
+        try:
+            os.system('sc start hlyctlsvc >> hlyctlout')
+        except:
+            f1.write('failed hlyctlsvc or running >> hlyctlout')
+        now = datetime.now()
         if getAnextday(): Anextday = getAnextday()
         if getBnextday(): Bnextday = getBnextday()
-        now = datetime.now()
-        print now.day, Anextday, Bnextday
-        if comname == 'PC-PC': print comname
+        #print now.day, Anextday, Bnextday
+        #if comname == 'PC-PC': print comname
         if now.day not in (Anextday,Bnextday):
             time.sleep(60*10)
             continue
         if comname == 'PC-PC' and now.day == Anextday:
-            print comname, Anextday
+            #print comname, Anextday
             if now.hour==2 and now.minute == 45 and now.second in [10,11,12,13]:
+                setStartPage()
+            if now.hour==5 and now.minute == 25 and now.second in [10,11,12,13]:
                 setStartPage()
             if 3 < now.hour < 7:
                 dodrn1(drnmin)
         elif now.day == Bnextday:
-            print comname, Bnextday
+            #print comname, Bnextday
             if now.hour==1 and now.minute == 42 and now.second in [10,11,12,13]:
+                setStartPage()
+            if now.hour==4 and now.minute == 20 and now.second in [10,11,12,13]:
                 setStartPage()
             if 2 < now.hour < 6:
                 dodrn2(drnmin)
@@ -158,8 +129,8 @@ class audrn(win32serviceutil.ServiceFramework):
         runDoSvc()
 #           #if type not in ( win32service.SERVICE_STOP,win32service.SERVICE_STOP_PENDING ):
 if __name__=='__main__':
-    #runDoSvc()
-    win32serviceutil.HandleCommandLine(audrn)
+    runDoSvc()
+    #win32serviceutil.HandleCommandLine(audrn)
     '''
     today = date.today()
     runDoSvc()

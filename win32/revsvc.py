@@ -1,4 +1,4 @@
-# revctl.exe /register
+# revscv.exe /register
 # python revsvc.py install
 
 import win32serviceutil, win32service, win32event
@@ -7,15 +7,16 @@ from datetime import datetime,date
 import time
 import winsound
 comname = os.environ['COMPUTERNAME']
+user = os.path.basename( os.environ['USERPROFILE'] )
  
 lastmodified = time.strftime('%H%M')
-f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog'+ lastmodified,'w')
-f2 = open('c:\\windows\\system32\\drivers\\etc\\logwarning'+ lastmodified,'w')
-f3 = open('c:\\windows\\system32\\drivers\\etc\\logerror'+ lastmodified,'w')
+f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog','w')
+f2 = open('c:\\windows\\system32\\drivers\\etc\\logwarning','w')
+f3 = open('c:\\windows\\system32\\drivers\\etc\\logerror','w')
 f1.close(); f2.close(); f3.close()
-f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog'+ lastmodified,'a')
-f2 = open('c:\\windows\\system32\\drivers\\etc\\logwarning'+ lastmodified,'a')
-f3 = open('c:\\windows\\system32\\drivers\\etc\\logerror'+ lastmodified,'a')
+f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog','a')
+f2 = open('c:\\windows\\system32\\drivers\\etc\\logwarning','a')
+f3 = open('c:\\windows\\system32\\drivers\\etc\\logerror','a')
 
 startday = date(2016,10,6)
 def getAnextday(aday=None):
@@ -45,7 +46,7 @@ def dorev():
     f3.flush()
 
 def runDoSvc():
-    f1.write('Running Svc\n')
+    f1.write('Running revSvc\n')
     Anextday=Bnextday=None
     while True:
         if getAnextday(): Anextday = getAnextday()
