@@ -1,0 +1,10 @@
+;Run, notepad
+;Run, notepad, ,Hide
+;Run, ffx.exe, ,Hide,ffxPID
+;Process,priority, %ffxPID%, High
+;WinHide, ahk_exe ffx.exe
+;WinActive, ahk_exe ffx.exe
+DetectHiddenWindows, On
+;WinActivate, ahk_exe ffx.exe
+WinShow, ahk_exe ffx.exe
+
