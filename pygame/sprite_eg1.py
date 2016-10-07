@@ -5,6 +5,22 @@ import pygame, math, sys
 from pygame.locals import *
 screen = pygame.display.set_mode((1024,768))
 fpsclock = pygame.time.Clock()
+class PadSprite(pygame.sprite.Sprite):
+    normal = pygame.image.load('pad_normal.png')
+    hit = pygame.image.load('pad_hit.png')
+    def __init__(self,number,position):
+        pygame.sprite.Sprite.__init(self)
+        self.number = number
+        self.rect.center = position
+        self.image = self.normal
+pads = [
+        PadSprite(1,(200,200)),
+        PadSprite(2,(800,200)),
+        PadSprite(3,(200,600)),
+        PadSprite(4,(800,600)),
+        ]
+
+
 class CarSprite(pygame.sprite.Sprite):
     max_forward_speed = 10
     max_backward_speed = 10
@@ -41,6 +57,9 @@ class CarSprite(pygame.sprite.Sprite):
 rect = screen.get_rect()
 car = CarSprite('car.png',rect.center)
 car_group = pygame.sprite.RenderPlain(car)
+pad_group = pygame.sprite.RenderPlain(*pads)
+collisions = pygame.sprite.spritecollide(car_group,pad_group)
+current_pad_number = 0
 while True:
     # user input
     deltat = fpsclock.tick(30)
@@ -52,10 +71,21 @@ while True:
         elif e.key == K_UP: car.k_up = keydown * +2
         elif e.key == K_DOWN: car.k_down = keydown * -2 
         elif e.key == K_ESCAPE: sys.exit(0)
+    pads = pygame.sprite.spritecollide(car,pad_group,False)
+    if pads:
+        pad = pads[0]
+        if pad.number == current_pad_number +1:
+            pad.image = pad.hit
+            current_pad_number += 1
+    elif current_pad_number == 4:
+        for pad in pad_group.sprites(): pad.image = pad.normal
+        current_pad_number = 0
     # rendering
     screen.fill((0,0,0))
     car_group.update(deltat)
     car_group.draw(screen)
+    pad_group.update(collisions)
+    pad_group.draw(screen)
     pygame.display.flip()
 
 
