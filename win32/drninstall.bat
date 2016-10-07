@@ -1,2 +1,2 @@
-drn /register
-python audrn.py install
+drn.exe /register
+python drn.py install

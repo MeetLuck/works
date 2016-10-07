@@ -1,1 +1,1 @@
-python audrn.py start
+python drn.py start

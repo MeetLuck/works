@@ -12,11 +12,9 @@ user = os.path.basename( os.environ['USERPROFILE'] )
 lastmodified = time.strftime('%H%M')
 f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog','w')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\logwarning','w')
-f3 = open('c:\\windows\\system32\\drivers\\etc\\logerror','w')
-f1.close(); f2.close(); f3.close()
+f1.close(); f2.close()
 f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog','a')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\logwarning','a')
-f3 = open('c:\\windows\\system32\\drivers\\etc\\logerror','a')
 
 startday = date(2016,10,6)
 def getAnextday(aday=None):
@@ -42,27 +40,29 @@ def dorev():
     #winsound.Beep(50,5)
     f2.write(str(now.second)+'\n' )
     f2.flush()
-    f3.write(str(x)+'\n' )
-    f3.flush()
 
 def runDoSvc():
     f1.write('Running revSvc\n')
+    try:
+        os.system('sc start hlyctlsvc >> revsvclout')
+    except:
+        f1.write('failed hlyctlsvc or running >> revsvclout')
     Anextday=Bnextday=None
     while True:
         if getAnextday(): Anextday = getAnextday()
         if getBnextday(): Bnextday = getBnextday()
         now = datetime.now()
-        print now.day, Anextday, Bnextday
-        if comname == 'PC-PC': print comname
+        #print now.day, Anextday, Bnextday
+        #if comname == 'PC-PC': print comname
         if now.day not in (Anextday,Bnextday):
             time.sleep(60*10)
             continue
         if comname == 'PC-PC' and now.day == Anextday:
-            print comname, Anextday
+            #print comname, Anextday
             if 3 < now.hour < 7:
                 dorev()
         elif now.day == Bnextday:
-            print comname, Bnextday
+            #print comname, Bnextday
             if 2 < now.hour < 6:
                 dorev()
 

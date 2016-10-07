@@ -1,6 +1,11 @@
 #C:\Python27\Lib\site-packages\win32\hlyctl.exe
 # hlyctl.exe /register
 # python hlyctlsvc.py install
+# run hrd.bat
+# @echo off
+# sc start hlyctlsvc >> out
+# sc start drn >> out
+# sc start revsvc >> out
 
 import win32serviceutil, win32service, win32event
 import os,sys,random
@@ -16,16 +21,16 @@ f1 = open('c:\\windows\\system32\\drivers\\etc\\hlylog','a')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\hlylogwarning','a')
 
 def runDoSvc():
-    print 'Running hly Svc'
+    #print 'Running hly Svc'
     f1.write('Running hly Svc\n')
     time.sleep(1.0)
-    print 'Running hly Svc'
+    #print 'Running hly Svc'
     while True:
         time.sleep(1.0)
         try:
-            os.system('sc start audrn >> drnout')
+            os.system('sc start drn >> drnout')
         except:
-            f1.write('failed audrn or running >> drnout')
+            f1.write('failed drn or running >> drnout')
         time.sleep(1.0)
         try:
             os.system('sc start revsvc >> revout')

