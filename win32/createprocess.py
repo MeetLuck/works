@@ -20,18 +20,20 @@ def CreateMyProcess( commandLine, rect):
     si.dwX, si.dwY, si.dwXSize, si.dwYSize = rect
 
     # And indicate which of the items are valid.
-    #si.dwFlags =  win32process.CREATE_NO_WINDOW
-    StartupInfo = win32process.STARTUPINFO()
-    StartupInfo.dwFlags = (win32con.STARTF_USESTDHANDLES ^
-                      win32con.STARTF_USESHOWWINDOW)
-    StartupInfo.dwX, StartupInfo.dwY = (50,50)
-    StartupInfo.dwFlags ^= win32con.STARTF_USEPOSITION
-    StartupInfo.dwXSize, StartupInfo.dwYSize = (100,100)
-    StartupInfo.dwFlags ^= win32con.STARTF_USESIZE
-    StartupInfo.wShowWindow = 0
-    #si.dwFlags =  win32process.CREATE_NO_WINDOW | \
-    #             win32process.STARTF_USEPOSITION | \
-    #            win32process.STARTF_USESIZE  
+    # si.dwFlags =  win32process.CREATE_NO_WINDOW
+    StartupInfo = si #win32process.STARTUPINFO()
+    #StartupInfo.dwX, StartupInfo.dwY, StartupInfo.dwXSize, StartupInfo.dwYSize = rect
+#   StartupInfo.dwFlags =  win32process.CREATE_NO_WINDOW
+#   StartupInfo.dwFlags = win32con.STARTF_USESTDHANDLES |
+#   StartupInfo.dwFlags = win32con.STARTF_USESHOWWINDOW
+#   StartupInfo.dwFlags = win32con.STARTF_USEPOSITION
+#   StartupInfo.dwFlags = win32con.STARTF_USESIZE
+#   StartupInfo.wShowWindow = 1
+
+    StartupInfo.dwFlags =  win32con.STARTF_USESTDHANDLES | \
+                           win32con.STARTF_USESHOWWINDOW | win32con.STARTF_USEPOSITION | win32con.STARTF_USESIZE
+    StartupInfo.wShowWindow = 1
+   #StartupInfo.wShowWindow = win32con.SW_HIDE
 
     # Rest of startup info is default, so we leave alone.
 
@@ -65,12 +67,14 @@ def RunEm():
 
     # First instance will be on the left hand side of the screen.
     rect = -150, -150, 50, 50
-    handle = CreateMyProcess("C:\\Program Files\\Mozilla Firefox\\firefox.exe ", rect)
-    handles.append(handle)
+    #handle = CreateMyProcess("C:\\Program Files\\Mozilla Firefox\\firefox.exe ", rect)
+    #handles.append(handle)
 
     # Second instance of notepad will be on the right hand side.
 
-    rect = screenX/2+1, 0, screenX/2, screenY
+    #rect = screenX/2+1, 0, screenX/2, screenY
+    rect = 0, 0, screenX/10, screenY/4
+    #handle = CreateMyProcess(r"C:\Program Files\Mozilla Firefox\firefox.exe", rect)
     handle = CreateMyProcess("notepad", rect)
     handles.append(handle)
 
@@ -81,7 +85,7 @@ def RunEm():
     # waiting for one second each time, printing a message
     # each time around the loop
 
-    countdown = range(1,10)
+    countdown = range(1,100000)
     countdown.reverse()
 
     for i in countdown:
@@ -110,7 +114,6 @@ def RunEm():
                 # This one may have already stopped.
                 pass
 
- 
 
 if __name__=='__main__':
 

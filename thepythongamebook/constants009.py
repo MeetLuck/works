@@ -1,4 +1,9 @@
 import pygame,random,os
+# --------  what's new -------------
+# flags = pygame.DOUBLEBUF | [0,pygame.fullscreen][config.fullscreen]
+# pygame.mouse.set_visible(config.visibmouse)
+# self.clock.tick_busy_loop(self.fps)
+# keys = pygame.key.get_pressed()[PygView.cursorkeys]
 
 # colors
 white = pygame.Color('white')

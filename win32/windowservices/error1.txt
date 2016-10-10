@@ -1,0 +1,5 @@
+D:\home\works\win32\windowservices\error1.txt created at Tue Oct 11 05:55:12 2016
+SvcDoRun started at Tue Oct 11 05:55:12 2016
+cannot run test1.pyTue Oct 11 05:56:04 2016
+cannot run test1.pyTue Oct 11 05:56:57 2016
+stopped at Tue Oct 11 05:57:41 2016

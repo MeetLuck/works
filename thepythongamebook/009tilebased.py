@@ -5,7 +5,6 @@ A simple Maze Wanderer
 from constants009 import *
 
 class PygView(object):
-    # pygame View
     cursorkeys = slice(273,277)
     quitkeys = pygame.K_ESCAPE,pygame.K_q
     events = 'up','down','right','left'
@@ -17,23 +16,28 @@ class PygView(object):
         self.bgcolor = config.bgcolor
         self.fps = config.fps
         self.fontcolor = config.fontcolor
+
         pygame.init()
         flags = pygame.DOUBLEBUF | [0,pygame.fullscreen][config.fullscreen]
         self.canvas = pygame.display.set_mode( (self.width,self.height),flags )
         pygame.display.set_caption(config.title)
+
+        self.font = pygame.font.Font(None,self.height/config.fontratio)
         self.clock = pygame.time.Clock()
         pygame.mouse.set_visible(config.visibmouse)
-        self.font = pygame.font.Font(None,self.height/config.fontratio)
+
     @property
     def frameDurationSeconds(self):
+        # self.frameDurationSeconds =  0.001 * self.clock.get_time()
         return 0.001 * self.clock.get_time()
+
     def run(self):
         running = True
         while running:
             self.clock.tick_busy_loop(self.fps)
-            running = self.controller.dispath(self.getEvents())
+            running = self.controller.dispatch(self.getEvents())
             self.flip()
-        else:
+        else: # while ~ else ~
             self.quit()
     def getEvents(self):
         keys = pygame.key.get_pressed()[PygView.cursorkeys]
@@ -61,91 +65,92 @@ class PygView(object):
     def quit(self):
         pygame.quit()
 
-    ### class Grid
-    class Grid(object):
-        # calculate points on a rectangular grid
-        def __init__(self,dx=1,dy=1,xoff=0,yoff=0):
-            self.dx,self.dy = dx,dy
-            self.xoff, self.yoff = xoff,yoff
-        def getPoint(self,x,y):
-            return self.xoff + self.dx * x, self.yoff + self.dy * y
-        def getRect(self,x,y):
-            # return rect = x,y, width, height
-            return self.getPoint(x,y) + (self.dx,self.dy)
-        def getCell(self,x,y):
-            # snap coordinates to center point grid
-            x,y = int(x+0.5),int(y+0.5)
-            return (x-self.xoff+self.dx/2)/self.dx, (y-self.yoff + self.dy/2)/self.dy
-    ### class Map
-    class Map(object):
-        # Maze map representation
-        def __init__(self,mapdata):
-            self.width,self.height = len(mapdata[0]), len(mapdata)
-            self.data = mapdata
-        def __getitem__(self,xy):
-            x,y = xy
-            return self.data[y][x]
-        @property
-        def start(self):
-            # search the starting point, there should be only one
-            for i,y in enumerate(self.data):
-                for j,x in enumerate(y):
-                    if x == 's': return j,i
-    ### class Mapper(object):
-    class Mapper(object):
-        # manage all maps
-        def __init__(self,maps,width,height):
-            self.view_width = width
-            self.view_height= height
-            self.maps = [ Map(m) for m in maps ]
-        def select(self,mode=start):
-            assert mode in (start,up,down,random),'wrong selection'
-            n = len(self.maps)
-            if mode == start:
-                self.actindex = 0
-            elif mode = random:
-                if len(self.maps)>1:
-                    self.actindex = random.choice( list( set(range(n)) - set([self.actindex]) )  )
-            else:
-                self.actindex = ( self.actindex + n + mode ) % len(self.maps)
-            self.actgrid,self.actcentergrid = self.adjustGrids()
-            return self.actmap, self.actgrid, self.actcentergrid
-        def adjustGrids(self):
-            # a grid for upper left corner for drawing rectangles,
-            # a grid for their center points, which are used for collision detection
-            smap = self.actmap
-            w = self.view_width/smap.width - 1
-            h = self.view_height/smap.height - 1
-            xoff = self.view_width - smap.width * w
-            yoff = self.view_height - smap.height * h
-            grid = Grid(w,h,xoff/2,yoff/2)
-            # +1
-            centergrid = Grid(w,h,xoff/2+w/2+1,yoff/2+hoff/2+1)
-            return grid,centergrid
-        def drawMap(self,view):
-            smap = self.actmap
-            grid = self.actgrid
-            width = smap.width
-            for y in range(smap.height):
-                for x in range(width):
-                    place = smap[x,y]
-                    if place not in not_drawables:
-                        view.rectangel( gird.getRect(x,y), mapcolors[place], place in places)
-        @property
-        def actMap(self):
-            return self.maps[self.actIndex]
-        @proeprty
-        def start(self):
-            return self.actmap.start
-        def getPoint(self,x,y):
-            return self.actgrid.getPoint(x,y)
-        def getRect(self,x,y):
-            return self.actgrid.get_rect(x,y)
-        def getCell(self,x,y):
-            return self.actcentergrid.getCell(x,y)
-        @property
-        def playerSizehint(self):
-            return self.actgrid.dx/2,self.actgrid.dy/2
+### class Grid
+class Grid(object):
+    # calculate points on a rectangular grid
+    def __init__(self,dx=1,dy=1,xoff=0,yoff=0):
+        self.dx,self.dy = dx,dy
+        self.xoff, self.yoff = xoff,yoff
+    def getPoint(self,x,y):
+        return self.xoff + self.dx * x, self.yoff + self.dy * y
+    def getRect(self,x,y):
+        # return rect = x,y, width, height
+        return self.getPoint(x,y) + (self.dx,self.dy)
+    def getCell(self,x,y):
+        # snap coordinates to center point grid
+        x,y = int(x+0.5),int(y+0.5)
+        return (x-self.xoff+self.dx/2)/self.dx, (y-self.yoff + self.dy/2)/self.dy
+### class Map
+class Map(object):
+    # Maze map representation
+    def __init__(self,mapdata):
+        self.width,self.height = len(mapdata[0]), len(mapdata)
+        self.data = mapdata
+    def __getitem__(self,xy):
+        x,y = xy
+        return self.data[y][x]
+    @property
+    def start(self):
+        # search the starting point, there should be only one
+        for i,y in enumerate(self.data):
+            for j,x in enumerate(y):
+                if x == 's': return j,i
+
+### class Mapper(object):
+class Mapper(object):
+    # manage all maps
+    def __init__(self,maps,width,height):
+        self.view_width = width
+        self.view_height= height
+        self.maps = [ Map(m) for m in maps ]
+    def select(self,mode=start):
+        assert mode in (start,up,down,random),'wrong selection'
+        n = len(self.maps)
+        if mode == start:
+            self.actindex = 0
+        elif mode = random:
+            if len(self.maps)>1:
+                self.actindex = random.choice( list( set(range(n)) - set([self.actindex]) )  )
+        else:
+            self.actindex = ( self.actindex + n + mode ) % len(self.maps)
+        self.actgrid,self.actcentergrid = self.adjustGrids()
+        return self.actmap, self.actgrid, self.actcentergrid
+    def adjustGrids(self):
+        # a grid for upper left corner for drawing rectangles,
+        # a grid for their center points, which are used for collision detection
+        smap = self.actmap
+        w = self.view_width/smap.width - 1
+        h = self.view_height/smap.height - 1
+        xoff = self.view_width - smap.width * w
+        yoff = self.view_height - smap.height * h
+        grid = Grid(w,h,xoff/2,yoff/2)
+        # +1
+        centergrid = Grid(w,h,xoff/2+w/2+1,yoff/2+hoff/2+1)
+        return grid,centergrid
+    def drawMap(self,view):
+        smap = self.actmap
+        grid = self.actgrid
+        width = smap.width
+        for y in range(smap.height):
+            for x in range(width):
+                place = smap[x,y]
+                if place not in not_drawables:
+                    view.rectangel( gird.getRect(x,y), mapcolors[place], place in places)
+    @property
+    def actMap(self):
+        return self.maps[self.actIndex]
+    @proeprty
+    def start(self):
+        return self.actmap.start
+    def getPoint(self,x,y):
+        return self.actgrid.getPoint(x,y)
+    def getRect(self,x,y):
+        return self.actgrid.get_rect(x,y)
+    def getCell(self,x,y):
+        return self.actcentergrid.getCell(x,y)
+    @property
+    def playerSizehint(self):
+        return self.actgrid.dx/2,self.actgrid.dy/2
 
 class Player(object):
     # represent moving player rectangle
@@ -217,7 +222,7 @@ class Controller(object):
         self.game = MazeGame(maps,config)
         self.game.reset(start)
         self.state = 'playing'
-    def dispath(self,all_events):
+    def dispatch(self,all_events):
         # control the game state
         event, move_events = all_events
         if event == 'quit':
@@ -296,7 +301,7 @@ class MazeGame(object):
         return True
     def process(self,view,move_events):
         # main method
-        dur = view.frame_duration_secs
+        dur = view.frameDurationSeconds
         self.accelerate_player(move_events,dur*self.player_accel)
         self.dtimer += dur
         self.dtimer.integrate( self.transform_player, self.friction)
