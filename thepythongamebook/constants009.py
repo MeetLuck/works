@@ -30,29 +30,29 @@ def checkQuit(): # event handler
     return True
 
 #### configuration
-MAPCOLORS =\
-{ 'x': (100,60,30),
-  'y': (30,120,10),
-  'u': (30,190,10),
-  'r': (250,250,0),
-  'e': (250,0,0) }
+
 config =\
-{ 'fullscreen': False,
+{ 
+  'fullscreen': False,
   'set_visible': True,
-  'width': False,
-  'height': False,
-  'bgcolor': False,
-  'fontratio': False,
-  'fontcolor': False,
-  'fps': False,
-  'friction': False,
-  'playersizefac': False,
-  'playeraccel': False,
-  'widthsensors': False,
-  'heightsensors': False,
+  'width': 800,
+  'height': 600,
+  'bgcolor': (230,180,40),
+  'fontratio': 8,
+  'fontcolor': (255,255,255),
+  'fps': 100,
+  'dt': 0.01,
+  'friction': 0.987,
+  'playersize': 1.2,
+  'playercolor': (0,0,255),
+  'playeraccel': 400,
+  'widthsensors': 8,
+  'heightsensors': 8,
   'title': "Maze Wanderer",
   'waitingtext': 'quit=ESC, again=Other Key'
+
   }
+
 
 ### maps
 # x = wall
@@ -60,6 +60,13 @@ config =\
 # d = level down
 # u = level up
 # r = random level
+
+MAPCOLORS =\
+{ 'x': (100,60,30),
+  'y': (30,120,10),
+  'u': (30,190,10),
+  'r': (250,250,0),
+  'e': (250,0,0) }
 
 # 20 x 16
 easy_map =\

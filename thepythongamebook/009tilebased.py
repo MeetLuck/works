@@ -19,7 +19,7 @@ class PygView(object):
 
         pygame.init()
         # flags
-        flags = pygame.DOUBLEBUF | [0,pygame.fullscreen][config.fullscreen]
+        flags = pygame.DOUBLEBUF | [0,pygame.FULLSCREEN][config.fullscreen]
         self.canvas = pygame.display.set_mode( (self.width,self.height),flags )
         pygame.display.set_caption(config.title)
 
@@ -118,33 +118,33 @@ class Mapper(object):
         self.maps = [ Map(m) for m in maps ] # 3 maps -> easy, medium, hard from constants
 
     def select(self,mode=START): # START = -3 from constants
-        assert mode in (START,up,down,random),'wrong selection'
+        assert mode in (START,UP,DOWN,RANDOM),'wrong selection'
         n = len(self.maps) # 3
+        #----- select map by self.actindex --> self.maps[actindex]
         if mode == START:
             self.actindex = 0
-        elif mode = random:
+        elif mode == RANDOM:
             if len(self.maps)>1:
                 self.actindex = random.choice( list( set(range(n)) - set([self.actindex]) )  )
-        else:
+        else: # UP,DOWN
             self.actindex = ( self.actindex + n + mode ) % len(self.maps)
         # 
         self.actgrid,self.actcentergrid = self.adjustGrids()
         # actmap: property -> one of self.maps
         return self.actmap, self.actgrid, self.actcentergrid
 
-
-
     def adjustGrids(self):
         # a grid for upper left corner for drawing rectangles,
         # a grid for their center points, which are used for collision detection
         actmap = self.actmap
-        width = self.view_width/actmap.width - 1
+        width  = self.view_width/actmap.width   - 1
         height = self.view_height/actmap.height - 1
         xoff = self.view_width  - actmap.width * width
         yoff = self.view_height - actmap.height * height
 
         grid = Grid(width,height,xoff/2,yoff/2)
         centergrid = Grid( width,height, (xoff+width)/2+1,(yoff+height)/2+1  )
+
         return grid,centergrid
 
     def drawMap(self,view):
@@ -160,7 +160,7 @@ class Mapper(object):
     @property
     def actmap(self): # self.actmap = self.maps[...]
         return self.maps[self.actIndex]
-    @proeprty
+    @property
     def startpos(self):
         return self.actmap.startpos
     @property
@@ -185,6 +185,7 @@ class Player(object):
         self.width2,self.height2 = width/2,height/2
         self.color = color
         self.dx,self.dy = 0,0
+
     @property
     def pos(self):
         return self.x,self.y
@@ -195,12 +196,17 @@ class Player(object):
     def center(self):
         x,y = self.pos
         return x + self.width2, y + self.height2
+    @property
+    def vertex_sensors(self):
+        x,y = self.pos
+        return [ (x+sx*self.width, y+ sy*self.height) for sx,sy in Player.sensor_pts ]
+
     def restorePos(self):
         self.x,self.y = self.oldPos
     def move(self,dt,friction):
         self.dx *= friction
         self.dy *= friction
-        self.xold,self.yodl = self.pos
+        self.xold,self.yold = self.pos
         self.x += self.dx * dt
         self.y += self.dy * dt
     def accelerate(self,direct,acc):
@@ -209,24 +215,20 @@ class Player(object):
         self.accy = ydir * acc
         self.dx += self.accx
         self.dy += self.accy
-    @property
-    def vertext_sensors(self):
-        x,y = self.pos
-        return [ (x+sx*self.width, y+ sy*self.height) for sx,sy in Player.sensor_pts ]
-    def north_sensors(self,n):
+    def northSensors(self,n):
         x,y = self.pos
         delta = self.width/n
         return [ (x+i*delta,y) for i in range(1,n) ]
-    def south_sensors(self,n):
+    def southSensors(self,n):
         x,y = self.pos
         delta = self.width/n
         h = y + self.height
         return [ (x+i*delta,h) for i in range(1,n) ]
-    def west_sensors(self,n):
+    def westSensors(self,n):
         x,y = self.pos
         delta = self.height/n
         return [ (x, y+i*delta) for i in range(1,n) ]
-    def east_sensors(self,n):
+    def eastSensors(self,n):
         x,y = self.pos
         delta = self.height/n
         w = x + self.width
@@ -267,46 +269,52 @@ class Controller(object):
 class MazeGame(object):
     def __init__(self,maps,config):
         self.config = config
-        self.dtimer = DeltaTimer(config.dt)
+        self.deltatimer = DeltaTimer(config.dt)
         self.mapper = Mapper(maps, config.width, config.height)
-        self.player_accel = config.play_accel
+        self.playeraccel = config.playeraccel
         self.friction = config.friction
+
     def reset(self,mode):
         self.text = ''
-        self.mapper.select(mode)
-        x,y = self.mapper.get_point(*self.mapper.startpos)
-        w,h = self.mapper.player_sizehint
-        size = self.config.player_sizefac
-        width, height = int(w*size), int(h*size)
-        self.player = Player(x+1,y+1,width,height, self.config.player_color)
-    def accelerate_player(self,events,accel):
+        self.mapper.select(mode) # map selection
+        x,y = self.mapper.getPoint(*self.mapper.startpos)
+        width,height = self.mapper.playerSizehint
+        size = self.config.playersize
+        width, height = int(width*size), int(height*size)
+        self.player = Player(x+1,y+1,width,height, self.config.playercolor)
+
+    def acceleratePlayer(self,events,accel):
         for e in events:
             self.player.accelerate(e, accel)
+
     def checkPlaces(self):
-        place = self.mapper.act_map[ self.mapper.getCell(*self.player.center) ]
+        place = self.mapper.actmap[ self.mapper.getCell(*self.player.center) ]
         if place in places:
             if place == 'e':
                 return 'ending'
             else:
-                self.reset( {'u':up,'d':down,'r':random}.get(place) )
+                self.reset( {'u':UP,'d':DOWN,'r':RANDOM}.get(place) )
         return 'playing'
+
     def checkCollision(self):
         # check at first 4 sides of the player rectangle
         # if collision occurs, check corners
-        actmap = self.mapper.act_map
+        actmap = self.mapper.actmap
         mapper = self.mapper
         ws = self.config.width_sensors
         hs = self.config.height_sensors
-        north = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.north_sensors(ws) ]
-        south = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.south_sensors(ws) ]
-        east  = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.east_sensors(hs) ]
-        west  = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.west_sensors(hs) ]
+        # x : wall
+        north = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.northSensors(ws) ]
+        south = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.southSensors(ws) ]
+        east  = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.eastSensors(hs) ]
+        west  = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.westSensors(hs) ]
 
         west_east = any(west) or any(east)
         north_south = any(north) or any(south)
         if west_east or north_south:
             self.player.bounce(west_east, north_south)
             return True
+        # not weast_east nor north_south
         csx = False
         for sx,sy in self.player.vertex_sensors:
             if actmap[mapper.getCell(sx,sy)] == 'x':
@@ -314,6 +322,8 @@ class MazeGame(object):
                 break
         if not csx:
             return False
+
+        # csx is True
         old_px,old_py = self.player.oldpos
         px,py = self.player.pos
         oldcsx = csx - px + oldpx
@@ -321,20 +331,22 @@ class MazeGame(object):
 
         oldcellx,oldcelly = mapper.getCell(oldcsx,oldcsy)
         cellx,celly = mapper.getCell(csx,csy)
+
         self.player.bounce( abs(oldcellx - cellx) > 0, abs(oldcelly - celly) > 0 )
         return True
+
     def process(self,view,move_events):
         # main method
-        dur = view.frameDurationSeconds
-        self.accelerate_player(move_events,dur*self.player_accel)
-        self.dtimer += dur
-        self.dtimer.integrate( self.transform_player, self.friction)
+        duration = view.frameDurationSeconds
+        self.acceleratePlayer(move_events, duration*self.player_accel)
+        self.deltatimer += duration
+        self.deltatimer.integrate( self.transformPlayer, self.friction)
         self.mapper.drawMap(view)
         self.player.draw(view)
         self.drawText(view)
 
         return self.check_places()
-    def transform_players(self,dt,friction):
+    def transformPlayer(self,dt,friction):
         # move player in 1 timestep dt
         self.player.move(dt,friction)
         collision = self.checkCollision()
@@ -343,8 +355,8 @@ class MazeGame(object):
             self.player.move(dt,friction)
     def wait(self,view):
         # if player finds exit, ask for new game
-        self.text = self.config.wating_text
-        slf.drawText(view)
+        self.text = self.config.waitingtext
+        self.drawText(view)
     def drawText(self,view):
         view.drawText(self.text)
     def quit(self):
