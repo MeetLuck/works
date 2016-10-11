@@ -284,8 +284,8 @@ class Map(object):
 
     for i, y in enumerate(self.data):
       for j, x in enumerate(y):
-        if x == 's':
-          return j, i
+        if x == 's': # s -> 
+            return j, i
 
 ####
 

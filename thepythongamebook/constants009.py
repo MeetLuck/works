@@ -1,9 +1,12 @@
 import pygame,random,os
 # --------  what's new -------------
 # flags = pygame.DOUBLEBUF | [0,pygame.fullscreen][config.fullscreen]
-# pygame.mouse.set_visible(config.visibmouse)
+''' pygame.mouse.set_visible(config.visibmouse) '''
+# hide or show the mouse cursor - > bools
 # self.clock.tick_busy_loop(self.fps)
-# keys = pygame.key.get_pressed()[PygView.cursorkeys]
+''' keys = pygame.key.get_pressed()[PygView.cursorkeys] '''
+# get the state of all keyboard buttons -> bools
+# returns a sequence of boolean values representing the state of every key on the keyboard.
 
 # colors
 white = pygame.Color('white')
@@ -27,7 +30,7 @@ def checkQuit(): # event handler
     return True
 
 #### configuration
-mapcolors =\
+MAPCOLORS =\
 { 'x': (100,60,30),
   'y': (30,120,10),
   'u': (30,190,10),
@@ -35,7 +38,7 @@ mapcolors =\
   'e': (250,0,0) }
 config =\
 { 'fullscreen': False,
-  'visibmouse': False,
+  'set_visible': True,
   'width': False,
   'height': False,
   'bgcolor': False,

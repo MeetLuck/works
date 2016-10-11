@@ -1,11 +1,17 @@
-import time
-start = time.time()
-startctime = time.ctime()
-count = 0
-while True:
-    if time.time() - start > 10.0:
-        print startctime
-        print time.ctime()
-        print str(count//1.0e6) + ' M times'
-        break
-    count += 1
+class Map(object):
+    def __init__(self,amap):
+        self.amap = amap
+    def __getitem__(self,xy):
+        x,y = xy
+        print x,y
+        return self.amap[y][x]
+
+if __name__ == '__main__':
+    li = [
+            [1,2,3],
+            [4,5,6],
+            [7,8,9]
+            ]
+    amap = Map(li)
+    print amap[(1,2)] == amap[1,2]
+    print amap[0,0],amap[0,1]

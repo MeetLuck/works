@@ -18,13 +18,15 @@ class PygView(object):
         self.fontcolor = config.fontcolor
 
         pygame.init()
+        # flags
         flags = pygame.DOUBLEBUF | [0,pygame.fullscreen][config.fullscreen]
         self.canvas = pygame.display.set_mode( (self.width,self.height),flags )
         pygame.display.set_caption(config.title)
 
         self.font = pygame.font.Font(None,self.height/config.fontratio)
         self.clock = pygame.time.Clock()
-        pygame.mouse.set_visible(config.visibmouse)
+        # mouse.get_visible
+        pygame.mouse.set_visible(config.set_visible)
 
     @property
     def frameDurationSeconds(self):
@@ -34,30 +36,39 @@ class PygView(object):
     def run(self):
         running = True
         while running:
+            # clock.tick_bulsy_loop
             self.clock.tick_busy_loop(self.fps)
             running = self.controller.dispatch(self.getEvents())
             self.flip()
         else: # while ~ else ~
             self.quit()
+
     def getEvents(self):
+        # key.get_pressed
+        # cursorkeys = slice(273,277)
+        # quitkeys = pygame.K_ESCAPE,pygame.K_q
+        # events = 'up','down','right','left'
         keys = pygame.key.get_pressed()[PygView.cursorkeys]
-        move_events = [ e for e,k in zip(PygView.events,keys) if k ]
+        # [('up',0), ('down',0),'('left',0),'('right',0)]
+        move_events = [ event for event,key in zip(PygView.events,keys) if key is True ]
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 return 'quit',move_events
             if e.type == pygame.KEYDOWN:
-                if e.key in PygView.quitkeys:
+                if e.key in PygView.quitkeys: # K_ESCAPE or K_q
                     return 'quit', move_events
                 else:
                     return 'otherkey', move_events
         else: # for else
             return None,move_events
-    def rectangle(self,xywh,color,border=0):
-        pygame.draw.rect(self.canvas,color,xywh,border)
+
+    def drawRect(self,rect,color,border=0):
+        pygame.draw.rect(self.canvas,color,rect,border)
+
     def drawText(self,text):
-        fw,fh = self.font.size(text)
+        fontwidth,fontheight = self.font.size(text)
         textsurf = self.font.render(text,True,self.fontcolor)
-        pos =  (self.width - fw)/2, (self.height-fh)/2  
+        pos =  (self.width - fontwidth)/2, (self.height-fontheight)/2  
         self.canvas.blit(textsurf, pos)
     def flip(self):
         pygame.display.flip()
@@ -69,17 +80,19 @@ class PygView(object):
 class Grid(object):
     # calculate points on a rectangular grid
     def __init__(self,dx=1,dy=1,xoff=0,yoff=0):
-        self.dx,self.dy = dx,dy
+        self.dx, self.dy = dx,dy   # width,height
         self.xoff, self.yoff = xoff,yoff
     def getPoint(self,x,y):
         return self.xoff + self.dx * x, self.yoff + self.dy * y
     def getRect(self,x,y):
         # return rect = x,y, width, height
         return self.getPoint(x,y) + (self.dx,self.dy)
+        # (pointX,pointY) + (self.dx,self.dy) => (pointX,pointY,self.dx,self.dy)
     def getCell(self,x,y):
         # snap coordinates to center point grid
         x,y = int(x+0.5),int(y+0.5)
         return (x-self.xoff+self.dx/2)/self.dx, (y-self.yoff + self.dy/2)/self.dy
+
 ### class Map
 class Map(object):
     # Maze map representation
@@ -90,11 +103,11 @@ class Map(object):
         x,y = xy
         return self.data[y][x]
     @property
-    def start(self):
+    def startpos(self):
         # search the starting point, there should be only one
-        for i,y in enumerate(self.data):
-            for j,x in enumerate(y):
-                if x == 's': return j,i
+        for y,row in enumerate(self.data):
+            for x,val in enumerate(y):
+                if val == 's': return y,x # s -> start position in the map
 
 ### class Mapper(object):
 class Mapper(object):
@@ -102,61 +115,70 @@ class Mapper(object):
     def __init__(self,maps,width,height):
         self.view_width = width
         self.view_height= height
-        self.maps = [ Map(m) for m in maps ]
-    def select(self,mode=start):
-        assert mode in (start,up,down,random),'wrong selection'
-        n = len(self.maps)
-        if mode == start:
+        self.maps = [ Map(m) for m in maps ] # 3 maps -> easy, medium, hard from constants
+
+    def select(self,mode=START): # START = -3 from constants
+        assert mode in (START,up,down,random),'wrong selection'
+        n = len(self.maps) # 3
+        if mode == START:
             self.actindex = 0
         elif mode = random:
             if len(self.maps)>1:
                 self.actindex = random.choice( list( set(range(n)) - set([self.actindex]) )  )
         else:
             self.actindex = ( self.actindex + n + mode ) % len(self.maps)
+        # 
         self.actgrid,self.actcentergrid = self.adjustGrids()
+        # actmap: property -> one of self.maps
         return self.actmap, self.actgrid, self.actcentergrid
+
+
+
     def adjustGrids(self):
         # a grid for upper left corner for drawing rectangles,
         # a grid for their center points, which are used for collision detection
-        smap = self.actmap
-        w = self.view_width/smap.width - 1
-        h = self.view_height/smap.height - 1
-        xoff = self.view_width - smap.width * w
-        yoff = self.view_height - smap.height * h
-        grid = Grid(w,h,xoff/2,yoff/2)
-        # +1
-        centergrid = Grid(w,h,xoff/2+w/2+1,yoff/2+hoff/2+1)
+        actmap = self.actmap
+        width = self.view_width/actmap.width - 1
+        height = self.view_height/actmap.height - 1
+        xoff = self.view_width  - actmap.width * width
+        yoff = self.view_height - actmap.height * height
+
+        grid = Grid(width,height,xoff/2,yoff/2)
+        centergrid = Grid( width,height, (xoff+width)/2+1,(yoff+height)/2+1  )
         return grid,centergrid
+
     def drawMap(self,view):
-        smap = self.actmap
+        actmap = self.actmap
         grid = self.actgrid
-        width = smap.width
-        for y in range(smap.height):
+        width = actmap.width
+        for y in range(actmap.height):
             for x in range(width):
-                place = smap[x,y]
-                if place not in not_drawables:
-                    view.rectangel( gird.getRect(x,y), mapcolors[place], place in places)
+                place = actmap[x,y] # __getitem__(self,xy)
+                if place not in NOT_DRAWABLES: # constants '.', 's'
+                    # mapcolors : constants
+                    view.rectangel( gird.getRect(x,y), MAPCOLORS[place], place in places)
     @property
-    def actMap(self):
+    def actmap(self): # self.actmap = self.maps[...]
         return self.maps[self.actIndex]
     @proeprty
-    def start(self):
-        return self.actmap.start
-    def getPoint(self,x,y):
-        return self.actgrid.getPoint(x,y)
-    def getRect(self,x,y):
-        return self.actgrid.get_rect(x,y)
-    def getCell(self,x,y):
-        return self.actcentergrid.getCell(x,y)
+    def startpos(self):
+        return self.actmap.startpos
     @property
     def playerSizehint(self):
         return self.actgrid.dx/2,self.actgrid.dy/2
+    def getPoint(self,x,y):
+        return self.actgrid.getPoint(x,y)
+    def getRect(self,x,y):
+        return self.actgrid.getRect(x,y)
+    def getCell(self,x,y):
+        return self.actcentergrid.getCell(x,y)
 
 class Player(object):
     # represent moving player rectangle
 
     dirs = { 'up':(0,-1), 'down':(0,1),'left':(-1,0),'right':(0,1) }
     sensorpts = [(0,0),(1,0),(1,1),(0,1)]
+
     def __init__(self,x,y,width,height,color):
         self.x,self.y = x,y
         self.width,self.height = width,height
@@ -213,17 +235,18 @@ class Player(object):
         self.dx = (self.dx, -self.dx)[west_east]
         self.dy = (self.dy, -self.dy)[north_south]
     def draw(self,view):
-        view.rectangle( (self.x,self.y,self.width,self.height), self.color )
+        view.drawRect( (self.x,self.y,self.width,self.height), self.color )
 
 ### class Controller
 class Controller(object):
     def __init__(self, view, maps, config):
         self.view = view(self,config)
         self.game = MazeGame(maps,config)
-        self.game.reset(start)
+        self.game.reset(START) # from constant
         self.state = 'playing'
     def dispatch(self,all_events):
         # control the game state
+        # quit or other keys,  move_events  
         event, move_events = all_events
         if event == 'quit':
             self.game.quit()
@@ -235,10 +258,11 @@ class Controller(object):
             self.game.wait(self.view)
             if event == 'other_key':
                 self.state = 'playing'
-                self.game.reset(start)
+                self.game.reset(START)
         return True
     def run(self):
         self.view.run()
+
 ### class MazeGame
 class MazeGame(object):
     def __init__(self,maps,config):
@@ -250,7 +274,7 @@ class MazeGame(object):
     def reset(self,mode):
         self.text = ''
         self.mapper.select(mode)
-        x,y = self.mapper.get_point(*self.mapper.start)
+        x,y = self.mapper.get_point(*self.mapper.startpos)
         w,h = self.mapper.player_sizehint
         size = self.config.player_sizefac
         width, height = int(w*size), int(h*size)
@@ -269,14 +293,14 @@ class MazeGame(object):
     def checkCollision(self):
         # check at first 4 sides of the player rectangle
         # if collision occurs, check corners
-        smap = self.mapper.act_map
+        actmap = self.mapper.act_map
         mapper = self.mapper
         ws = self.config.width_sensors
         hs = self.config.height_sensors
-        north = [ smap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.north_sensors(ws) ]
-        south = [ smap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.south_sensors(ws) ]
-        east  = [ smap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.east_sensors(hs) ]
-        west  = [ smap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.west_sensors(hs) ]
+        north = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.north_sensors(ws) ]
+        south = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.south_sensors(ws) ]
+        east  = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.east_sensors(hs) ]
+        west  = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.west_sensors(hs) ]
 
         west_east = any(west) or any(east)
         north_south = any(north) or any(south)
@@ -285,7 +309,7 @@ class MazeGame(object):
             return True
         csx = False
         for sx,sy in self.player.vertex_sensors:
-            if smap[mapper.getCell(sx,sy)] == 'x':
+            if actmap[mapper.getCell(sx,sy)] == 'x':
                 csx,csy = sy,sy
                 break
         if not csx:
@@ -345,6 +369,7 @@ class Config(object):
     def __init__(self,**kwargs):
         self.__dict__.update(kwargs)
 def main():
+    # maps = easy_map,medium_map, hard_map
     Controller( PygView, maps, Config(**config) ). run()
 
 if __name__ == '__main__':
