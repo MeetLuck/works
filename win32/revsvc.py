@@ -5,18 +5,20 @@ import win32serviceutil, win32service, win32event
 import os,sys,random
 from datetime import datetime,date
 import time
-import winsound
+#import winsound
 comname = os.environ['COMPUTERNAME']
+#print comname,type(comname)
 user = os.path.basename( os.environ['USERPROFILE'] )
  
 lastmodified = time.strftime('%H%M')
 f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog','w')
-f2 = open('c:\\windows\\system32\\drivers\\etc\\logwarning','w')
+f2 = open('c:\\windows\\system32\\drivers\\etc\\revwarning','w')
 f1.close(); f2.close()
 f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog','a')
-f2 = open('c:\\windows\\system32\\drivers\\etc\\logwarning','a')
+f2 = open('c:\\windows\\system32\\drivers\\etc\\revwarning','a')
 
 startday = date(2016,10,6)
+
 def getAnextday(aday=None):
     if not aday: aday = date.today()
     daydelta = date.toordinal(aday) - date.toordinal(startday)
@@ -31,27 +33,43 @@ def getBnextday(bday=None):
     elif daydelta % 18 == 12+1: return bday
     return False
 
-def dorev():
-    now = datetime.now()
-    f1.write(now.ctime()+'\n' )
-    f1.flush()
-    x = random.choice([1,1,1,1,1,1,1,1,2,2,3,90])
-    time.sleep(x/80000.0)
-    #winsound.Beep(50,5)
-    f2.write(str(now.second)+'\n' )
-    f2.flush()
+def getRandomThree():
+    a = random.randint(0,20)
+    b = random.randint(20,40)
+    c = random.randint(40,59)
+    return [a,b,c]
 
-def runDoSvc():
-    f1.write('Running revSvc\n')
+def runTest():
+    #print 'started at %s\n' %time.ctime()
+    f2.write('started at %s\n' %time.ctime() )
+    start = time.time()
+    running = True
+    while running:
+        if time.time() - start > 60*3:
+            running = False
+        #print 'running: ', running
+
+    else:
+        #print 'ended at %s\n' %time.ctime()
+        f2.write('ended at %s\n' %time.ctime() )
+        time.sleep(1.0)
+def check_hlyctlsvc():
     try:
         os.system('sc start hlyctlsvc >> revsvclout')
     except:
-        f1.write('failed hlyctlsvc or running >> revsvclout')
+        f2.write('failed hlyctlsvc or hlyctl already running %s\n' %time.ctime() )
+        time.sleep(1.0)
+
+def runDoSvc():
+    f1.write( 'Running revSvc at %s\n' %time.ctime() )
+    check_hlyctlsvc()
     Anextday=Bnextday=None
+
+    startmin = getRandomThree()
     while True:
+        now = datetime.now()
         if getAnextday(): Anextday = getAnextday()
         if getBnextday(): Bnextday = getBnextday()
-        now = datetime.now()
         #print now.day, Anextday, Bnextday
         #if comname == 'PC-PC': print comname
         if now.day not in (Anextday,Bnextday):
@@ -59,12 +77,23 @@ def runDoSvc():
             continue
         if comname == 'PC-PC' and now.day == Anextday:
             #print comname, Anextday
-            if 3 < now.hour < 7:
-                dorev()
+            if now.hour == 3 and now.minute in (20,40,50):
+                f2.write('Anextday is %s\n' % str(Anextday)  )
+                f2.write('today is %s\n' % str(now.date())  )
+                time.sleep(10.0)
+            if 4 <= now.hour <= 6 and now.minute in startmin:
+                runTest()
         elif now.day == Bnextday:
             #print comname, Bnextday
-            if 2 < now.hour < 6:
-                dorev()
+            if now.hour == 2 and now.minute in (20,40,50):
+                f2.write('Bnextday is %s\n' % str(Bnextday)  )
+                f2.write('today is %s\n' % str(now.date())  )
+                time.sleep(20.0)
+            if 3 <= now.hour <= 5 and now.minute in startmin:
+                runTest()
+        f1.flush()
+        f2.flush()
+        time.sleep(1.0)
 
 class revsvc(win32serviceutil.ServiceFramework):
 
@@ -88,7 +117,8 @@ class revsvc(win32serviceutil.ServiceFramework):
         runDoSvc()
 #           #if type not in ( win32service.SERVICE_STOP,win32service.SERVICE_STOP_PENDING ):
 if __name__=='__main__':
-    win32serviceutil.HandleCommandLine(revsvc)
+    runDoSvc()
+    #win32serviceutil.HandleCommandLine(revsvc)
     '''
     today = date.today()
     runDoSvc()

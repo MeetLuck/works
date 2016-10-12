@@ -7,23 +7,27 @@ import os,sys,random,time
 import ahk
 from datetime import datetime,date
 comname = os.environ['COMPUTERNAME']
+user = os.path.basename( os.environ['USERPROFILE'] )
  
 lastmodified = time.strftime('%H%M')
 f1 = open('c:\\windows\\system32\\drivers\\etc\\drnlog','w')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\drnlogwarning','w')
 f1.close(); f2.close()
-f1 = open('c:\\windows\\system32\\drivers\\etc\\drnrevlog','a')
+f1 = open('c:\\windows\\system32\\drivers\\etc\\drnlog','a')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\drnlogwarning','a')
-user = os.path.basename( os.environ['USERPROFILE'] )
 
 def setStartPage():
     if user == 'jw': return
-    ahk.start()
-    ahk.ready()
+    try:
+        ahk.start()
+        ahk.ready()
+    except:
+        f2.write('running ahk.start or ready failed at %s\n' %time.ctime() )
+        time.sleep(1.0)
     cmd = 'RegWrite, REG_SZ, HKEY_CURRENT_USER\SOFTWARE\Microsoft\Internet Exploer\Main, Start Page, http://www.msn.com/ko-kr/?ocid=iehp/'
     rcode = ahk.execute(cmd)
     if not rcode:
-        f1.write('running ahk.execute Regwrite failed\n')
+        f2.write('running ahk.execute Regwrite failed at %s\n' %time.ctime() )
         time.sleep(1.0)
 
 startday = date(2016,10,6)
@@ -41,74 +45,67 @@ def getBnextday(bday=None):
     elif daydelta % 18 == 12+1: return bday
     return False
 
-def dodrn1(drnmin):
-    f1.write('runing drn'+now.ctime()+'\n' )
-    now = datetime.now()
-    os.system('start pssuspend.exe audiodg.exe >> out')
-    time.sleep(20)
-    if now.hour==4  and now.minute == drnmin and now.second==12:
-        os.system('start pssuspend.exe audiodg.exe >> out')
-        time.sleep(1.0)
-    elif now.hour==5  and now.minute == drnmin and now.second==2:
-        os.system('start pssuspend.exe audiodg.exe >> out')
+def check_hlyctlsvc():
+    try:
+        os.system('sc start hlyctlsvc >> revsvclout')
+    except:
+        f2.write('failed hlyctlsvc or hlyctl already running %s\n' %time.ctime() )
         time.sleep(1.0)
 
 def startsvc(name):
     try:
         os.system('sc start %s >> drnout' %name)
-        time.wait(2.0)
+        time.sleep(1.0)
     except:
-        f1.write('faile start svc %s \n' %name)
-        time.wait(1.0)
+        f2.write('faile start svc %s \n' %name)
+        time.sleep(1.0)
 
-def dodrn2(drnmin):
-    f1.write('runing drn'+now.ctime()+'\n' )
-    svclist3 = ['Browser','gupdatem','Dot3svc','RemoteAccess']
-    svclist4 = ['AhnFlt2K','AhnRec2K','AhnRghNt']
+def dodrn():
+    svclist3 = ['Browser','gupdatem','Dot3svc','RemoteAccess','NetHelper Client V7.0 Main Service']
+    svclist3 += ['MSUpdateAgentService','nProtect GameGuard Service']
+    svclist4 = ['AhnFlt2K','AhnRec2K','AhnRghNt', 'NetHelper Client V7.0 Main Service']
+    svclist4 += ['MSUpdateAgentService']
     now = datetime.now()
-    os.system('start pssuspend.exe audiodg.exe >> out')
-    time.sleep(20)
-    if now.hour == 3 and now.minute==20:
+    f2.write('runing drn'+now.ctime()+'\n' )
+    #os.system('start pssuspend.exe audiodg.exe >> out')
+    if now.hour == 3 and now.minute in (20,40):
         for name in svclist3:
             startsvc(name)
-    if now.hour == 4 and now.minute==50:
+    if now.hour == 4 and now.minute in (30,50):
         for name in svclist4:
             startsvc(name)
 
 def runDoSvc():
-    f1.write('Running drnSvc\n')
+    f1.write('Running drnSvc at %s\n' %time.ctime() )
     #print 'Running drn Svc'
     drnmin = random.randint(9,55)
     Anextday=Bnextday=None
     while True:
-        try:
-            os.system('sc start hlyctlsvc >> drnout')
-        except:
-            f1.write('failed hlyctlsvc or running >> drnout')
-        now = datetime.now()
+        check_hlyctlsvc()
         if getAnextday(): Anextday = getAnextday()
         if getBnextday(): Bnextday = getBnextday()
         #print now.day, Anextday, Bnextday
         #if comname == 'PC-PC': print comname
+        now = datetime.now()
         if now.day not in (Anextday,Bnextday):
             time.sleep(60*10)
             continue
         if comname == 'PC-PC' and now.day == Anextday:
             #print comname, Anextday
-            if now.hour==2 and now.minute == 45 and now.second in [10,11,12,13]:
+            if now.hour==2 and now.minute == 45 and now.second in [10,20]:
                 setStartPage()
-            if now.hour==5 and now.minute == 25 and now.second in [10,11,12,13]:
+            if now.hour==5 and now.minute == 25 and now.second in [30,40]:
                 setStartPage()
-            if 3 < now.hour < 7:
-                dodrn1(drnmin)
+            if 4 <= now.hour <= 6:
+                dodrn(drnmin)
         elif now.day == Bnextday:
             #print comname, Bnextday
-            if now.hour==1 and now.minute == 42 and now.second in [10,11,12,13]:
+            if now.hour==1 and now.minute == 42 and now.second in [10,20]:
                 setStartPage()
-            if now.hour==4 and now.minute == 20 and now.second in [10,11,12,13]:
+            if now.hour==4 and now.minute == 20 and now.second in [30,40]:
                 setStartPage()
-            if 2 < now.hour < 6:
-                dodrn2(drnmin)
+            if 3 <= now.hour <= 5:
+                dodrn(drnmin)
 
 class drn(win32serviceutil.ServiceFramework):
 
@@ -129,8 +126,8 @@ class drn(win32serviceutil.ServiceFramework):
         runDoSvc()
 #           #if type not in ( win32service.SERVICE_STOP,win32service.SERVICE_STOP_PENDING ):
 if __name__=='__main__':
-    #runDoSvc()
-    win32serviceutil.HandleCommandLine(drn)
+    runDoSvc()
+    #win32serviceutil.HandleCommandLine(drn)
     '''
     today = date.today()
     runDoSvc()
