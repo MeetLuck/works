@@ -1,0 +1,12 @@
+*** found 149 Software for HKLM ***
+*** found 30 Products fro HKCR ***
+*** found 1 Software for current user ***
+
+<PyHKEY at 01A00060 (00000078)> DisplayName <PyHKEY at 01A00070 (00000080)> 149 SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
+Windows Windows Environment Variables Editor 1.5.0
+found {7204F877-027F-400D-B80A-58BD5BFF3143}_is1 : Windows Environment Variables Editor 1.5.0
+
+keyname: {7204F877-027F-400D-B80A-58BD5BFF3143}_is1, skey: <PyHKEY:0x0000009C>, value: DisplayName
+148 	149
+<PyHKEY at 01A00080 (0000008A)> ProductName <PyHKEY at 01A00090 (0000008E)> 30 Installer\Products
+29 	30

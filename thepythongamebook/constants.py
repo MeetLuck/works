@@ -19,5 +19,5 @@ def checkQuit(): # event handler
     for e in pygame.event.get():
         if e.type == pygame.QUIT or e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
             return False
-        pygame.event.post(e)
+        #pygame.event.post(e)
     return True

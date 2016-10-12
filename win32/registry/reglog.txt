@@ -1,0 +1,11 @@
+keyname: Winamp, skey: <PyHKEY:0x00000098>, value: DisplayName
+keyname: {7204F877-027F-400D-B80A-58BD5BFF3143}_is1, skey: <PyHKEY:0x0000009C>, value: DisplayName
+keyname: {9DA28CE5-0AA5-429E-86D8-686ED898C665}, skey: <PyHKEY:0x00000098>, value: DisplayName
+keyname: 5EC82AD95AA0E924688D86E68D896C56, skey: <PyHKEY:0x0000009A>, value: ProductName
+keyname: 7-Zip, skey: <PyHKEY:0x00000098>, value: DisplayName
+keyname: Audacity_is1, skey: <PyHKEY:0x00000098>, value: DisplayName
+keyname: PotPlayer, skey: <PyHKEY:0x00000098>, value: DisplayName
+keyname: {18455581-E099-4BA8-BC6B-F34B2F06600C}, skey: <PyHKEY:0x00000098>, value: DisplayName
+keyname: {2318C2B1-4965-11d4-9B18-009027A5CD4F}, skey: <PyHKEY:0x00000098>, value: DisplayName
+keyname: 18555481990E8AB4CBB63FB4F26006C0, skey: <PyHKEY:0x0000009E>, value: ProductName
+keyname: Mozilla Firefox 49.0.1 (x86 ko), skey: <PyHKEY:0x00000098>, value: DisplayName
