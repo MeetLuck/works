@@ -1,5 +1,6 @@
 import pygame,random,os
-
+# fps
+fps = 50
 # colors
 white = pygame.Color('white')
 red = pygame.Color('red')

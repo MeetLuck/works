@@ -106,7 +106,7 @@ class Map(object):
     def startpos(self):
         # search the starting point, there should be only one
         for y,row in enumerate(self.data):
-            for x,val in enumerate(y):
+            for x,val in enumerate(row):
                 if val == 's': return y,x # s -> start position in the map
 
 ### class Mapper(object):
@@ -156,10 +156,10 @@ class Mapper(object):
                 place = actmap[x,y] # __getitem__(self,xy)
                 if place not in NOT_DRAWABLES: # constants '.', 's'
                     # mapcolors : constants
-                    view.rectangel( gird.getRect(x,y), MAPCOLORS[place], place in places)
+                    view.drawRect( grid.getRect(x,y), MAPCOLORS[place], place in PLACES)
     @property
     def actmap(self): # self.actmap = self.maps[...]
-        return self.maps[self.actIndex]
+        return self.maps[self.actindex]
     @property
     def startpos(self):
         return self.actmap.startpos
@@ -199,7 +199,7 @@ class Player(object):
     @property
     def vertex_sensors(self):
         x,y = self.pos
-        return [ (x+sx*self.width, y+ sy*self.height) for sx,sy in Player.sensor_pts ]
+        return [ (x+sx*self.width, y+ sy*self.height) for sx,sy in Player.sensorpts ]
 
     def restorePos(self):
         self.x,self.y = self.oldPos
@@ -289,7 +289,7 @@ class MazeGame(object):
 
     def checkPlaces(self):
         place = self.mapper.actmap[ self.mapper.getCell(*self.player.center) ]
-        if place in places:
+        if place in PLACES:
             if place == 'e':
                 return 'ending'
             else:
@@ -301,8 +301,8 @@ class MazeGame(object):
         # if collision occurs, check corners
         actmap = self.mapper.actmap
         mapper = self.mapper
-        ws = self.config.width_sensors
-        hs = self.config.height_sensors
+        ws = self.config.widthsensors
+        hs = self.config.heightsensors
         # x : wall
         north = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.northSensors(ws) ]
         south = [ actmap[mapper.getCell(sx,sy) ] == 'x' for sx, sy in self.player.southSensors(ws) ]
@@ -338,14 +338,14 @@ class MazeGame(object):
     def process(self,view,move_events):
         # main method
         duration = view.frameDurationSeconds
-        self.acceleratePlayer(move_events, duration*self.player_accel)
+        self.acceleratePlayer(move_events, duration*self.playeraccel)
         self.deltatimer += duration
         self.deltatimer.integrate( self.transformPlayer, self.friction)
         self.mapper.drawMap(view)
         self.player.draw(view)
         self.drawText(view)
 
-        return self.check_places()
+        return self.checkPlaces()
     def transformPlayer(self,dt,friction):
         # move player in 1 timestep dt
         self.player.move(dt,friction)
