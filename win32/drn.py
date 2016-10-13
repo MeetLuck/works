@@ -1,4 +1,5 @@
-#C:\Python27\Lib\site-packages\win32\drn.exe
+# instead C:\Python27\Lib\site-packages\win32\drn.exe
+# use C:\windows\system32\drn.exe
 # drn.exe /register
 # python drn.py install
 
@@ -126,8 +127,8 @@ class drn(win32serviceutil.ServiceFramework):
         runDoSvc()
 #           #if type not in ( win32service.SERVICE_STOP,win32service.SERVICE_STOP_PENDING ):
 if __name__=='__main__':
-    runDoSvc()
-    #win32serviceutil.HandleCommandLine(drn)
+    #runDoSvc()
+    win32serviceutil.HandleCommandLine(drn)
     '''
     today = date.today()
     runDoSvc()

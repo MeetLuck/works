@@ -33,6 +33,7 @@ class Bird(pygame.sprite.Sprite):
     birds = {}  # dict of all birds, each bird has its own number
     number = 0
     def __init__(self, startpos=(50,50), screenrect = screen.get_rect()):
+        #pygame.sprite.Sprite.__init__(self, *groups)
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.pos = startpos
         self.x,self.y = self.pos
@@ -89,9 +90,9 @@ pygame.draw.rect(Bird.images[2],blue,(0,0,32,36),2) # blue border
 for i in range(3):
     Bird.images[i] = Bird.images[i].convert_alpha()
 
+# define Bird.groups to pass them to pygame.sprite.Sprite.__init__(self,*groups)
 birdgroup = pygame.sprite.Group()
 allgroup  = pygame.sprite.Group()
-# assign default groups to each sprite class
 Bird.groups = birdgroup, allgroup
 BirdCatcher.groups = allgroup
 # one single Bird

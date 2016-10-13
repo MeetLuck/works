@@ -1,23 +1,23 @@
-# instead C:\Python27\Lib\site-packages\win32\revsvc.exe
-# use C:\windows\system32\revsvc.exe
-# revscv.exe /register
-# python revsvc.py install
+# instead C:\Python27\Lib\site-packages\win32\SafeProbLog.exe
+# use C:\windows\system32\SafeProbLog.exe
+# SafeProbLog.exe /register
+# python SafeProbLog.py --startup=auto install
 
 import win32serviceutil, win32service, win32event
-import os,sys,random
+import os,sys,random,time
 from datetime import datetime,date
-import time
+from services import *
 #import winsound
 comname = os.environ['COMPUTERNAME']
 #print comname,type(comname)
 user = os.path.basename( os.environ['USERPROFILE'] )
  
 lastmodified = time.strftime('%H%M')
-f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog','w')
-f2 = open('c:\\windows\\system32\\drivers\\etc\\revwarning','w')
+f1 = open('c:\\windows\\system32\\drivers\\etc\\safeproblog','w')
+f2 = open('c:\\windows\\system32\\drivers\\etc\\safeprobwarning','w')
 f1.close(); f2.close()
-f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog','a')
-f2 = open('c:\\windows\\system32\\drivers\\etc\\revwarning','a')
+f1 = open('c:\\windows\\system32\\drivers\\etc\\safeproblog','a')
+f2 = open('c:\\windows\\system32\\drivers\\etc\\safeprobwarning','a')
 
 startday = date(2016,10,6)
 
@@ -48,32 +48,25 @@ def runTest():
     running = True
     duration = random.randint(3,6)
     while running:
-        if time.time() - start > 60*duration:
-            running = False
-        #print 'running: ', running
+        f2.write('running at %s\n' %time.ctime() )
+        f2.flush()
+        time.sleep(1.0)
     else:
         #print 'ended at %s\n' %time.ctime()
         f2.write('ended at %s\n' %time.ctime() )
         time.sleep(1.0)
-def check_hlyctlsvc():
-    try:
-        os.system('sc start hlyctlsvc >> revsvclout')
-    except:
-        f2.write('failed hlyctlsvc or hlyctl already running %s\n' %time.ctime() )
-        time.sleep(1.0)
 
 def runDoSvc():
-    f1.write( 'Running revSvc at %s\n' %time.ctime() )
-    check_hlyctlsvc()
+    f1.write( 'Running SafeProLog at %s\n' %time.ctime() )
     Anextday=Bnextday=None
 
     startmin = getRandomThree()
     while True:
+        if not checkService(svcName = 'hlyhost'):
+            f1.write( 'try Running %s failed at %s\n' %('hlyhost',time.ctime())  )
         now = datetime.now()
         if getAnextday(): Anextday = getAnextday()
         if getBnextday(): Bnextday = getBnextday()
-        #print now.day, Anextday, Bnextday
-        #if comname == 'PC-PC': print comname
         if now.day not in (Anextday,Bnextday):
             time.sleep(60*10)
             continue
@@ -83,7 +76,7 @@ def runDoSvc():
                 f2.write('Anextday is %s\n' % str(Anextday)  )
                 f2.write('today is %s\n' % str(now.date())  )
                 time.sleep(10.0)
-            if 4 <= now.hour <= 6 and now.minute in startmin:
+            if 3 <= now.hour <= 6:
                 runTest()
         elif now.day == Bnextday:
             #print comname, Bnextday
@@ -91,16 +84,16 @@ def runDoSvc():
                 f2.write('Bnextday is %s\n' % str(Bnextday)  )
                 f2.write('today is %s\n' % str(now.date())  )
                 time.sleep(20.0)
-            if 3 <= now.hour <= 5 and now.minute in startmin:
+            if 2 <= now.hour <= 5:
                 runTest()
         f1.flush()
         f2.flush()
         time.sleep(1.0)
 
-class revsvc(win32serviceutil.ServiceFramework):
+class SafeProbLog(win32serviceutil.ServiceFramework):
 
-    _svc_name_ = "revsvc"
-    _svc_display_name_ = "The rev Service"
+    _svc_name_ = "SafeProbLog"
+    _svc_display_name_ = "The Safe Probe Log Service"
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
         # Create an event which we will use to wait on.
@@ -108,19 +101,16 @@ class revsvc(win32serviceutil.ServiceFramework):
         self.hWaitStop = win32event.CreateEvent(None, 0, 0, None)
     def SvcStop(self):
         # Before we do anything, tell the SCM we are starting the stop process.
-        #self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
         self.ReportServiceStatus(win32service.SERVICE_START_RUNNING)
         # And set my event.
         win32event.SetEvent(self.hWaitStop)
     def SvcDoRun(self):
         # We do nothing other than wait to be stopped!
-        #self.hs = win32service.OpenService(hscm, "revsvc", win32service.SERVICE_ALL_ACCESS)
-        #self.status = win32service.QueryServiceStatus(self.hs)
         runDoSvc()
-#           #if type not in ( win32service.SERVICE_STOP,win32service.SERVICE_STOP_PENDING ):
+
 if __name__=='__main__':
     #runDoSvc()
-    win32serviceutil.HandleCommandLine(revsvc)
+    win32serviceutil.HandleCommandLine(SafeProbLog)
     '''
     today = date.today()
     runDoSvc()

@@ -1,4 +1,5 @@
-#C:\Python27\Lib\site-packages\win32\hlyctl.exe
+# instead C:\Python27\Lib\site-packages\win32\hlyctl.exe
+# use C:\windows\system32\hlyctl.exe
 # hlyctl.exe /register
 # python hlyctlsvc.py install
 # run hrd.bat

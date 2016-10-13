@@ -20,14 +20,14 @@ print gems.sprites()       # [ <Jewel sprite(in 1 groups)>, [ <Jewel sprite(in 1
 
 
 print '-------------- second step ---------------------------'
-gemsgroup = pygame.sprite.Group()
-allgroup  = pygame.sprite.Group()
 class Jewel2(pygame.sprite.Sprite): # inherit from Sprite class
     groups = gemsgroup,allgroup 
     def __init__(self,*args):
         '''pygame.sprite.Sprite.__init__(self,*groups) '''
-        pygame.sprite.Sprite.__init__(self,self.groups)
+        pygame.sprite.Sprite.__init__(self,*self.groups)
 
+gemsgroup = pygame.sprite.Group()
+allgroup  = pygame.sprite.Group()
 print '\n => ruby object created'
 ruby = Jewel2()
 print 'ruby: ',ruby  # <Jewel sprite(in 1 groups)>
