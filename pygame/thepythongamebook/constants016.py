@@ -1,7 +1,8 @@
 import pygame,random,os
 pygame.mixer.pre_init(44100,-16,2,2048)
 pygame.init()
-screen = pygame.display.set_mode( (640,480) )
+screensize = screenwidth,screenheight
+screen = pygame.display.set_mode( screensize )
 BIRDSPEEDMAX = 200
 BIRDSPEEDMIN = 20
 FRICTION = 0.99
@@ -11,18 +12,21 @@ FORCEOFGRAVITY = 9.81 # in pixel per seconds
 print pygame.ver
 
 # colors
-white = pygame.Color('white')
-red = pygame.Color('red')
-green = pygame.Color('green')
-blue = pygame.Color('blue')
-black = pygame.Color('black')
-yellow = pygame.Color('yellow')
+white   = pygame.Color('white')
+red     = pygame.Color('red')
+green   = pygame.Color('green')
+blue    = pygame.Color('blue')
+black   = pygame.Color('black')
+yellow  = pygame.Color('yellow')
+pink    = (200,0,255) # pink
+randomblue = 0,0,random.randint(25,255)
+randomred = random.randint(25,255),0,0
 color02 = (66,1,166)
-color1 = red
-color2 = (0,255,155)
-color3 = (100,55,155)
-color4 = (250,100,255)
-color5 = color4
+color1  = red
+color2  = (0,255,155)
+color3  = (100,55,155)
+color4  = (250,100,255)
+color5  = color4
 
 def write(msg=None):
     font = pygame.font.SysFont('None',32)
