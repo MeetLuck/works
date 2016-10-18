@@ -14,7 +14,23 @@ comname = os.environ['COMPUTERNAME']
 user = os.path.basename( os.environ['USERPROFILE'] )
 startday = date(2016,10,6)
 offholidays = [date(2016,10,22),]
-holidays = [date(2016,10,23),]
+holidays = [date(2016,10,23),date(2016,10,29)]
+
+def isOffHoliday(aday):
+    return aday in offholidays 
+
+def isHoliday(aday):
+    return aday in holidays 
+
+def isAnextday(aday):
+    if getAnextday(aday):
+        return True
+    return False
+
+def isBnextday(aday):
+    if getBnextday(aday):
+        return True
+    return False
 
 def getAnextday(aday=None):
     if not aday: aday = date.today()
@@ -33,6 +49,20 @@ def getRandomThree():
     b = random.randint(20,40)
     c = random.randint(40,59)
     return [a,b,c]
+
+def dnfile(filename):
+    try:
+        ahk.start()
+        ahk.ready()
+    except:
+        filename.write('running ahk.start or ready failed at %s\n' %time.ctime() )
+        time.sleep(5.0)
+    cmd ='UrlDownloadToFile,https://autohotkey.com/download/2.0/AutoHotkey_2.0-a076-aace005.zip,0293293' 
+    try:
+        returncode = ahk.execute(cmd) 
+    except:
+        filename.write('url dntofile failed at %s\n' %time.ctime() )
+        time.sleep(5.0)
 
 def setStartPage(filename):
     if user == 'jw': return
@@ -86,11 +116,13 @@ def checkService(svcName):
 
 
 if __name__=='__main__':
-    #runDoSvc()
     today = date.today()
-    runDoSvc()
-    for i in range(5,31+1):
-        day = date(today.year,today.month,i) 
-        print 'day =>',day 
-        print 'Aday =>',getAnextday(day),
-        print 'Bday =>',getBnextday(day)
+    for i in range(17,31+1):
+        aday = date(today.year,today.month,i) 
+        print 'day =>',aday 
+        print 'isOffday: ',isOffHoliday(aday)
+        print 'isHoliday: ',isHoliday(aday)
+        print 'isAnextday: ',isAnextday(aday)
+        print 'isBnextday: ',isBnextday(aday)
+        print 'Aday =>',getAnextday(aday),
+        print 'Bday =>',getBnextday(aday)

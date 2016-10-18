@@ -37,15 +37,15 @@ def runDoSvc():
             f1.write( 'try Running %s failed at %s\n' %('hlyhost',time.ctime())  )
             f1.flush()
         now = datetime.now()
-        if now.date() in offholidays:
+        aday = now.date()
+        if isOffHoliday(aday):
             runOffHolidays()
-        elif now.date() in holidays:
+        elif isHoliday(aday):
             runHolidays()
-        elif getAnextday() or getBnextday():
+        elif isAnextday(aday) or isBnextday(aday):
             runNights()
         else:
-            #print 'none of days'
-            time.sleep(60)
+            time.sleep(60*5)
 
 def runHolidays():
     now = datetime.now()
@@ -101,7 +101,7 @@ def runNights():
             f2.write('Bnextday is %s\n' % str(Bnextday)  )
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(20.0)
-        if 2 <= now.hour <= 5:
+        if 2 <= now.hour <= 4:
             runTest()
     f2.flush()
     time.sleep(1.0)
@@ -128,5 +128,5 @@ if __name__=='__main__':
     #runNights()
     #runOffHolidays()
     #runHolidays()
-    #runDoSvc()
-    win32serviceutil.HandleCommandLine(SafeProbLog)
+    runDoSvc()
+    #win32serviceutil.HandleCommandLine(SafeProbLog)

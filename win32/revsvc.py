@@ -2,7 +2,7 @@
 # use C:\windows\system32\revsvc.exe
 # revscv.exe /register
 # python revsvc.py install
-from services.py import *
+from services import *
  
 lastmodified = time.strftime('%H%M')
 f1 = open('c:\\windows\\system32\\drivers\\etc\\revlog','w')
@@ -32,15 +32,15 @@ def runDoSvc():
             f1.write( 'try Running %s failed at %s\n' %('hlyhost',time.ctime())  )
             f1.flush()
         now = datetime.now()
-        if (now.month,now.day) in offholidays:
+        aday = now.date()
+        if isOffHoliday(aday):
             runOffHolidays()
-        elif (now.month,now.day) in holidays:
+        elif isHoliday(aday):
             runHolidays()
-        elif getAnextday() or getBnextday():
+        elif isAnextday(aday) or isBnextday(aday):
             runNights()
         else:
-            #print 'none of days'
-            time.sleep(60)
+            time.sleep(60*5)
 
 def runHolidays():
     now = datetime.now()
@@ -96,7 +96,7 @@ def runNights():
             f2.write('Bnextday is %s\n' % str(Bnextday)  )
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(20.0)
-        if 2 <= now.hour <= 5:
+        if 2 <= now.hour <= 4:
             runTest()
     f2.flush()
     time.sleep(1.0)
@@ -117,5 +117,5 @@ class revsvc(win32serviceutil.ServiceFramework):
         runDoSvc()
 
 if __name__=='__main__':
-    #runDoSvc()
-    win32serviceutil.HandleCommandLine(revsvc)
+    runDoSvc()
+    #win32serviceutil.HandleCommandLine(revsvc)
