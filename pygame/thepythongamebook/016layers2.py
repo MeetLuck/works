@@ -18,12 +18,67 @@ class Text(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = screenwidth/2, 10
 
+class Mountain(pygame.sprite.Sprite):
+    # generate a mountain sprite for the background to demonstrate parallax scrolling
+    # like in the classic 'moonbuggy' game. Mountains slide from right to left
+    def __init__(self,atype):
+        self.groups = mountaingroup, allgroup
+        pygame.sprite.Sprite.__init__(self,self.groups)
+
+        self.type = atype
+        if self.type == 1:
+            self._layer = -1
+            self.dx = -100
+            self.color = blue
+        elif self.type == 2:
+            self._layer = -2
+            self.dx = -75
+            self.color = pink
+        else:
+            self._layer = -3
+            self.dx = -35
+            self.color = red
+
+        self.dy = 0
+        width = 1.5 * 100 * self.type # 1.5%
+        height = screenheight/2 + 50*(self.type-1)
+        self.image = pygame.Surface( (width,height))
+        self.image.set_colorkey(black)
+        pygame.draw.polygon(self.image, self.color,
+                ( (0,height), (0,height-10*self.type),(width/2, int( random.random() * height/2 ) ),
+                  (width,height),(9,height) ), 0)
+        self.image.convert_alpha()
+        self.rect = self.image.get_rect()
+        self.x = screen.get_width()  - self.rect.width/2
+        self.y = screen.get_height() - self.rect.height/2
+        self.rect.centerx = int(self.x)
+        self.rect.centery = int(self.y)
+        self.parent = False
+
+    @property
+    def pos(self):
+        return self.x, self.y
+
+    def update(self,time):
+        self.x += self.dx * time
+        self.y += self.dy * time
+        self.rect.center = self.pos
+        #self.rect.centery = int(self.y)
+        # kill mountains too far to the left
+        if self.rect.centerx + self.rect.width/2 + 10 < 0:
+            self.kill()
+        # create new mountains if necessary
+        if not self.parent:
+            if self.rect.centerx < screen.get_width():
+                self.parent = True
+                Mountain(self.type) # new Mountain coming from the right side
+
 class BirdCatcher(pygame.sprite.Sprite):
     # circle around the mouse pointer. 
     # LEFT button create new sprite, RIGHT button kill sprite
     def __init__(self):
         self._layer = 9
-        self.groups = stuffgroup#, allgroup
+        self.groups = catchergroup, allgroup
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.image = pygame.Surface( (100,100) )
         self.image.set_colorkey(black)
@@ -182,7 +237,8 @@ birdgroup = pygame.sprite.Group()
 textgroup = pygame.sprite.Group()
 lifebargroup = pygame.sprite.Group()
 fraggroup = pygame.sprite.Group()
-#mountaingroup = pygame.sprite.Group()
+catchergroup = pygame.sprite.Group()
+mountaingroup = pygame.sprite.Group()
 
 # only allgroup draws the sprite, so use LayeredUpdates() instead Group()
 allgroup = pygame.sprite.LayeredUpdates() # can draw sprites in layers
@@ -213,15 +269,20 @@ def main():
     crysound = pygame.mixer.Sound( os.path.join('data','claws.ogg') )
 
     #--------- create Sprites
-    #hunter = BirdCatcher()
+    hunter = BirdCatcher()
 
     birdlayer = 4
     birdtext = Text('current Bird layer = %i' %birdlayer)
     cooldowntime = 0 # seconds
 
     # start with some Birds
-    for _ in range(30):
+    for _ in range(10):
         Bird(birdlayer) # one single Bird
+
+    # create the first parallax scrolling mountains
+    Mountain(1) # blue
+    Mountain(2) # pink
+    Mountain(3) # red
 
     mainloop = True
     while mainloop:
@@ -254,10 +315,10 @@ def main():
         for bird in birdgroup:
             bird.cleanStatus()
         # pygame.sprite.spritecollide(sprite,group,dokill,collide=None): return Sprite list
-        #crashgroup = pygame.sprite.spritecollide(hunter,birdgroup,False,pygame.sprite.collide_circle)
+        crashgroup = pygame.sprite.spritecollide(hunter,birdgroup,False,pygame.sprite.collide_circle)
         # pygame.sprite.collide_circle works ONLY IF sprite has self.radius
-        #for crashbird in crashgroup:
-        #   crashbird.catched = True # will get a blue border from Bird.update()
+        for crashbird in crashgroup:
+           crashbird.catched = True # will get a blue border from Bird.update()
         for bird in birdgroup:  # test if a bird collide with another bird
             # check Bird.number to make sure the bird is NOT crashing with himself
             crashgroup = pygame.sprite.spritecollide(bird,birdgroup,False)
