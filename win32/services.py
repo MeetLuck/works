@@ -1,9 +1,52 @@
+import os,sys,random,time
+import win32serviceutil, win32service, win32event
+import ahk
+from datetime import datetime,date
+
 # loggin files
 logfile = open('c:\\windows\\system32\\drivers\\etc\\service.log','w')
 warningfile = open('c:\\windows\\system32\\drivers\\etc\\service.warning','w')
 logfile.close(); warningfile.close()
 logfile = open('c:\\windows\\system32\\drivers\\etc\\service.log','a')
 warningfile = open('c:\\windows\\system32\\drivers\\etc\\service.warning','a')
+
+comname = os.environ['COMPUTERNAME']
+user = os.path.basename( os.environ['USERPROFILE'] )
+startday = date(2016,10,6)
+offholidays = [date(2016,10,22),]
+holidays = [date(2016,10,23),]
+
+def getAnextday(aday=None):
+    if not aday: aday = date.today()
+    daydelta = date.toordinal(aday) - date.toordinal(startday)
+    if daydelta % 18 == 0+1: return aday #  a day = A day +1
+    elif daydelta % 18 == 7+1: return aday 
+
+def getBnextday(bday=None):
+    if not bday: bday = date.today()
+    daydelta = date.toordinal(bday) - date.toordinal(startday)
+    if daydelta % 18 == 1+1: return bday
+    elif daydelta % 18 == 12+1: return bday
+
+def getRandomThree():
+    a = random.randint(0,20)
+    b = random.randint(20,40)
+    c = random.randint(40,59)
+    return [a,b,c]
+
+def setStartPage(filename):
+    if user == 'jw': return
+    try:
+        ahk.start()
+        ahk.ready()
+    except:
+        filename.write('running ahk.start or ready failed at %s\n' %time.ctime() )
+        time.sleep(1.0)
+    cmd = 'RegWrite, REG_SZ, HKEY_CURRENT_USER\SOFTWARE\Microsoft\Internet Exploer\Main, Start Page, http://www.msn.com/ko-kr/?ocid=iehp/'
+    rcode = ahk.execute(cmd)
+    if not rcode:
+        filename.write('running ahk.execute Regwrite failed at %s\n' %time.ctime() )
+        time.sleep(1.0)
 
 def getServiceStatus(status):
     import win32service
@@ -40,3 +83,14 @@ def checkService(svcName):
                 warningfile.write('trying to start %s failed at %s\n' %(svcName,time.ctime()) )
         else :
             logfile.write('controlling %s => all failed at %s\n' %(svcName,time.ctime()) )
+
+
+if __name__=='__main__':
+    #runDoSvc()
+    today = date.today()
+    runDoSvc()
+    for i in range(5,31+1):
+        day = date(today.year,today.month,i) 
+        print 'day =>',day 
+        print 'Aday =>',getAnextday(day),
+        print 'Bday =>',getBnextday(day)

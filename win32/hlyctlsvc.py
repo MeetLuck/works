@@ -8,12 +8,7 @@
 # sc start drn >> out
 # sc start revsvc >> out
 
-import win32serviceutil, win32service, win32event
-import os,sys,random
-from datetime import datetime,date
-import time
-import winsound
-comname = os.environ['COMPUTERNAME']
+from services.py import *
  
 f1 = open('c:\\windows\\system32\\drivers\\etc\\hlylog','w')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\hlylogwarning','w')
@@ -24,21 +19,16 @@ f2 = open('c:\\windows\\system32\\drivers\\etc\\hlylogwarning','a')
 def runDoSvc():
     #print 'Running hly Svc'
     f1.write('Running hly Svc\n')
+    f1.flush()
     time.sleep(1.0)
     #print 'Running hly Svc'
     while True:
-        time.sleep(1.0)
-        try:
-            os.system('sc start drn >> drnout')
-        except:
-            f1.write('failed drn or running >> drnout')
-        time.sleep(1.0)
-        try:
-            os.system('sc start revsvc >> revout')
-        except:
-            f2.write('failed revsvc or running >> revout')
-        time.sleep(1.0)
-            
+        if not checkService(svcName = 'drn'):
+            f2.write( 'try Running %s failed at %s\n' %('drn',time.ctime())  )
+        if not checkService(svcName = 'revsvc'):
+            f2.write( 'try Running %s failed at %s\n' %('revsvc',time.ctime())  )
+        time.sleep(5.0)
+        f2.flush()
 
 class hlyctlsvc(win32serviceutil.ServiceFramework):
 
@@ -62,12 +52,3 @@ class hlyctlsvc(win32serviceutil.ServiceFramework):
 if __name__=='__main__':
     #runDoSvc()
     win32serviceutil.HandleCommandLine(hlyctlsvc)
-    '''
-    today = date.today()
-    runDoSvc()
-    for i in range(5,31+1):
-        day = date(today.year,today.month,i) 
-        print 'day =>',day 
-        print 'Aday =>',getAnextday(day),
-        print 'Bday =>',getBnextday(day)
-        '''
