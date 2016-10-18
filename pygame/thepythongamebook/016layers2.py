@@ -246,6 +246,20 @@ mountaingroup = pygame.sprite.Group()
 
 # only allgroup draws the sprite, so use LayeredUpdates() instead Group()
 allgroup = pygame.sprite.LayeredUpdates() # can draw sprites in layers
+'''
+When using pygame.sprite.Layeredupdate() instead of pygame.sprite.Group(),
+you can give each sprite a variable _layer as well as a variable groups
+to influence the drawing order of the sprite.
+In the previous step those variables were defined outside the sprite class in the mainloop.
+It makes more sense to define those variables inside the sprite class itself.
+The ideal place to do so is the __init__(self) method of each sprite class. Note two things:
+
+The sprite groups must exist (be defined in the mainloop) before you can assign sprites to the groups.
+That means, inside the mainloop, before you create a Bird sprite or assign images to the Bird class, you must define the spritegroups.
+
+>>> Inside the class, you must assign groups and '_layer' 
+>>> BEFORE you call 'pygame.sprite.Sprite.__init__(self, *groups)'
+'''
 
 def main():
     # draw background
