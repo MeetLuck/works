@@ -67,8 +67,8 @@ def game():
         """generate a mountain sprite for the background, to 
            demonstrate parallax scrolling. Like in the classic
            'moonbuggy' game. Mountains slide from right to left"""
-        def __init__(self, type):
-            self.type = type
+        def __init__(self, atype):
+            self.type = atype
             if self.type == 1:
                 self._layer = -1
                 self.dx = -100
@@ -121,7 +121,6 @@ def game():
                     Mountain(self.type) # new Mountain coming from the right side
             
            
-    
     class Block(pygame.sprite.Sprite):
         """a block with a number indicating it's layer.
            Blocks move horizontal and bounce on screen edges"""
@@ -491,6 +490,8 @@ def game():
                     cry.play()
                     for bird in birdgroup:
                         allgroup.change_layer(bird, birdlayer) # allgroup draws the sprite 
+                    for bar in bargroup:
+                        allgroup.change_layer(bar, birdlayer) # allgroup draws the sprite 
                     for bar in bargroup:
                         allgroup.change_layer(bar, birdlayer) # allgroup draws the sprite 
             if pygame.mouse.get_pressed()[2]:

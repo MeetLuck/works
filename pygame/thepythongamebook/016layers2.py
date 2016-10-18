@@ -22,37 +22,41 @@ class Mountain(pygame.sprite.Sprite):
     # generate a mountain sprite for the background to demonstrate parallax scrolling
     # like in the classic 'moonbuggy' game. Mountains slide from right to left
     def __init__(self,atype):
-        self.groups = mountaingroup, allgroup
-        pygame.sprite.Sprite.__init__(self,self.groups)
 
         self.type = atype
         if self.type == 1:
             self._layer = -1
-            self.dx = -100
+            self.dx = -100.0
             self.color = blue
         elif self.type == 2:
             self._layer = -2
-            self.dx = -75
+            self.dx = -75.0
             self.color = pink
         else:
             self._layer = -3
-            self.dx = -35
+            self.dx = -35.0
             self.color = red
 
-        self.dy = 0
+        # why the order of self._layer and base constructor counts???
+        self.groups = mountaingroup, allgroup
+        pygame.sprite.Sprite.__init__(self,self.groups)
+
+        self.dy = 0.0
         width = 1.5 * 100 * self.type # 1.5%
-        height = screenheight/2 + 50*(self.type-1)
+        height = screenheight/2.0 + 50.0*(self.type-1)
         self.image = pygame.Surface( (width,height))
         self.image.set_colorkey(black)
         pygame.draw.polygon(self.image, self.color,
-                ( (0,height), (0,height-10*self.type),(width/2, int( random.random() * height/2 ) ),
-                  (width,height),(9,height) ), 0)
+              ( (0,height),
+                (0,height-10*self.type),
+                (width/2, int( random.random() * height/2.0 ) ),
+                (width,height),
+                (9,height) ), 0)
         self.image.convert_alpha()
         self.rect = self.image.get_rect()
-        self.x = screen.get_width()  - self.rect.width/2
-        self.y = screen.get_height() - self.rect.height/2
-        self.rect.centerx = int(self.x)
-        self.rect.centery = int(self.y)
+        self.x = screenwidth  + self.rect.width/2.0
+        self.y = screenheight - self.rect.height/2.0
+        self.rect.center = self.pos
         self.parent = False
 
     @property
@@ -69,7 +73,7 @@ class Mountain(pygame.sprite.Sprite):
             self.kill()
         # create new mountains if necessary
         if not self.parent:
-            if self.rect.centerx < screen.get_width():
+            if self.rect.centerx < screenwidth:
                 self.parent = True
                 Mountain(self.type) # new Mountain coming from the right side
 
@@ -296,18 +300,22 @@ def main():
                 if e.key == pygame.K_g: # toggle gravity
                     printBirds()
                     Fragment.gravity = not Fragment.gravity
-        # change bird layer on mouse click
-        leftmouse,_,rightmouse = pygame.mouse.get_pressed()
-        if leftmouse and birdlayer < 10:
-            birdlayer += 1
-            crysound.play()
-            for bird in birdgroup:
-                allgroup.change_layer(bird,birdlayer)
-        if rightmouse and birdlayer > -4:
-            birdlayer -= 1
-            crysound.play()
-            for bird in birdgroup:
-                allgroup.change_layer(bird,birdlayer)
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == 1 and birdlayer < 10:
+                    birdlayer += 1
+                    crysound.play()
+                    for bird in birdgroup:
+                        allgroup.change_layer(bird,birdlayer)
+                    for lifebar in lifebargroup:
+                        allgroup.change_layer(lifebar, birdlayer) # allgroup draws the sprite 
+                if e.button == 3 and birdlayer > -4:
+                    birdlayer -= 1
+                    crysound.play()
+                    for bird in birdgroup:
+                        allgroup.change_layer(bird,birdlayer)
+                    for lifebar in lifebargroup:
+                        allgroup.change_layer(lifebar, birdlayer) # allgroup draws the sprite 
+
         pygame.display.set_caption("fps: %.2f birds: %i grav: %s" % (clock.get_fps(), len(birdgroup),
                                     Fragment.gravity))
         birdtext.newMsg('current Bird layer = %i' %birdlayer) # update text for birdlayer

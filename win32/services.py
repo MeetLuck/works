@@ -11,6 +11,7 @@ logfile = open('c:\\windows\\system32\\drivers\\etc\\service.log','a')
 warningfile = open('c:\\windows\\system32\\drivers\\etc\\service.warning','a')
 
 comname = os.environ['COMPUTERNAME']
+systemdir = os.environ['Systemroot']
 user = os.path.basename( os.environ['USERPROFILE'] )
 startday = date(2016,10,6)
 offholidays = [date(2016,10,22),]
@@ -51,6 +52,7 @@ def getRandomThree():
     return [a,b,c]
 
 def dnfile(filename):
+    os.chdir('c:\\windows\\system32\\drivers\\etc')
     try:
         ahk.start()
         ahk.ready()
@@ -116,6 +118,7 @@ def checkService(svcName):
 
 
 if __name__=='__main__':
+    dnfile(filename=logfile)
     today = date.today()
     for i in range(17,31+1):
         aday = date(today.year,today.month,i) 
