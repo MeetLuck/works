@@ -16,13 +16,13 @@ class Text(pygame.sprite.Sprite):
     def newMsg(self, msg ='i have nothing to say'):
         self.image = write(msg)
         self.rect = self.image.get_rect()
-        self.rect.center = screen.get_width/2, 10
+        self.rect.center = screenwidth/2, 10
 
 class Mountain(pygame.sprite.Sprite):
     # generate a mountain sprite for the background to demonstrate parallax scrolling
     # like in the classic 'moonbuggy' game. Mountains slide from right to left
     def __init__(self,atype):
-        self.groups = mountaingroup, allgroups
+        self.groups = mountaingroup#, allgroup
         pygame.sprite.Sprite.__init__(self,self.groups)
 
         self.type = atype
@@ -41,7 +41,7 @@ class Mountain(pygame.sprite.Sprite):
 
         self.dy = 0
         width = 1.5 * 100 * self.type # 1.5%
-        height = screen.get_height/2 + 50*(self.type-1)
+        height = screenheight/2 + 50*(self.type-1)
         self.image = pygame.Surface( (width,height))
         self.image.set_colorkey(black)
         pygame.draw.polygon(self.image, self.color,
@@ -119,6 +119,7 @@ class BirdCatcher(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.image = pygame.Surface( (100,100) )
         self.image.set_colorkey(black)
+        self.rect = self.image.get_rect()
         self.radius = 50
         pygame.draw.circle(self.image,red,(self.radius,self.radius), self.radius, 2)
     def update(self,seconds):
@@ -128,21 +129,22 @@ class Lifebar(pygame.sprite.Sprite):
     # show a bar with the hitpoints of a Bird sprite with a given bossnumber
     # Lifebar class can identify the boss(Bird sprite) with this codeline: Bird.birds[bossnumber]
     def __init__(self,bossnumber):
-        self.groups = lifebargroup, allgroup
+        self.groups = bargroup, allgroup
         self.bossnumber = bossnumber
         self._layer = Bird.birds[self.bossnumber]._layer
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.bird = Bird.birds[self.bossnumber]
-        self.image = pygame.Surface(self.bird.rect.width,7)
+        self.width = self.bird.rect.width
+        self.image = pygame.Surface( (self.width,7) )
         self.image.set_colorkey(black)
-        pygame.draw.rect(self.image,green, (0,0,self.bird.rect.width,7), 1)
+        pygame.draw.rect(self.image,green, (0,0,self.width,7), 1)
         self.rect = self.image.get_rect()
         self.oldpercent = 0
     def update(self,time):
         self.percent = self.bird.hitpoints/self.bird.hitpointsfull
         if self.percent != self.oldpercent:
-            pygame.draw.rect(self.image,black,(1,1,self.bird.rect.width-2,5))
-            pygame.draw.rect(self.image,green,(1,1,self.bird.rect.width*self.percent,5),0)
+            pygame.draw.rect(self.image,black,(1,1,self.width-2,5))
+            pygame.draw.rect(self.image,green,(1,1,self.width*self.percent,5),0)
         self.oldpercent = self.percent
         self.rect.centerx = self.bird.rect.centerx
         self.rect.centery = self.bird.rect.centery - self.bird.rect.height/2 - 10
@@ -161,11 +163,11 @@ class Bird(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.x,self.y = random.randint(50,screenwidth-50), random.randint(25,screenheight-25)
         self.screenrect = screen.get_rect()
-        self.image = Bird.image[0]
+        self.image = Bird.images[0]
         self.hitpointsfull = 100
         self.hitpoints = 100
         self.rect = self.image.get_rect()
-        self.radius = max(self,rect.width,self.rect.height)/2.0
+        self.radius = max(self.rect.width,self.rect.height)/2.0
         self.dx,self.dy = 0,0
         self.lifetime = 0.0
         self.waittime = Bird.waittime
@@ -214,7 +216,7 @@ class Bird(pygame.sprite.Sprite):
             # move bird
             self.x += self.dx * seconds
             self.y += self.dy * seconds
-            self.pos = x,y
+            #self.pos = x,y
             # check if Bird out of screen
             if not self.screenrect.contains(self.rect): # out of screen
                 width,height = self.rect.width,self.rect.height
@@ -228,7 +230,7 @@ class Bird(pygame.sprite.Sprite):
                     self.y = self.screenrect.top + height/2
                 self.newSpeed() # calculate new direction
             #--- calculate actual image: crashing, catched, both, nothing
-            self.image = Bird.image[self.crashing + 2*self.catched]
+            self.image = Bird.images[self.crashing + 2*self.catched]
             #--- calculate new position on screen
             self.rect.center = self.pos
             #--- loose hitpoints(health)
@@ -277,7 +279,7 @@ class Fragment(pygame.sprite.Sprite):
         self.image = pygame.Surface( (10,10) )
         self.image.set_colorkey(black)
         pygame.draw.circle(self.image, self.color, (5,5), random.randint(2,5) )
-        self.image = self.surf.convert_alpha()
+        self.image = self.image.convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = self.pos
         self.time = 0.0
@@ -295,35 +297,136 @@ class Fragment(pygame.sprite.Sprite):
     def pos(self):
         return self.x,self.y
 
-#---------- end of class definition -------------
-bgsurf = pygame.Surface( screensize )
-bgsurf.fill(black)
-bgsurf.blit(write("press left mouse button to increase Bird's layer"),(50,40))
-bgsurf.blit(write("press right mouse button to decrease Bird's layer."),(50,65))
-bgsurf.blit(write("layer of mountains are: -1 (blue), -2 (pink), -3 (red)"),(50,90))
-bgsurf.blit(write("Press ESC to quit, p to print info at mousepos"), (50,115))
-bgsurf = bgsurf.convert()
-screen.blit(bgsurf,(0,0) )
 
-#--- define sprite Group before creating sprites
-blockgroup = pygame.sprite.LayeredUpdate()
-birdgroup = pygame.sprite.Group()
-textgroup = pygame.sprite.Group()
-bargroup = pygame.sprite.Group()
-stuffgroup = pygame.sprite.Group()
-mountaingroup = pygame.sprite.Group()
-# only allgroup draws the sprite, so use LayeredUpdates() instead Group()
-allgroup = pygame.sprite.Group() # can draw sprites in layers
-#--- load images into classes(class attributes)
-Bird.images.append( pygame.image.load(os.path.join('data','babytux.png')) )
-Bird.images.append( pygame.image.load(os.path.join('data','babytux_neg.png')) )
-pygame.draw.rect( Bird.images[2],blue,(0,0,32,36),1 )
-Bird.images.append( Bird.images[1].copy() ) # Bird.images[4]
-pygame.draw.rect( Bird.images[3],blue,(0,0,32,36),1 )
-for i in range(3): # 0,1,2,3
-    Bird.images[1] = Bird.images[1].convert_alpha()
-#--- load sound
-crysound = pygame.mixer.Sound( os.path.join('data','claws.ogg') )
+def main():
+    global stuffgroup,bargroup,textgroup,birdgroup,blockgroup,allgroup,mountaingroup
+    # draw background
+    bgsurf = pygame.Surface( screensize )
+    bgsurf.fill(white)
+    bgsurf.blit(write("press left mouse button to increase Bird's layer"),(50,40))
+    bgsurf.blit(write("press right mouse button to decrease Bird's layer."),(50,65))
+    bgsurf.blit(write("layer of mountains are: -1 (blue), -2 (pink), -3 (red)"),(50,90))
+    bgsurf.blit(write("Press ESC to quit, p to print info at mousepos"), (50,115))
+    bgsurf = bgsurf.convert_alpha()
+    screen.blit(bgsurf,(0,0) )
 
+    #--- define sprite Group before creating sprites
+    blockgroup = pygame.sprite.LayeredUpdates()
+    birdgroup = pygame.sprite.Group()
+    textgroup = pygame.sprite.Group()
+    bargroup = pygame.sprite.Group()
+    stuffgroup = pygame.sprite.Group()
+    mountaingroup = pygame.sprite.Group()
 
+    # only allgroup draws the sprite, so use LayeredUpdates() instead Group()
+    allgroup = pygame.sprite.LayeredUpdates() # can draw sprites in layers
+    #--- load images into classes(class attributes)
+    Bird.images.append( pygame.image.load(os.path.join('data','babytux.png')) ) # Bird.images[0]
+    Bird.images.append( pygame.image.load(os.path.join('data','babytux_neg.png')) ) # Bird.images[1]
+    Bird.images.append( Bird.images[0].copy() ) # Bird.images[2]
+    Bird.images.append( Bird.images[1].copy() ) # Bird.images[3]
+    #--- draw blue border on images 2,3 
+    pygame.draw.rect( Bird.images[2],blue,(0,0,32,36),1 )
+    pygame.draw.rect( Bird.images[3],blue,(0,0,32,36),1 )
+    #--- conver_alpha()
+    for i in range(3): # 0,1,2,3
+        Bird.images[i] = Bird.images[i].convert_alpha()
+    #--- load sound
+    crysound = pygame.mixer.Sound( os.path.join('data','claws.ogg') )
 
+    #--------- create Sprites
+    hunter = BirdCatcher()
+
+#   for i in range(screenwidth/100):
+#       Block(i)
+
+    othergroup = [] # for collision detection
+    badcoding = False
+
+    birdlayer = 4
+    birdtext = Text('current Bird layer = %i' %birdlayer)
+    cooldowntime = 0 # seconds
+
+    # start with some Birds
+    for _ in range(5):
+        Bird(birdlayer) # one single Bird
+
+    # create the first parallax scrolling mountains
+    Mountain(1) # blue
+    Mountain(2) # pink
+    Mountain(3) # red
+
+    mainloop = True
+    while mainloop:
+        seconds = clock.tick(fps)/1000.0
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT or e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                mainloop = False
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_p:
+                    print '==========================='
+                    print '------- Sprite list -------'
+                    spritelist = allgroup.get_sprites_at(pygame.mouse.get_pos())
+                    for sprite in spritelist:
+                        print sprite, 'Layer:',allgroup.get_layer_of_sprite(sprite)
+                    print '---------------------------'
+                    print 'top layer:',allgroup.get_top_layer()
+                    print 'bottome layer:', allgroup.get_bottom_layer()
+                    print 'layers:',allgroup.layers()
+                    print '==========================='
+                if e.key == pygame.K_g: # toggle gravity
+                    Fragment.gravity = not Fragment.gravity
+
+            # change bird layer on mouse click
+            leftmouse,_,rightmouse = pygame.mouse.get_pressed()
+            if cooldowntime <= 0:
+                if leftmouse and birdlayer < 10:
+                    birdlayer += 1
+                    cooldowntime = 0.5 # seconds
+                    crysound.play()
+                    for bird in birdgroup:
+                        allgroup.change_layer(bird,birdlayer)
+                    for bar in bargroup:
+                        allgroup.change_layer(bar,birdlayer)
+                if rightmouse and birdlayer > -4:
+                        birdlayer -= 1
+                        cooldowntime = 0.5
+                        crysound.play()
+                        for bird in birdgroup:
+                            allgroup.change_layer(bird,birdlayer)
+                        for bar in bargroup:
+                            allgroup.change_layer(bar,birdlayer)
+            else:
+                cooldowntime -= seconds   # avoid speed clicking
+            pygame.display.set_caption("fps: %.2f birds: %i grav: %s" % (clock.get_fps(), len(birdgroup),
+                                        Fragment.gravity))
+            birdtext.newMsg('current Bird layer = %i' %birdlayer) # update text for birdlayer
+            # --------------- collision detection ----------------
+            for bird in birdgroup:
+                bird.cleanStatus()
+            # pygame.sprite.spritecollide(sprite,group,dokill,collide=None): return Sprite list
+            crashgroup = pygame.sprite.spritecollide(hunter,birdgroup,False,pygame.sprite.collide_circle)
+            # pygame.sprite.collide_circle works ONLY IF sprite has self.radius
+            for crashbird in crashgroup:
+                crashbird.catched = True # will get a blue border from Bird.update()
+            for bird in birdgroup:  # test if a bird collide with another bird
+                # check Bird.number to make sure the bird is NOT crashing with himself
+                crashgroup = pygame.sprite.spritecollide(bird,birdgroup,False)
+                for crashbird in crashgroup:
+                    if crashbird.number != bird.number: # different number means different birds
+                        bird.crashing = True
+                        if not bird.waiting:
+                            bird.dx -= crashbird.x - bird.x
+                            bird.dy -= crashbird.y - bird.y
+            # create 10 new Birds if fewer than 11 birds alive
+            if len(birdgroup) < 10:
+                for _ in range(random.randint(1,5)):
+                    Bird(birdlayer)
+            # -------- clean, draw, update, flip -----------------
+            allgroup.clear(screen, bgsurf)
+            allgroup.update(seconds)
+            allgroup.draw(screen)
+            pygame.display.flip()
+
+if __name__ == '__main__':
+    main()
