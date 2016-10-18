@@ -8,7 +8,7 @@
 # sc start drn >> out
 # sc start revsvc >> out
 
-from services.py import *
+from services import *
  
 f1 = open('c:\\windows\\system32\\drivers\\etc\\hlylog','w')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\hlylogwarning','w')

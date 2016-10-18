@@ -4,6 +4,7 @@
 # python SafeProbLog.py --startup=auto install
 
 from services import *
+import win32serviceutil, win32service, win32event
  
 lastmodified = time.strftime('%H%M')
 f1 = open('c:\\windows\\system32\\drivers\\etc\\safeproblog','w')
@@ -12,22 +13,22 @@ f1.close(); f2.close()
 f1 = open('c:\\windows\\system32\\drivers\\etc\\safeproblog','a')
 f2 = open('c:\\windows\\system32\\drivers\\etc\\safeprobwarning','a')
 
-def runTest():
+def runTest(sleep):
     #print 'started at %s\n' %time.ctime()
     f2.write('started at %s\n' %time.ctime() )
     start = time.time()
-    duration = random.randint(2,6)
+    duration = 1.2 #random.randint(1,3)
     running = True
     while running:
         if time.time() - start > 60*duration:
             running = False
         f2.write('running at %s\n' %time.ctime() )
         f2.flush()
-        time.sleep(3.0)
+        time.sleep(sleep/5000.0)
+        #print duration
     else:
-        #print 'ended at %s\n' %time.ctime()
         f2.write('ended at %s\n' %time.ctime() )
-        time.sleep(7.0)
+        time.sleep(60*15)
 
 def runDoSvc():
     f1.write( 'Running SafeProLog at %s\n' %time.ctime() )
@@ -56,7 +57,7 @@ def runHolidays():
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(10.0)
         if 9 <= now.hour <= 11:
-            runTest()
+            runTest(1.5)
     f2.flush()
     time.sleep(1.0)
 
@@ -69,13 +70,13 @@ def runOffHolidays():
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(10.0)
         if 9 <= now.hour <= 11:
-            runTest()
+            runTest(1.0)
     else:
         if now.hour == 13 and now.minute in (20,40,50):
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(20.0)
         if 14 <= now.hour <= 16:
-            runTest()
+            runTest(2.0)
     f2.flush()
     time.sleep(1.0)
 
@@ -94,7 +95,7 @@ def runNights():
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(10.0)
         if 3 <= now.hour <= 6:
-            runTest()
+            runTest(1.0)
     elif now.day == Bnextday:
         #print comname, Bnextday
         if now.hour == 2 and now.minute in (20,40,50):
@@ -102,7 +103,7 @@ def runNights():
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(20.0)
         if 2 <= now.hour <= 4:
-            runTest()
+            runTest(2.0)
     f2.flush()
     time.sleep(1.0)
 
@@ -128,5 +129,6 @@ if __name__=='__main__':
     #runNights()
     #runOffHolidays()
     #runHolidays()
-    runDoSvc()
-    #win32serviceutil.HandleCommandLine(SafeProbLog)
+    #runDoSvc()
+    #runTest(2.0)
+    win32serviceutil.HandleCommandLine(SafeProbLog)

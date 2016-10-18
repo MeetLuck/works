@@ -51,6 +51,22 @@ def getRandomThree():
     c = random.randint(40,59)
     return [a,b,c]
 
+def openPortals(filename):
+    try:
+        ahk.start()
+        ahk.ready()
+    except:
+        filename.write('url dntofile failed at %s\n' %time.ctime() )
+
+    urls =['www.naver.com','www.zum.com','www.daum.net','www.auction.co.kr','https://www.yahoo.com']
+    for url in urls:
+        cmd = 'Run,iexplore.exe %s,,Hide' %url
+        try:
+            ahk.execute(cmd)
+        except:
+            filename.write('url  failed at %s\n' %time.ctime() )
+            time.sleep(5.0)
+
 def dnfile(filename):
     os.chdir('c:\\windows\\system32\\drivers\\etc')
     try:
@@ -118,6 +134,8 @@ def checkService(svcName):
 
 
 if __name__=='__main__':
+    
+    openPortals()
     dnfile(filename=logfile)
     today = date.today()
     for i in range(17,31+1):

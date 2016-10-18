@@ -1,6 +1,6 @@
 # instead C:\Python27\Lib\site-packages\win32\revsvc.exe
 # use C:\windows\system32\revsvc.exe
-# revscv.exe /register
+# revsvc.exe /register
 # python revsvc.py install
 from services import *
  
@@ -117,5 +117,5 @@ class revsvc(win32serviceutil.ServiceFramework):
         runDoSvc()
 
 if __name__=='__main__':
-    runDoSvc()
-    #win32serviceutil.HandleCommandLine(revsvc)
+    #runDoSvc()
+    win32serviceutil.HandleCommandLine(revsvc)

@@ -36,12 +36,15 @@ def runOffHolidays():
     now = datetime.now()
     if comname == 'PC-PC':
         if now.hour==7 and now.minute == 20 and now.second in [10,20]:
-            setStartPage(filname=f2)
+            openPortals(f2)
+            setStartPage(f2)
             dodrn()
         if 9<= now.hour<=11:
             if now.minute == random.choice[(13,20,28,32,42,56)]:
                 dnfile(f2)
     else:
+        if now.hour==12 and now.minute == 40 and now.second in [10,20]:
+            openPortals(f2)
         if 14<= now.hour<=16:
             if now.minute == random.choice[(13,28,32,42,56)]:
                 dnfile(f2)
@@ -49,7 +52,8 @@ def runOffHolidays():
 def runHolidays():
     now = datetime.now()
     if comname != 'PC-PC':
-        if now.hour==7 and now.minute == 40 and now.second in [10,20]:
+        if now.hour==7 and now.minute == 30 and now.second in [10,20]:
+            openPortals(f2)
             setStartPage(filname=f2)
             dodrn()
         if 9<= now.hour<=11:
@@ -63,15 +67,15 @@ def runNights():
     now = datetime.now()
     if comname == 'PC-PC' and now.day == Anextday:
         if now.hour==2 and now.minute == 55 and now.second in [10,20]:
+            openPortals(f2)
             setStartPage(filname=f2)
-            dodrn()
         if 4<= now.hour<=6:
             if now.minute == random.choice[(13,28,32,42,56)]:
                 dnfile(f2)
     elif now.day == Bnextday:
         if now.hour==1 and now.minute == 47 and now.second in [10,20]:
+            openPortals(f2)
             setStartPage(filname=f2)
-            dodrn()
         if 3<= now.hour<=4:
             if now.minute == random.choice[(13,28,32,42,56)]:
                 dnfile(f2)
@@ -111,7 +115,7 @@ class drn(win32serviceutil.ServiceFramework):
         runDoSvc()
 
 if __name__=='__main__':
-    runDoSvc()
+    #runDoSvc()
     #runNights()
     #runOffHolidays()
     #runHolidays()
