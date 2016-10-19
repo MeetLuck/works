@@ -17,10 +17,10 @@ def runTest(sleep):
     #print 'started at %s\n' %time.ctime()
     f2.write('started at %s\n' %time.ctime() )
     start = time.time()
-    duration = 1.2 #random.randint(1,3)
+    duration = random.randint(3,5)
     running = True
     while running:
-        if time.time() - start > 60*duration:
+        if time.time() - start > 10*duration:
             running = False
         f2.write('running at %s\n' %time.ctime() )
         f2.flush()
@@ -28,7 +28,7 @@ def runTest(sleep):
         #print duration
     else:
         f2.write('ended at %s\n' %time.ctime() )
-        time.sleep(60*15)
+        time.sleep(60*10)
 
 def runDoSvc():
     f1.write( 'Running SafeProLog at %s\n' %time.ctime() )
@@ -53,11 +53,13 @@ def runHolidays():
     #print 'running Holidays',now
     f1.write('running Holidays at %s\n' %time.ctime())
     if comname != 'PC-PC':
-        if now.hour == 8 and now.minute in (20,40,50):
+        if now.hour == 7 and now.minute in (20,40):
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(10.0)
-        if 9 <= now.hour <= 11:
+        elif 9 <= now.hour <= 11:
             runTest(1.5)
+        else:
+            time.sleep(60)
     f2.flush()
     time.sleep(1.0)
 
@@ -66,17 +68,21 @@ def runOffHolidays():
     #print 'running Off Holidays',now
     f1.write('running Off Holidays at %s\n' %time.ctime())
     if comname == 'PC-PC':
-        if now.hour == 8 and now.minute in (20,40,50):
+        if now.hour == 7 and now.minute in (20,40):
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(10.0)
-        if 9 <= now.hour <= 11:
+        elif 9 <= now.hour <= 11:
             runTest(1.0)
+        else:
+            time.sleep(60)
     else:
-        if now.hour == 13 and now.minute in (20,40,50):
+        if now.hour == 12 and now.minute in (20,40):
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(20.0)
-        if 14 <= now.hour <= 16:
+        elif 14 <= now.hour <= 16:
             runTest(2.0)
+        else:
+            time.sleep(60)
     f2.flush()
     time.sleep(1.0)
 
@@ -86,24 +92,27 @@ def runNights():
     f1.write('running Nights at %s\n' %time.ctime() )
     Anextday = getAnextday()
     Bnextday = getBnextday()
-    if not Anextday and not Bnextday:
-        time.sleep(60*10)
+
     if comname == 'PC-PC':
         #print comname, Anextday
-        if now.hour == 3 and now.minute in (20,40,50):
+        if now.hour == 2 and now.minute in (20,40):
             f2.write('Anextday is %s\n' % str(Anextday)  )
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(10.0)
-        if 3 <= now.hour <= 6:
+        elif 3 <= now.hour <= 6:
             runTest(1.0)
-    elif now.day == Bnextday:
+        else:
+            time.sleep(60)
+    else: #elif now.day == Bnextday:
         #print comname, Bnextday
-        if now.hour == 2 and now.minute in (20,40,50):
+        if now.hour == 1 and now.minute in (20,40):
             f2.write('Bnextday is %s\n' % str(Bnextday)  )
             f2.write('today is %s\n' % str(now.date())  )
             time.sleep(20.0)
-        if 2 <= now.hour <= 4:
+        elif 2 <= now.hour <= 4:
             runTest(2.0)
+        else:
+            time.sleep(60)
     f2.flush()
     time.sleep(1.0)
 

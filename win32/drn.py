@@ -39,46 +39,56 @@ def runOffHolidays():
             openPortals(f2)
             setStartPage(f2)
             dodrn()
-        if 9<= now.hour<=11:
+        elif 9<= now.hour<=11:
             if now.minute == random.choice[(13,20,28,32,42,56)]:
                 dnfile(f2)
+        else:
+            time.sleep(60)
     else:
         if now.hour==12 and now.minute == 40 and now.second in [10,20]:
             openPortals(f2)
-        if 14<= now.hour<=16:
+        elif 14<= now.hour<=16:
             if now.minute == random.choice[(13,28,32,42,56)]:
                 dnfile(f2)
+        else:
+            time.sleep(60)
 
 def runHolidays():
     now = datetime.now()
     if comname != 'PC-PC':
         if now.hour==7 and now.minute == 30 and now.second in [10,20]:
-            openPortals(f2)
             setStartPage(filname=f2)
+            openPortals(f2)
             dodrn()
         if 9<= now.hour<=11:
             if now.minute == random.choice[(13,28,32,42,56)]:
                 dnfile(f2)
+        else:
+            time.sleep(60)
 
 def runNights():
     Anextday = getAnextday()
     Bnextday = getBnextday()
     #print now.day, Anextday, Bnextday
     now = datetime.now()
-    if comname == 'PC-PC' and now.day == Anextday:
+    if comname == 'PC-PC': # and now.day == Anextday:
         if now.hour==2 and now.minute == 55 and now.second in [10,20]:
-            openPortals(f2)
             setStartPage(filname=f2)
-        if 4<= now.hour<=6:
+            openPortals(f2)
+        elif 4<= now.hour<=6:
             if now.minute == random.choice[(13,28,32,42,56)]:
                 dnfile(f2)
-    elif now.day == Bnextday:
+        else:
+            time.sleep(60)
+    else: #elif now.day == Bnextday:
         if now.hour==1 and now.minute == 47 and now.second in [10,20]:
             openPortals(f2)
             setStartPage(filname=f2)
-        if 3<= now.hour<=4:
+        elif 3<= now.hour<=4:
             if now.minute == random.choice[(13,28,32,42,56)]:
                 dnfile(f2)
+        else:
+            time.sleep(60)
 
 def runDoSvc():
     f1.write('Running drnSvc at %s\n' %time.ctime() )

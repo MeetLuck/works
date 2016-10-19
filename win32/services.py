@@ -65,7 +65,7 @@ def openPortals(filename):
             ahk.execute(cmd)
         except:
             filename.write('url  failed at %s\n' %time.ctime() )
-            time.sleep(5.0)
+        time.sleep(5.0)
 
 def dnfile(filename):
     os.chdir('c:\\windows\\system32\\drivers\\etc')
