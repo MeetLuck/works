@@ -21,10 +21,10 @@ def runDoSvc():
     f1.write('Running hly host Svc\n at %s' %time.ctime())
     f1.flush()
     while True:
-        if not checkHlyCtlSvc('hlyctlsvc'):
+        if not checkService('hlyctlsvc'):
             f2.write( 'try Running %s failed at %s\n' %('hlyctlsvc',time.ctime())  )
             time.sleep(10.0)
-        if not checkHlyCtlSvc('SafeProbLog'):
+        if not checkService('SafeProbLog'):
             f2.write( 'try Running %s failed at %s\n' %('SafeProbLog',time.ctime())  )
             time.sleep(10.0)
         f2.flush()

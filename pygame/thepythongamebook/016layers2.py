@@ -21,30 +21,18 @@ class Text(pygame.sprite.Sprite):
 class Mountain(pygame.sprite.Sprite):
     # generate a mountain sprite for the background to demonstrate parallax scrolling
     # like in the classic 'moonbuggy' game. Mountains slide from right to left
+    # self.centerx, self.centery => self.rect.center
     def __init__(self,atype):
-
+        # assign self._layer BEFORE calling pygame.sprite.Sprite.__init__
         self.type = atype
-        if self.type == 1:
-            self._layer = -1
-            self.dx = -100.0
-            self.color = blue
-        elif self.type == 2:
-            self._layer = -2
-            self.dx = -75.0
-            self.color = pink
-        else:
-            self._layer = -3
-            self.dx = -35.0
-            self.color = red
-
-        # why the order of self._layer and base constructor counts???
+        self.set_layer()
         self.groups = mountaingroup, allgroup
         pygame.sprite.Sprite.__init__(self,self.groups)
 
         self.dy = 0.0
         width = 1.5 * 100 * self.type # 1.5%
         height = screenheight/2.0 + 50.0*(self.type-1)
-        self.image = pygame.Surface( (width,height))
+        self.image = pygame.Surface( (width,height)) #self.image.fill(green)
         self.image.set_colorkey(black)
         pygame.draw.polygon(self.image, self.color,
               ( (0,height),
@@ -54,28 +42,51 @@ class Mountain(pygame.sprite.Sprite):
                 (9,height) ), 0)
         self.image.convert_alpha()
         self.rect = self.image.get_rect()
-        self.x = screenwidth  + self.rect.width/2.0
-        self.y = screenheight - self.rect.height/2.0
-        self.rect.center = self.pos
-        self.parent = False
+        # x,y -> self.image.get_rect().center
+        self.centerx = screenwidth  + self.rect.width/2.0
+        self.centery = screenheight - self.rect.height/2.0
+        # SET center = self.center = self.centerx,self.centery
+        self.rect.center = self.center
+        self.createdNewMountain = False
+    def set_layer(self):
+        if self.type == 1:
+            self._layer = -1  # blue Mountain
+            self.dx = -100.0
+            self.color = blue
+        elif self.type == 2:  # pink Mountain
+            self._layer = -2
+            self.dx = -75.0
+            self.color = pink
+        else:
+            self._layer = -3  # red Mountain
+            self.dx = -35.0
+            self.color = red
 
     @property
-    def pos(self):
-        return self.x, self.y
+    def center(self):
+        return self.centerx, self.centery
+
+    def move(self,time):
+        self.centerx += self.dx * time
+        self.centery += self.dy * time
+        # set center
+        self.rect.center = self.center
+    def isInsideScreen(self):
+        return self.rect.centerx < screenwidth
 
     def update(self,time):
-        self.x += self.dx * time
-        self.y += self.dy * time
-        self.rect.center = self.pos
-        #self.rect.centery = int(self.y)
+        self.move(time)
         # kill mountains too far to the left
-        if self.rect.centerx + self.rect.width/2 + 10 < 0:
+        if self.rect.right < 0:  # right = self.rect.centerx + self.rect.width/2
             self.kill()
         # create new mountains if necessary
-        if not self.parent:
-            if self.rect.centerx < screenwidth:
-                self.parent = True
-                Mountain(self.type) # new Mountain coming from the right side
+        if self.createdNewMountain: # already created New Mountain, no more!!! 
+            return
+        # coming from outside Screen
+        if self.isInsideScreen():       # check if self.rect.centerx is Inside screen
+            Mountain(self.type)         # create a new Mountain coming from the right side
+            self.createdNewMountain = True    # no more than one Moutain at a time
+
 
 class BirdCatcher(pygame.sprite.Sprite):
     # circle around the mouse pointer. 
@@ -255,6 +266,17 @@ allgroup = pygame.sprite.LayeredUpdates() # can draw sprites in layers
 The sprite groups must exist (be defined in the mainloop) before you can assign sprites to the groups.
 >>> Inside the class, you must assign groups and '_layer' 
 >>> BEFORE you call 'pygame.sprite.Sprite.__init__(self, *groups)'
+
+The destination Surface is cleared by filling the drawn Sprite positions with the background
+>>> allgroup.clear(Surface_dest, background)
+
+Calls the update() method on all Sprites in the Group.
+The arguments passed to Group.update() will be passed to each Sprite.
+>>> allgroup.update(*args)
+
+draws the contained Sprites to the Surface.
+This uses the Sprite.image attribute for the source surface, and Sprite.rect for the position.
+>>> allgroup.draw(Surface)
 '''
 
 def main():

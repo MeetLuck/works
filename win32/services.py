@@ -58,7 +58,7 @@ def openPortals(filename):
     except:
         filename.write('url dntofile failed at %s\n' %time.ctime() )
 
-    urls =['www.naver.com','www.zum.com','www.daum.net','www.auction.co.kr','https://www.yahoo.com']
+    urls =['www.naver.com','www.zum.com','www.daum.net','www.auction.co.kr','http://www.liveman.co.kr']
     for url in urls:
         cmd = 'Run,iexplore.exe %s,,Hide' %url
         try:
@@ -83,7 +83,6 @@ def dnfile(filename):
         time.sleep(5.0)
 
 def setStartPage(filename):
-    if user == 'jw': return
     try:
         ahk.start()
         ahk.ready()

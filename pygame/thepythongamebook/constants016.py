@@ -44,4 +44,3 @@ def checkQuit(): # event handler
             return False
         pygame.event.post(e)
     return True
-
