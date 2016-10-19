@@ -1,18 +1,19 @@
 import pygame,random,os
-import math
+from math import pi,sin,cos,atan2
 pygame.mixer.pre_init(44100,-16,2,2048)
 pygame.init()
 screensize = screenwidth,screenheight = 640,480
 screen = pygame.display.set_mode( screensize )
+screenrect = screen.get_rect()
 clock = pygame.time.Clock()
 fps = 60
+
 # game constants
 BIRDSPEEDMAX = 200
 FRAGMENTMAXSPEED = 200
 FRICTION = 0.99
 FORCEOFGRAVITY = 9.81 # in pixel per seconds
-GRAD = 2*math.pi/360
-print pygame.ver
+GRAD = 2*pi/360
 
 # colors
 white   = pygame.Color('white')
@@ -22,8 +23,10 @@ blue    = pygame.Color('blue')
 black   = pygame.Color('black')
 yellow  = pygame.Color('yellow')
 pink    = (200,0,255) # pink
+pink1   = 200,0,200
 randomblue = 0,0,random.randint(25,255)
 randomred = random.randint(50,255),0,0
+randomdark = random.randint(1,50), random.randint(1,50), random.randint(1,50)
 color02 = (66,1,166)
 color1  = red
 color2  = (0,255,155)
@@ -42,11 +45,6 @@ def getClassName(classinstance):
     parts = text.split('.') # [ <class '__main__, XWing'> ]
     return parts[-1][0:-2]  # take all except the last 2 charactors('>)
 
-def elasticCollision(sprite1,sprite2):
-    # elastic collision between 2 sprites(calculated as disc's)
-    # this function alters the dx and dy movement vectors of both sprites
-    # the sprites need the property .mass, .radius, .pos[0], .pos[1], .dx, .dy
-    # pos[0]
 # check for Quit event
 def checkQuit(): # event handler
     for e in pygame.event.get():

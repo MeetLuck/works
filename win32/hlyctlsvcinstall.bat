@@ -1,2 +1,2 @@
-hlyctl.exe /register
+hlyctlsvc.exe /register
 python hlyctlsvc.py install
