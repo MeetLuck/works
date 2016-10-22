@@ -178,7 +178,7 @@ def game(folder = "data"):
             self.waittime = Bird.waittime # 1.0 # one second
             self.lifetime = 0.0
             self.waiting = True
-            self.rect.center = (-100,-100) # out of visible screen
+            #self.rect.center = (-100,-100) # out of visible screen
             self.crashing = False
             self.frags = 25 # number of framgents if Bird is killed
             self.number = Bird.number # get my personal Birdnumber
@@ -247,7 +247,7 @@ def game(folder = "data"):
                     self.dy -= self.boostspeed # upward is negative y !
                     self.ddx = -math.sin(self.angle*GRAD) 
                     self.ddy = -math.cos(self.angle*GRAD) 
-                    Smoke(self.rect.center, -self.ddx , -self.ddy )
+                    #Smoke(self.rect.center, -self.ddx , -self.ddy )
                 self.speedcheck()    # ------------- movement
                 self.pos[0] += self.dx * seconds
                 self.pos[1] += self.dy * seconds
@@ -543,6 +543,7 @@ def game(folder = "data"):
     screentext = Text()
     clock = pygame.time.Clock()        # create pygame clock object 
     mainloop = True
+    FPS = 6                           # desired max. framerate in frames per second. 
     FPS = 60                           # desired max. framerate in frames per second. 
     amount = 7 # how many small birds should always be present on the screen
     player = BigBird() # big Bird
@@ -596,7 +597,8 @@ def game(folder = "data"):
                         bird.crashing = True # make bird blue
                         crashbird.crashing = True # make other bird blue
                         if not (bird.waiting or crashbird.waiting):
-                            elastic_collision(crashbird, bird) # change dx and dy of both birds
+                            pass
+                            #elastic_collision(crashbird, bird) # change dx and dy of both birds
                                             
                 crashgroup = pygame.sprite.spritecollide(bird, bulletgroup, False)
                 for ball in crashgroup:  # test for collision with bullet
