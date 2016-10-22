@@ -25,11 +25,11 @@ def write(msg='pygame is cool',color=darkblue):
 class  Target:
 
     def __init__(self,bgsurf):
-        self.width,self.height = 100,200#,50
+        self.width,self.height = 200,100
+        #self.width,self.height = 100,200#,50
         self.angle = 0.0
         self.center = screenwidth/2,screenheight/2
         self.reset()
-        self.bgsurf = bgsurf
     def reset(self):
         self.surf = pygame.Surface( (self.width,self.height) )
         self.surf.set_colorkey(black)
@@ -37,29 +37,43 @@ class  Target:
         self.rect = self.surf.get_rect()
         pygame.draw.rect(self.surf,blue,self.rect,1)
         leftrect = 1,1,10,10
-        pygame.draw.rect(self.surf,red,leftrect)
         rightrect = self.rect.right-10-1,self.rect.top+1,10,10
+        horizontal_halfrect = 0,0,self.rect.width,self.rect.height/2
+        vertical_halfrect = 0,0,self.rect.width/2,self.rect.height
+        pygame.draw.rect(self.surf,red,leftrect)
         pygame.draw.rect(self.surf,green,rightrect)
-        pygame.draw.circle(self.surf,red,self.rect.center,10)
+        pygame.draw.line(self.surf,red,self.rect.midtop,self.rect.midbottom,1)
+        pygame.draw.line(self.surf,red,self.rect.midleft,self.rect.midright,2)
+        pygame.draw.circle(self.surf,red,self.rect.center,10,2)
         self.surf = self.surf.convert_alpha()
+        self.orisurf = self.surf.copy()
         self.setCenter()
     def setCenter(self):
         self.rect.center = self.center
-    def draw(self,bgsurf):
+    def draw(self):
+        bgsurf.blit( write(str(t.rect)) ,(20,40) )
+        bgsurf.blit( write('center = ' + str(t.rect.center)), (20,60) )
+        bgsurf.blit( write('angle = '  + str(self.angle)),    (20,80) )
+        #bgsurf.blit( write(str(self.angle%360)) ,(20,80) )
         bgsurf.blit(self.surf, self.rect.topleft)
+
         #pygame.draw.rect(self.surf,green,(0,0,
     def rotate(self,key):
-        orisurf = self.surf.copy()
         if key == pygame.K_a: # turn left, counter-clockwise
-            self.angle += +45 #self.rotatespeed
+            self.angle += +15 #self.rotatespeed
         if key == pygame.K_d: # turn right, clockwise
-            self.angle += -45 #self.rotatespeed
+            self.angle += -15 #self.rotatespeed
+        print self.angle
+        if self.angle > 360:
+            self.angle += -360
+        elif self.angle < -360:
+            self.angle += 360
 #       self.surf = rot_center(self.surf,self.angle)
-        rotsurf = pygame.transform.rotate(orisurf, self.angle)
-        rotrect = rotsurf.get_rect(center = self.center)
-        bgsurf.blit(rotsurf,self.rect.topleft)
-
-        #pygame.draw.rect(self.surf, pink, self.rect,1)
+        self.surf = pygame.transform.rotate(self.orisurf, self.angle)
+        self.rect = self.surf.get_rect(center = self.center)
+        bgsurf.blit(self.surf, self.rect.topleft)
+        #pygame.draw.rect(rotsurf, red, rotrect,3)
+        self.draw()
         #self.setCenter()
 
 def rot_center(image, angle):
@@ -88,7 +102,7 @@ bgsurf = bgsurf.convert()  # jpg can not have transparency
 
 #playersurf = pygame.Surface( (100,100) )
 t = Target(bgsurf)
-t.draw(bgsurf)
+#t.draw(bgsurf)
 mainloop = True
 while mainloop:
     for e in pygame.event.get():
@@ -96,16 +110,13 @@ while mainloop:
             mainloop = False
         if e.type == pygame.KEYDOWN:
             t.rotate(e.key)
-    print t.rect.center
-    #bgsurf.fill(bgcolor)
+    #print t.rect.center
+    bgsurf.fill(bgcolor)
     pygame.draw.line(bgsurf,black,screenrect.midleft,screenrect.midright,1)
     pygame.draw.line(bgsurf,black,screenrect.midtop,screenrect.midbottom,1)
     pygame.draw.circle(bgsurf,darkgray,(screenwidth/2,screenheight/2), 100,1)
     pygame.draw.circle(bgsurf,gray,(screenwidth/2,screenheight/2), 200,1)
-    bgsurf.blit( write(str(t.rect)) ,(20,20) )
-    bgsurf.blit( write(str(t.rect.width)+','+str(t.rect.height)) ,(20,40) )
-    bgsurf.blit( write(str(t.rect.center)) ,(20,60) )
-    #t.draw(bgsurf)
+    t.draw()
     screen.blit(bgsurf, (0,0))     # blit background on screen (overwriting all)
     pygame.display.flip()
     clock.tick(fps)

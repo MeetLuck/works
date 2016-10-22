@@ -11,6 +11,7 @@ yellow  = Color('yellow')
 darkgreen  = Color('darkgreen')
 darkgray  = Color('darkgray')
 darkblue    = Color('darkblue')
+darkred    = Color('darkred')
 gray  = Color('gray')
 pink    = (200,0,255) # pink
 pink1   = 200,0,200
