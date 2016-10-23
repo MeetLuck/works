@@ -8,10 +8,18 @@ green   = Color('green')
 blue    = Color('blue')
 black   = Color('black')
 yellow  = Color('yellow')
+orange  = Color('orange')
+purple  = Color('purple')
+# light color
+lightyellow  = Color('lightyellow')
+# dark color
 darkgreen  = Color('darkgreen')
 darkgray  = Color('darkgray')
 darkblue    = Color('darkblue')
 darkred    = Color('darkred')
+darkorange  = Color('darkorange')
+yellowgreen  = Color('yellowgreen')
+limegreen  = Color('limegreen')
 gray  = Color('gray')
 pink    = (200,0,255) # pink
 pink1   = 200,0,200

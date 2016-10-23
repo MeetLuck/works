@@ -1,8 +1,8 @@
 import pygame, sys
 from colors import *
 
-def write(msg='pygame is cool',color=darkblue):
-    font = pygame.font.SysFont('Anonymous Pro',14)
+def write(msg='pygame is cool',color=black):
+    font = pygame.font.SysFont('Anonymous Pro',12)
     textsurf = font.render(msg,True,color)
     textsurf = textsurf.convert_alpha()
     return textsurf
@@ -21,6 +21,7 @@ class Test:
         pygame.draw.rect(self.surf,green,outer_rect,2)
         # draw origin 
         pygame.draw.circle(self.surf,red,self.rect.center,5,2)
+        # set center as screen center
         self.rect.center = self.screen.get_rect().center
         self.screen.blit(self.surf,self.rect)
 
@@ -42,6 +43,8 @@ def main():
         for e in pygame.event.get():
             if e.type == pygame.QUIT or e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 mainloop = False #pygame.quit(); sys.exit()
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_s:
+                pygame.image.save(screen,'pygameRect.png')
 
         screen.fill(white)
         pygame.draw.line(screen,darkgray,screenrect.midleft, screenrect.midright,1)
@@ -52,11 +55,15 @@ def main():
         screen.blit( write('left',red),(test.rect.left-40,test.rect.centery-20) )
         screen.blit( write('right',red),(test.rect.right+10,test.rect.centery-20) )
         # topleft,topright,bottomleft,bottomright
-        screen.blit( write('topleft',red),(test.rect.left-20,test.rect.top-20) )
-        screen.blit( write('topright',red),(test.rect.right,test.rect.top-20) )
-        screen.blit( write('bottomleft',red),(test.rect.left-20,test.rect.bottom) )
-        screen.blit( write('bottomright',red),(test.rect.right,test.rect.bottom) )
-
+        screen.blit( write('topleft',purple),(test.rect.left-20,test.rect.top-20) )
+        screen.blit( write('topright',purple),(test.rect.right,test.rect.top-20) )
+        screen.blit( write('bottomleft',purple),(test.rect.left-20,test.rect.bottom) )
+        screen.blit( write('bottomright',purple),(test.rect.right,test.rect.bottom) )
+        # midtop,midbottom,midleft,midright
+        screen.blit( write('midtop',orange),   (test.rect.centerx-15,test.rect.top+5) )
+        screen.blit( write('midbottom',orange),(test.rect.centerx-25,test.rect.bottom-20) )
+        screen.blit( write('midleft',orange),  (test.rect.left+5,test.rect.centery-20) )
+        screen.blit( write('midright',orange), (test.rect.right-60,test.rect.centery-20) )
         # screen.get_rect(), top, bottom, right, left, center
         x = 20
         screen.blit( write('rect = '    + str(test.rect)),          (x,20) )
