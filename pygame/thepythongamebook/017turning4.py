@@ -95,10 +95,8 @@ class Car:
         self.speed *= 0.90 
     def setSpeed(self,key):
         if key == pygame.K_k:
-            #print 'k pressed, SpeedUp'
             self.speedUp()
         elif key == pygame.K_SPACE:
-            #print 'j pressed, BREAK'
             self.speedDown()
     def startCar(self):
         self.start = True
