@@ -23,6 +23,24 @@ class Bullet(pygame.sprite.Sprite):
         self.calculateOrigin()
         self.update()
     def calculateHeading(self):
+        # drawing the bullet and rotating it according to it's launcher
+        self.radius = Bullet.side
+        self.angle += self.boss.turrentAngle
+        self.mass = Bullet.mass
+        self.vel = Bullet.vel
+        image = pygame.Surface( (2*Bullet.side,Bullet.side) ) 
+        image.fill(gray)
+        pygame.draw.rect(image,self.color,(0,0,int(Bullet.side*1.5)), Bullet.side)
+        pygame.draw.circle(image,self.color,(int(1.5*self.side),self.side//2),self.side//2)
+        image.set_colorkey(gray)
+        self.image0 = image.convert_alpha()
+        self.image = pygame.transform.rotate(self.image0,self.angle)
+        dx = cos(self.boss.turretAngle*GRAD) * self.vel
+        dy = sin(-self.boss.turretAngle*GRAD) * self.vel
+    def calculateOrigin(self):
+        # spawn bullet at the end of turret barrel instead tank center
+        # cannon is aroudn
+
 
 class Lifebar(pygame.sprite.Sprite):
     def __init__(self,boss):
