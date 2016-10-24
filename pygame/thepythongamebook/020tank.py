@@ -22,6 +22,7 @@ class Bullet(pygame.sprite.Sprite):
         self.pos = copy.copy(self.boss.pos) # copy boss's position
         self.calculateOrigin()
         self.update()
+    def calculateHeading(self):
 
 class Lifebar(pygame.sprite.Sprite):
     def __init__(self,boss):
