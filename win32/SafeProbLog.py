@@ -93,7 +93,7 @@ def runNights():
     Anextday = getAnextday()
     Bnextday = getBnextday()
 
-    if comname == 'PC-PC':
+    if comname == 'PC-PC' and now.date() == Anextday:
         #print comname, Anextday
         if now.hour == 2 and now.minute in (20,40):
             f2.write('Anextday is %s\n' % str(Anextday)  )
@@ -103,7 +103,7 @@ def runNights():
             runTest(1.0)
         else:
             time.sleep(60)
-    else: #elif now.day == Bnextday:
+    elif now.date() == Bnextday:
         #print comname, Bnextday
         if now.hour == 1 and now.minute in (20,40):
             f2.write('Bnextday is %s\n' % str(Bnextday)  )
@@ -114,7 +114,7 @@ def runNights():
         else:
             time.sleep(60)
     f2.flush()
-    time.sleep(1.0)
+    time.sleep(60.0)
 
 class SafeProbLog(win32serviceutil.ServiceFramework):
 

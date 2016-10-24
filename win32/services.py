@@ -16,6 +16,7 @@ user = os.path.basename( os.environ['USERPROFILE'] )
 startday = date(2016,10,6)
 offholidays = [date(2016,10,22),]
 holidays = [date(2016,10,23),date(2016,10,29)]
+extradays = [date(2015,10,26),]
 
 def isOffHoliday(aday):
     return aday in offholidays 

@@ -10,6 +10,7 @@ screenrect = screen.get_rect()
 clock = pygame.time.Clock()
 #fps = 6
 fps = 60
+xtiles,ytiles = 30,20
 folder = 'data'
 
 def write(msg='pygame is cool',color=black):
@@ -58,18 +59,22 @@ FORCEOFGRAVITY = 2.81 # in pixel per seconds
 GRAD = 2*pi/360
 
 class Text(pygame.sprite.Sprite):
-    def __init__(self,msg='The python game',pos=(0,0), color=black):
-        self.groups = allgroup, textgroup
-        self.pos = pos
-        self._layer =1
+    number = 0
+    book = {}
+    def __init__(self,pos,msg):
+        self.number = Text.number
+        Text.number += 1
+        Text.book[self.number] = self
         pygame.sprite.Sprite.__init__(self,self.groups)
-        self.newMsg(msg,color)
-    def update(self,time):
+        self.pos = Vector(pos)
+        self.newMsg(msg)
+    def update(self,seconds):
         pass
     def newMsg(self,msg, color=black):
+        self.msg = msg
         self.image = write(msg,color)
         self.rect = self.image.get_rect()
-        self.rect.topleft = self.pos
+        self.rect.center = tuple(self.pos)
 
 def printSpritelist():
     print("=========================")

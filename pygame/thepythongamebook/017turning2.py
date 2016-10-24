@@ -412,18 +412,5 @@ def main():
         allgroup.draw(screen)           
         pygame.display.flip()         
 
-def printSpritelist():
-    print("=========================")
-    print( "-----Spritelist---------")
-    spritelist = allgroup.get_sprites_at(pygame.mouse.get_pos())
-    for sprite in spritelist:
-        print(sprite, "Layer:",allgroup.get_layer_of_sprite(sprite))
-    print("------------------------")
-
 if __name__ == "__main__":
     main()
-
-
-
-
-

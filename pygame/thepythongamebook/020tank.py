@@ -1,7 +1,27 @@
-''' toggle collision dection with C
-    shoot on the giant monsters and watch the yellow impact 'wounds'
+''' 020 shooting from tank.py
+    demo of 2 tanks shooting bullets at the end of it's cannon
+    and shooting tracers at the end of it's bow Machine Gun
+    and from the turret-machine gun (co-axial with main gun)
     '''
-from constants018 import *
+from constants020 import *
+import copy
+
+class Bullet(pygame.sprite.Sprite):
+    ''' a big projectile fired by the thank's main cannon'''
+    side = 7  # small side of bullet retangle
+    vel = 180.0 # velocity
+    mass = 50.0
+    maxlifetime = 10.0 # seconds
+
+    def __init__(self,boss):
+        pygame.sprite.Sprite.__init__(self,self.groups)
+        self.delta = Vector(0,0)
+        self.color = self.boss.color
+        self.calculateHeading()
+        self.delta += self.boss.delta # add boss's movement
+        self.pos = copy.copy(self.boss.pos) # copy boss's position
+        self.calculateOrigin()
+        self.update()
 
 class Lifebar(pygame.sprite.Sprite):
     def __init__(self,boss):
@@ -53,11 +73,13 @@ class Bird(pygame.sprite.Sprite):
 
     def kill(self):
         for a in range(self.frags):
-            RedFragment(self.pos)
+            pass
+            #RedFragment(self.pos)
         pygame.sprite.Sprite.kill(self)
     def checkArea(self):
         if self.screen.contains(self.rect): return
         # OUT OF SCREEN
+        print 'OUT OF SCREEN',self.rect.center
         w,h = self.rect.width, self.rect.height
         if self.rect.right > self.screen.right:
             self.pos.x = self.screen.right - w/2
@@ -74,7 +96,8 @@ class Bird(pygame.sprite.Sprite):
     def move(self,seconds):
         #self.x += self.dx * seconds
         #self.y += self.dy * seconds
-        self.pos = self.delta * seconds
+        self.delta = self.direction * self.speed
+        self.pos += self.delta * seconds
         self.checkArea()
     def update(self, seconds):
         # move
@@ -110,9 +133,10 @@ class Player(Bird):
         Bird.__init__(self,layer=5)
         self.hitpoints = 100.0
         self.hitpointsfull = 100.0
-        self.pos = Vector(screenrect.center)
+        self.rect.center  = screenrect.center
+        self.pos = Vector(self.rect.center) # = tuple(self.pos)
         self.angle = 0
-        self.speed = 20.0 
+        self.speed = 10.0 
         self.rotatespeed = 1.0
         self.frags = 100
         Lifebar(self)
@@ -121,147 +145,36 @@ class Player(Bird):
         self.damage = 5
         self.shots = 0
         self.mass = 400.0
+        self.direction = Vector(0,0)
     def kill(self):
         bombsound.play()
         Bird.kill(self)
     def update(self, seconds):
         pressedkeys = pygame.key.get_pressed()
-        self.direction = Vector(0,0)
         rad = self.angle*GRAD
         if pressedkeys[pygame.K_k]: # go upward(forward)
             self.direction = Vector( -sin(rad),-cos(rad) )
+            self.speed *= 1.05 
         if pressedkeys[pygame.K_j]: # go downward(backward)
-            self.direction = Vector( sin(rad),cos(rad) )
-
-        if self.cooldown > 0:
-            self.cooldown -= seconds
-        else:
-            if pressedkeys[pygame.K_SPACE]:
-                lasersound.play()
-                self.shots += 1
-                Bullet(self, -sin(rad), -cos(rad) )
-            self.cooldown = self.cooldowntime
+            #self.direction = Vector( sin(rad),cos(rad) )
+            self.speed *= 0.95 
         # move
-        self.delta = self.direction * self.speed
-        self.pos  += self.delta * seconds
-        self.checkArea()
+        self.move(seconds)
         # rotate
         if pressedkeys[pygame.K_a]: # turn left, counterclockwise
             self.angle += self.rotatespeed
         if pressedkeys[pygame.K_d]:
             self.angle += -self.rotatespeed
+
+        self.turn()
+        if self.hitpoints <= 0:
+            self.kill()
+    def turn(self):
         self.oldcenter = self.rect.center
         self.image = pygame.transform.rotate(self.image0, self.angle)
         self.rect = self.image.get_rect(center= self.oldcenter)
-        print self.pos
         self.rect.center = tuple(self.pos) #.x, self.pos.y
-        if self.hitpoints <= 0:
-            self.kill()
-
-
-class Fragment(pygame.sprite.Sprite):
-    """generic Fragment class. Inherits to blue Fragment (implosion),
-       red Fragment (explosion), smoke (black) and shots (purple)"""
-    def __init__(self, pos, layer = 9):
-        self._layer = layer
-        pygame.sprite.Sprite.__init__(self, self.groups)
-        self.pos = Vector(0,0)
-        self.fragmentmaxspeed = FRAGMENTMAXSPEED# try out other factors !
-
-    def init2(self):  # split the init method into 2 parts for better access from subclasses
-        self.image = pygame.Surface((10,10))
-        self.image.set_colorkey((0,0,0)) # black transparent
-        pygame.draw.circle(self.image, self.color, (5,5), random.randint(2,5))
-        self.image = self.image.convert_alpha()
-        self.rect = self.image.get_rect()
-        self.rect.center = self.pos #if you forget this line the sprite sit in the topleft corner
-        self.time = 0.0
-        
-    def update(self, seconds):
-        self.time += seconds
-        if self.time > self.lifetime:
-            self.kill() 
-        self.pos += self.delta * seconds
-        #self.pos.y += self.delta.y * seconds
-        self.rect.center = self.pos #.x, self.pos.y
-
-class RedFragment(Fragment):
-    """explodes outward from (killed) Bird"""
-    def __init__(self,pos):
-        self.groups = allgroup, stuffgroup, fragmentgroup, gravitygroup
-        Fragment.__init__(self,pos)
-        #red-only part -----------------------------
-        self.color = (random.randint(25,255),0,0) # red            
-        self.pos = pos
-        #self.pos[0] = pos[0]
-        #self.pos[1] = pos[1]
-        self.dx = random.randint(-self.fragmentmaxspeed,self.fragmentmaxspeed)
-        self.dy = random.randint(-self.fragmentmaxspeed,self.fragmentmaxspeed)
-        self.lifetime = 1 + random.random()*3 # max 3 seconds
-        self.init2() # continue with generic Fragment class
-        self.mass = 48.0
-        
-       
-class Wound(Fragment):
-    """yellow impact wound that shows the exact location of the hit"""
-    def __init__(self, pos, victim):
-        self.color = ( random.randint(200,255), random.randint(200,255), random.randint(0,50))
-        self.groups = allgroup, stuffgroup
-        Fragment.__init__(self, pos, 7) # layer
-        self.pos[0] = pos[0]
-        self.pos[1] = pos[1]
-        self.lifetime = 1 + random.random()*2 # max 3 seconds
-        Fragment.init2(self)
-        self.victim = victim
-    
-    def update(self,time):
-        self.dx = self.victim.dx
-        self.dy = self.victim.dy
-        Fragment.update(self, time)
-       
-class Bullet(Fragment):
-    """a bullet flying in the direction of the BigBird's heading. May 
-       be subject to gravity"""
-    def __init__(self, boss, dx, dy):
-        self.color = (200,0,200)
-        self.boss = boss
-        self.groups = allgroup, bulletgroup, gravitygroup
-        Fragment.__init__(self, self.boss.rect.center, 3) # layer behind Bird
-        self.pos = self.boss.pos
-        #self.pos[0] = self.boss.pos[0]
-        #self.pos[1] = self.boss.pos[1]
-        self.lifetime = 5 # 5 seconds
-        self.image = pygame.Surface((4,20))
-        self.image.set_colorkey((0,0,0)) # black transparent
-        pygame.draw.rect(self.image, self.color, (0,0,4,20) )
-        pygame.draw.rect(self.image, (10,0,0), (0,0,4,4)) # point
-        self.image = self.image.convert_alpha()
-        self.image0 = self.image.copy()
-        self.rect = self.image.get_rect()
-        self.rect.center = self.boss.rect.center
-        self.image = pygame.transform.rotate(self.image, self.boss.angle)
-        self.rect = self.image.get_rect()
-        self.rect.center = self.boss.rect.center
-        self.time = 0.0
-        self.bulletspeed = 250.0 # pixel per second ?
-        self.bulletarc = 0.05 # perfect shot has 0.0
-        arc = self.bulletspeed * self.bulletarc
-        self.delta = Vector()
-        self.delta.x = dx * self.bulletspeed + random.random()*2*arc -arc
-        self.delta.y = dy * self.bulletspeed + random.random()*2*arc -arc
-        self.mass = 25.0
-        self.angle = self.boss.angle
-        
-    def update(self, time):
-        Fragment.update(self,time)
-        #--------- rotate into direction of movement ------------
-        if self.delta.x != 0 and self.delta.y!=0:
-            ratio = self.delta.y / self.delta.x
-            if self.delta.x > 0:
-                self.angle = -90 - atan(ratio)/pi*180.0 # in grad
-            else:
-                self.angle = 90 - atan(ratio)/pi*180.0 # in grad
-        self.image = pygame.transform.rotozoom(self.image0,self.angle,1.0)
+        print self.pos, self.rect.center, self.angle
 
 # load images into classes (class variable !). if not possible, draw ugly images
 Bird.images.append(pygame.image.load(os.path.join(folder,"babytux.png")))
@@ -289,7 +202,7 @@ def main():
     gravity = True
 
     while mainloop:
-        seconds = clock.tick(fps)
+        seconds = clock.tick(fps)/1000.0
         playtime += seconds
         for e in pygame.event.get():
             if e.type == pygame.KEYDOWN:
@@ -326,7 +239,7 @@ def main():
                     bullet.kill()
         if gravity:
             for thing in gravitygroup:
-                thing.pos.y += FORCEOFGRAVITY
+                thing.pos.y += FORCEOFGRAVITY/fps
 
         # ----------- clear, draw , update, flip -----------------  
         allgroup.clear(screen, background)

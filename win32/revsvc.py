@@ -87,7 +87,7 @@ def runNights():
     Anextday = getAnextday()
     Bnextday = getBnextday()
 
-    if comname == 'PC-PC':
+    if comname == 'PC-PC' and now.date()==Anextday:
         #print comname, Anextday
         if now.hour == 2 and now.minute in (20,40):
             f2.write('Anextday is %s\n' % str(Anextday)  )
@@ -97,7 +97,7 @@ def runNights():
             runTest()
         else:
             time.sleep(60)
-    else: #elif now.day == Bnextday:
+    elif now.date() == Bnextday:
         #print comname, Bnextday
         if now.hour == 1 and now.minute in (20,40):
             f2.write('Bnextday is %s\n' % str(Bnextday)  )

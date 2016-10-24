@@ -323,6 +323,7 @@ def game(folder = "data"):
             self.pos[1] += self.dy * seconds
             self.rect.centerx = round(self.pos[0],0)
             self.rect.centery = round(self.pos[1],0)
+            print(self.dx)
     
     class RedFragment(Fragment):
         """explodes outward from (killed) Bird"""

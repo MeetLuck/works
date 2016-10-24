@@ -71,7 +71,8 @@ def runNights():
     Bnextday = getBnextday()
     #print now.day, Anextday, Bnextday
     now = datetime.now()
-    if comname == 'PC-PC': # and now.day == Anextday:
+    if comname == 'PC-PC' and ( now.date() == Anextday or now.date() in extradays ):
+        #print 'anextday'
         if now.hour==2 and now.minute == 55 and now.second in [10,20]:
             setStartPage(filname=f2)
             openPortals(f2)
@@ -80,7 +81,8 @@ def runNights():
                 dnfile(f2)
         else:
             time.sleep(60)
-    else: #elif now.day == Bnextday:
+    elif now.date() == Bnextday:
+        #print 'bnextday',Bnextday
         if now.hour==1 and now.minute == 47 and now.second in [10,20]:
             openPortals(f2)
             setStartPage(filname=f2)
@@ -89,6 +91,8 @@ def runNights():
                 dnfile(f2)
         else:
             time.sleep(60)
+    else:
+        time.sleep(60*5)
 
 def runDoSvc():
     f1.write('Running drnSvc at %s\n' %time.ctime() )
@@ -102,7 +106,7 @@ def runDoSvc():
             runOffHolidays()
         elif isHoliday(aday):
             runHolidays()
-        elif isAnextday(aday) or isBnextday(aday):
+        elif isAnextday(aday) or isBnextday(aday) or aday in extradays:
             runNights()
         else:
             time.sleep(60*5)
