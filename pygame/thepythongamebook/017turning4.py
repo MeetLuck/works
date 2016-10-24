@@ -13,9 +13,9 @@ screensize = screenwidth,screenheight = 800,600 #640,480
 screen = pygame.display.set_mode( screensize )
 screenrect = screen.get_rect()
 clock = pygame.time.Clock()
-fps = 6
+#fps = 6
 direction = None
-#fps = 60
+fps = 60
 folder = 'data'
 
 def write(msg='pygame is cool',color=darkblue):
@@ -25,6 +25,15 @@ def write(msg='pygame is cool',color=darkblue):
     return textsurf
 
 def drawTracks():
+    for angle in range(0,360,15):
+        grad = 2*pi/360.0
+        dirx = -sin(angle*grad)
+        diry = -cos(angle*grad)
+        dest = screenrect.centerx + dirx*200,screenrect.centery+diry*200
+        dest = int(dest[0]),int(dest[1])
+        #print angle, dirx,diry, dest
+        pygame.draw.line(bgsurf,darkgray,screenrect.center,dest,1)
+        pygame.draw.circle(bgsurf,purple,dest,2)
     pygame.draw.line(bgsurf,black,screenrect.midleft,screenrect.midright,1)
     pygame.draw.line(bgsurf,black,screenrect.midtop,screenrect.midbottom,1)
     pygame.draw.circle(bgsurf,darkgray,screenrect.center,100,1)
@@ -39,6 +48,7 @@ class Car:
         # going forward(north)
         self.dirx = 0.0
         self.diry = 0.0
+        self.start = False
         self.makeCar()
     def makeCar(self):
         self.surf = pygame.Surface( (self.width,self.height) )
@@ -57,11 +67,21 @@ class Car:
         # right light
         pygame.draw.circle(self.surf,yellow,right_light,10)
         pygame.draw.circle(self.surf,green,right_light,8,2)
-        # mid lines
+        # arrow indicating moving direction
+        w,h = self.rect.size
+        cx,cy = self.rect.center
+        arrowcolor = purple
+        pointlist = self.rect.midtop, (cx-w/4,cy-h/8),(cx+w/4,cy-h/8),self.rect.midtop
+        #print pointlist
+        pygame.draw.polygon(self.surf,arrowcolor,pointlist)
+        #arrowrect = self.rect.midtop[0]-w/2,self.rect.midtop[1],w,self.height
+        arrowrect = cx-w/8,cy-h/4,w/4,h/2+h/4
+        pygame.draw.rect(self.surf,arrowcolor ,arrowrect)
+        # mid cross lines
         pygame.draw.line(self.surf,black,self.rect.midtop,self.rect.midbottom,1)
         pygame.draw.line(self.surf,black,self.rect.midleft,self.rect.midright,1)
         # origin
-        pygame.draw.circle(self.surf,red,self.rect.center,10,2)
+        pygame.draw.circle(self.surf,black,self.rect.center,self.rect.width/6,1)
         self.surf = self.surf.convert_alpha()
         self.orisurf = self.surf.copy()
         self.setCenter()
@@ -69,14 +89,6 @@ class Car:
         self.rect.center = screenrect.center
         # we need x,y to move self.rect.center because self.rect.center is ALWAYS INT type.
         self.x,self.y = self.rect.center
-    def draw(self):
-        bgsurf.blit( write(str(self.rect)) ,(20,40) )
-        bgsurf.blit( write('center = ' + str(self.rect.center)), (20,60) )
-        bgsurf.blit( write('angle = '  + str(self.angle)),    (20,80) )
-        bgsurf.blit( write('speed = %.2f' %self.speed, purple),    (20,100) )
-        #bgsurf.blit( write(str(self.angle%360)) ,(20,80) )
-        bgsurf.blit(self.surf, self.rect)
-        #pygame.draw.rect(self.surf,green,(0,0,
     def speedUp(self):
         self.speed *= 1.05
     def speedDown(self):
@@ -88,42 +100,47 @@ class Car:
         elif key == pygame.K_SPACE:
             #print 'j pressed, BREAK'
             self.speedDown()
-    def move(self):
-        # set direction, moving forward
+    def startCar(self):
+        self.start = True
+        self.setDirection()
+    def setDirection(self):
         self.dirx = -sin(self.angle*GRAD) 
         self.diry = -cos(self.angle*GRAD)
-        # set speed
-        self.dx = self.dirx * self.speed
-        self.dy = self.diry * self.speed
-        # move surface
-        self.x += self.dx
-        self.y += self.dy
-        self.rect.center = self.x,self.y
-        #print 'speed =>',self.speed,self.dx,self.dy
-        #print 'location =>',self.x,self.y, self.rect.center
 
     def turn(self,key):
+        ''' moving original surface, otherwise surface grows bigger and bigger
+            eventually diverse '''
         if key == pygame.K_h: # turn left, counter-clockwise
-            self.angle += +5 #self.rotatespeed
+            self.angle += +5.0 #self.rotatespeed
         elif key == pygame.K_l: # turn right, clockwise
-            self.angle += -5 #self.rotatespeed
+            self.angle += -5.0 #self.rotatespeed
         else:
             return
-        #print self.angle
         if self.angle > 360:
             self.angle += -360
         elif self.angle < -360:
             self.angle += 360
-#        self.surf = rot_center(self.surf,self.angle)
         self.surf = pygame.transform.rotate(self.orisurf, self.angle)
         self.rect = self.surf.get_rect(center= self.rect.center)
-        #self.setCenter()
-        bgsurf.blit(self.surf, self.rect)
-        #pygame.draw.rect(rotsurf, red, rotrect,3)
-        self.draw()
-        #self.setCenter()
+        self.setDirection()
 
-darkness = 0.85
+    def move(self): # set speed
+        if not self.start: return
+        self.dx = self.dirx * self.speed
+        self.dy = self.diry * self.speed
+        # move surface by moving surface's center
+        self.x += self.dx
+        self.y += self.dy
+        self.rect.center = int(self.x),int(self.y)
+
+    def draw(self):
+        bgsurf.blit( write(str(self.rect)) ,(20,40) )
+        bgsurf.blit( write('center = ' + str(self.rect.center)), (20,60) )
+        bgsurf.blit( write('angle = '  + str(self.angle)),    (20,80) )
+        bgsurf.blit( write('speed = %.2f' %self.speed, purple),    (20,100) )
+        bgsurf.blit(self.surf, self.rect)
+
+darkness = 0.95
 bgcolor = darkness*white[0], darkness*white[0], darkness*white[0]
 
 # ----------------- background -------------  
@@ -144,10 +161,12 @@ while mainloop:
                 car.turn(e.key)
             elif e.key == pygame.K_k or e.key == pygame.K_SPACE:
                 car.setSpeed(e.key)
-    car.move()
+            elif e.key == pygame.K_s:
+                car.startCar()
     #print t.rect.center
     bgsurf.fill(bgcolor)
     drawTracks()
+    car.move()
     car.draw()
     screen.blit(bgsurf, (0,0))     # blit background on screen (overwriting all)
     pygame.display.flip()
