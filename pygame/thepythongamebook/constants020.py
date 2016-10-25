@@ -12,6 +12,10 @@ clock = pygame.time.Clock()
 fps = 60
 xtiles,ytiles = 30,20
 folder = 'data'
+GRAD = 2*pi/360
+
+def toRadian(degree):
+    return degree * 2*pi/360
 
 def write(msg='pygame is cool',color=black):
     font = pygame.font.SysFont('None',32)
@@ -56,7 +60,6 @@ BIRDSPEEDMAX = 200
 FRAGMENTMAXSPEED = 200
 FRICTION = 0.999
 FORCEOFGRAVITY = 2.81 # in pixel per seconds
-GRAD = 2*pi/360
 
 class Text(pygame.sprite.Sprite):
     number = 0
