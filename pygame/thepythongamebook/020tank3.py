@@ -14,7 +14,7 @@ class Tank(pygame.sprite.Sprite):
     recoiltime = 0.75 # how many seconds the cannon is busy after firing one time
     MGrecoiltime = 0.2 # how many seconds the bow(machine gun) is idel
     turretTurnSpeed = 25
-    tankTurnSpeed = 8
+    tankTurnSpeed = 1 # degrees
     movespeed = 25.0 * 2
     maxrotate = 360
     book = {} # a book of tanks to store all tanks
@@ -140,8 +140,8 @@ class Tank(pygame.sprite.Sprite):
         self.delta = Vector()
         Vd = Vector()
         if self.forward == 1:
-            Vd.x = +cos(self.tankAngle*GRAD)
-            Vd.y = -sin(self.tankAngle*GRAD)
+            Vd.x = -sin(self.tankAngle*GRAD)
+            Vd.y = -cos(self.tankAngle*GRAD)
             self.delta = Vd * self.movespeed
         if self.forward == -1:
             Vd.x = -cos(self.tankAngle*GRAD)
@@ -158,8 +158,7 @@ class Tank(pygame.sprite.Sprite):
         # -- tank rotation --
         self.rotateTank(pressedkeys)
         # -- turn tank --
-        print self.tankAngle
-        self.tankAngle += self.tankturndirection * self.tankTurnSpeed * seconds
+        self.tankAngle += self.tankturndirection * self.tankTurnSpeed # * seconds
         print self.tankAngle
         # angle etc from Tank(boss)
         oldcenter = self.rect.center
