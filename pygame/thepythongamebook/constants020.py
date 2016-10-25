@@ -3,7 +3,7 @@ from math import pi,sin,cos,atan,atan2
 from colors import *
 from vector import Vector
 # game constants
-#fps = 6
+#fps = 1
 fps = 60
 xtiles,ytiles = 30,20
 folder = 'data'

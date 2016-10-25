@@ -131,6 +131,9 @@ class Tank(pygame.sprite.Sprite):
         Text.book[self.number].newMsg(self.msg)
 
     def move(self,pressedkeys,seconds):
+        # need +90 degree, because we are heading NORTH
+        # if heading EAST, no need adjustment
+        moveAngle = self.tankAngle + 90
         self.forward = 0 # movement calculator
         # if both pressed, self.forward becomes 0
         if pressedkeys[self.forwardkey]:
@@ -140,12 +143,12 @@ class Tank(pygame.sprite.Sprite):
         self.delta = Vector()
         Vd = Vector()
         if self.forward == 1:
-            Vd.x = -sin(self.tankAngle*GRAD)
-            Vd.y = -cos(self.tankAngle*GRAD)
+            Vd.x = +cos(moveAngle*GRAD)
+            Vd.y = -sin(moveAngle*GRAD)
             self.delta = Vd * self.movespeed
         if self.forward == -1:
-            Vd.x = -cos(self.tankAngle*GRAD)
-            Vd.y = +sin(self.tankAngle*GRAD)
+            Vd.x = -cos(moveAngle*GRAD)
+            Vd.y = +sin(moveAngle*GRAD)
             self.delta = Vd * self.movespeed
         self.pos += self.delta * seconds
 
@@ -159,6 +162,7 @@ class Tank(pygame.sprite.Sprite):
         self.rotateTank(pressedkeys)
         # -- turn tank --
         self.tankAngle += self.tankturndirection * self.tankTurnSpeed # * seconds
+
         print self.tankAngle
         # angle etc from Tank(boss)
         oldcenter = self.rect.center
@@ -272,7 +276,7 @@ def main():
     Turret.groups = allgroup
     Text.groups = allgroup
     player1 = Tank((150,250), 0) # create  first tank, looking north
-    player2 = Tank((450,250), 0) # create second tank, looking south
+    #player2 = Tank((450,250), 0) # create second tank, looking south
     status3 = Text((screenwidth//2, 10), "Tank Demo. Press ESC to quit")
     mainloop = True           
     while mainloop:
@@ -287,6 +291,7 @@ def main():
         allgroup.update(seconds)
         allgroup.draw(screen)
         pygame.display.flip() # flip the screen 30 times a second
+        #pygame.time.wait(100000)
     return 0
  
 if __name__ == '__main__':
