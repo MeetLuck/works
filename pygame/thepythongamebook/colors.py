@@ -12,6 +12,7 @@ orange  = Color('orange')
 purple  = Color('purple')
 # light color
 lightyellow  = Color('lightyellow')
+lightgray    = Color('lightgray')
 # dark color
 darkgreen  = Color('darkgreen')
 darkgray  = Color('darkgray')
