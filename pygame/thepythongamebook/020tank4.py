@@ -26,22 +26,26 @@ class Tank(pygame.sprite.Sprite):
         Tank.book[self.number] = self
         self.setKeys()
         self.makeTank(startpos,angle)
-        Turret(self) # create a Turret for this thank
+        self.turret = Turret(self) # create a Turret for this thank
         self.msg =  "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
         Text((screenwidth/2, 30+20*self.number), self.msg) # create status line text sprite
 
     def makeTank(self,startpos,angle):
         self.width,self.height = Tank.size,Tank.size
-        image = drawTank(self.width,self.height)
+        image,self.MGcenter = drawTank(self.width,self.height)
         self.image0 = image.convert_alpha()
         self.image = image.convert_alpha()
         self.rect = self.image0.get_rect()
-        self.pos = Vector(startpos)
-        self.rect.center = tuple(self.pos)
-        self.tankAngle = angle
-        self.Vd = Vector(0,0) # direction = 0 -> stop
-        self.movespeed = Tank.movespeed
+        # direction Vector Vd = 0 -> stop
+        self.Vd = Vector(0,0)
+        # movement Vector delta 
         self.delta = self.Vd * self.movespeed
+        # position Vector Vp
+        self.Vp = Vector(startpos)
+        self.Vp += self.delta
+        self.rect.center = tuple(self.Vp)
+        self.tankAngle = angle
+        self.movespeed = Tank.movespeed
         # tank constants
         self.tankTurnSpeed = Tank.tankTurnSpeed
         self.tankturndirection = 0
@@ -125,8 +129,8 @@ class Tank(pygame.sprite.Sprite):
         self.setDirection(pressedkeys)
         # delta
         self.delta = self.Vd * self.movespeed
-        self.pos += self.delta * seconds
-        self.rect.center = tuple(self.pos)
+        self.Vp += self.delta * seconds
+        self.rect.center = tuple(self.Vp)
 
     def update(self,seconds):
         # reduce cooltime
@@ -147,7 +151,7 @@ class Tank(pygame.sprite.Sprite):
         if pressedkeys[self.forwardkey] or pressedkeys[self.backwardkey]:
             self.move(pressedkeys,seconds)
         # -- paint sprite at correct position
-        #self.rect.center = tuple(self.pos)
+        #self.rect.center = tuple(self.Vp)
 
 class Turret(pygame.sprite.Sprite):
     """turret on top of tank"""
@@ -185,20 +189,29 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self,boss):
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.boss = boss
-        self.delta = Vector(0,0)
-        self.angle = 0
         self.lifetime = 0.0
-        self.color = self.boss.color
-        self.turretAngle = self.boss.turretAngle
-        self.calculateHeading()
-        self.delta += self.boss.delta # add boss's movement
-        self.pos = copy.copy(self.boss.pos) # copy boss's position
-        self.calculateOrigin()
+        self.angle = self.boss.turretAngle
+        # delta Vector
+        #self.delta = self.boss.delta # add boss's movement
+        self.delta = Vector(0,0)
+        self.setDirection()
+        self.setPosition()
+        self.makeBullet()
         self.update()
-    def calculateHeading(self):
+    def setDirection(self):
+        self.Vd = Vector(0,0)
+        self.Vd.x = cos(self.angle*GRAD)
+        self.Vd.y = -sin(self.angle*GRAD)
+    def setPosition(self):
+        # spawn bullet at the end of turret barrel instead tank center
+        # cannon is around Tank.side long, calculate from Tank center
+        # later substracted 20 pixel from this distance
+        # so that bullet spawns close to thank muzzle
+        self.Vp = copy.copy(self.boss.Vp) # copy boss's position
+        self.Vp += self.Vd * (Tank.size - 20)
+    def makeBullet(self):
         # drawing the bullet and rotating it according to it's launcher
         self.radius = Bullet.side  # for collide_circle
-        self.angle = self.boss.turretAngle
         self.mass = Bullet.mass
         self.vel = Bullet.vel
         image = pygame.Surface( (2*Bullet.side,Bullet.side) ) # rect 2 x 1 
@@ -211,36 +224,25 @@ class Bullet(pygame.sprite.Sprite):
         self.image0 = image.convert_alpha()
         self.image = pygame.transform.rotate(self.image0,self.angle)
         self.rect = self.image.get_rect()
-        Vd = Vector() # direction Vector
-        Vd.x =  cos(self.turretAngle*GRAD)
-        Vd.y =  sin(-self.turretAngle*GRAD)
-        self.delta = Vd * self.vel
-    def calculateOrigin(self):
-        # spawn bullet at the end of turret barrel instead tank center
-        # cannon is around Tank.side long, calculate from Tank center
-        # later substracted 20 pixel from this distance
-        # so that bullet spawns close to thank muzzle
-        Vd = Vector() # direction Vector
-        Vd.x = cos(self.turretAngle*GRAD)
-        Vd.y = sin(-self.turretAngle*GRAD)
-        self.pos += Vd * (Tank.size - 20)
-    def checkLifetime(self,seconds):
-        # kill it if too old
+
+    def checkLifetime(self,seconds): # kill it if too old
         self.lifetime += seconds
         if self.lifetime > Bullet.maxlifetime:
             self.kill()
     def move(self,seconds):
-        self.pos += self.delta * seconds
+        self.delta = self.Vd * self.vel
+        self.Vp += self.delta * seconds
+        self.rect.center = tuple(self.Vp)
     def checkArea(self):
-        if self.pos.x < 0 or self.pos.y < 0:
+        if self.Vp.x < 0 or self.Vp.y < 0:
             self.kill()
-        elif self.pos.x > screenwidth or self.pos.y > screenheight:
+        elif self.Vp.x > screenwidth or self.Vp.y > screenheight:
             self.kill()
     def update(self,seconds=0.0):
         self.checkLifetime(seconds)
         self.move(seconds)
         self.checkArea()
-        self.rect.center = tuple(self.pos)
+        #self.rect.center = tuple(self.Vp)
 
 
 class Tracer(Bullet):
@@ -254,29 +256,30 @@ class Tracer(Bullet):
 
     def __init__(self,boss,turret=False):
         Bullet.__init__(self, boss) 
-    def calculateHeading(self):
         self.radius = Tracer.side
         self.angle  = self.boss.tankAngle
         self.mass = Tracer.mass
         self.vel = Tracer.vel
+    def makeBullet(self):
         image = pygame.Surface( (Tracer.side, Tracer.side/4) ) # a line
-        image.fill(self.boss.color)
-        pygame.draw.rect(image,green,(1,1,self.side-1,self.side/4-1) ) # red dot in front
+        image.fill(gray)
+        #pygame.draw.rect(image,blue,(1,1,self.side-1,self.side/4-1) ) # red dot in front
         rect1 = Tracer.side*3/4, 0, Tracer.side, Tracer.side/4
-        pygame.draw.rect(image,black,rect1) # red dot in front
+        pygame.draw.rect(image,red,rect1) # red dot in front
         image.set_colorkey(gray)
         self.image0 = image.convert_alpha()
+        self.rect = self.image0.get_rect()
         self.image = pygame.transform.rotate(self.image0, self.angle)
-        self.rect = self.image.get_rect()
-        Vd = Vector()
-        Vd.x = cos(self.angle*GRAD)
-        Vd.y = -sin(self.angle*GRAD)
-        self.delta = Vd * self.vel
-    def calculateOrigin(self):
-        Vd = Vector()
-        Vd.x = cos( (30 + self.boss.tankAngle)*GRAD )
-        Vd.y = sin( (-30 - self.boss.tankAngle)*GRAD )
-        self.pos += Vd * (Tank.size/2.0)
+        self.rect = self.image.get_rect(center=self.rect.center)
+#       Vd = Vector()
+#       Vd.x = cos(self.angle*GRAD)
+#       Vd.y = -sin(self.angle*GRAD)
+#       self.delta = Vd * self.vel
+
+    def setPosition(self):
+        self.Vp = copy.copy(self.boss.Vp) # copy boss's position
+        print self.boss.Vp, Vector(self.boss.MGcenter)
+        self.Vp += -Vector(self.boss.MGcenter)
 
 def main():
 
