@@ -15,7 +15,7 @@ class Tank(pygame.sprite.Sprite):
     movespeed = 25.0 * 2
     book = {} # a book of tanks to store all tanks
     number = 0
-    color = ((200,200,0),(0,0,200) )
+    color = red,blue#((200,200,0),(0,0,200) )
     msg = ['wasd LCTRL, ijkl','Keypad: 4852, ENTER, cursor']
 
     def __init__(self,startpos=(150,150),angle=0):
@@ -40,8 +40,9 @@ class Tank(pygame.sprite.Sprite):
         self.rect.center = tuple(self.pos)
         self.tankAngle = angle
         self.Vd = Vector(0,0) # direction = 0 -> stop
-        # tank constants
         self.movespeed = Tank.movespeed
+        self.delta = self.Vd * self.movespeed
+        # tank constants
         self.tankTurnSpeed = Tank.tankTurnSpeed
         self.tankturndirection = 0
         self.ammo = 3000 # main gun
@@ -87,6 +88,7 @@ class Tank(pygame.sprite.Sprite):
         canFireCannon = self.cooltime <= 0 and self.ammo >0 and pressedkeys[self.firekey]
         if not canFireCannon: return
         # fire Cannon: cooltime == 0
+        Bullet(self)
         cannonsound.play()
         self.cooltime = Tank.recoiltime # seconds until tank can fire again
         self.ammo -= 1
@@ -98,6 +100,7 @@ class Tank(pygame.sprite.Sprite):
         canFireMG = self.MGcooltime <= 0 and self.MGammo > 0 and pressedkeys[self.MGfirekey]
         if not canFireMG: return
         # fire Machine Gun
+        Tracer(self, False) # turret mg = False
         mg2sound.play()
         self.MGcooltime = Tank.MGrecoiltime
         self.MGammo -= 1
@@ -171,6 +174,110 @@ class Turret(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center =self.boss.rect.center)
         #self.rect.center = self.boss.rect.center
  
+
+class Bullet(pygame.sprite.Sprite):
+    ''' a big projectile fired by the thank's main cannon'''
+    side = 7  # small side of bullet retangle
+    vel = 180.0 # velocity
+    mass = 50.0
+    maxlifetime = 10.0 # seconds
+
+    def __init__(self,boss):
+        pygame.sprite.Sprite.__init__(self,self.groups)
+        self.boss = boss
+        self.delta = Vector(0,0)
+        self.angle = 0
+        self.lifetime = 0.0
+        self.color = self.boss.color
+        self.turretAngle = self.boss.turretAngle
+        self.calculateHeading()
+        self.delta += self.boss.delta # add boss's movement
+        self.pos = copy.copy(self.boss.pos) # copy boss's position
+        self.calculateOrigin()
+        self.update()
+    def calculateHeading(self):
+        # drawing the bullet and rotating it according to it's launcher
+        self.radius = Bullet.side  # for collide_circle
+        self.angle = self.boss.turretAngle
+        self.mass = Bullet.mass
+        self.vel = Bullet.vel
+        image = pygame.Surface( (2*Bullet.side,Bullet.side) ) # rect 2 x 1 
+        image.fill(gray)
+        pygame.draw.rect(image,purple,(0,0,int(Bullet.side*1.5), Bullet.side) )
+        pygame.draw.circle(image,red,(int(1.5*self.side),self.side//2),self.side//2)
+        #pygame.draw.rect(image,self.color,(0,0,int(Bullet.side*1.5), Bullet.side) )
+        #pygame.draw.circle(image,self.color,(int(1.5*self.side),self.side//2),self.side//2)
+        image.set_colorkey(gray)
+        self.image0 = image.convert_alpha()
+        self.image = pygame.transform.rotate(self.image0,self.angle)
+        self.rect = self.image.get_rect()
+        Vd = Vector() # direction Vector
+        Vd.x =  cos(self.turretAngle*GRAD)
+        Vd.y =  sin(-self.turretAngle*GRAD)
+        self.delta = Vd * self.vel
+    def calculateOrigin(self):
+        # spawn bullet at the end of turret barrel instead tank center
+        # cannon is around Tank.side long, calculate from Tank center
+        # later substracted 20 pixel from this distance
+        # so that bullet spawns close to thank muzzle
+        Vd = Vector() # direction Vector
+        Vd.x = cos(self.turretAngle*GRAD)
+        Vd.y = sin(-self.turretAngle*GRAD)
+        self.pos += Vd * (Tank.size - 20)
+    def checkLifetime(self,seconds):
+        # kill it if too old
+        self.lifetime += seconds
+        if self.lifetime > Bullet.maxlifetime:
+            self.kill()
+    def move(self,seconds):
+        self.pos += self.delta * seconds
+    def checkArea(self):
+        if self.pos.x < 0 or self.pos.y < 0:
+            self.kill()
+        elif self.pos.x > screenwidth or self.pos.y > screenheight:
+            self.kill()
+    def update(self,seconds=0.0):
+        self.checkLifetime(seconds)
+        self.move(seconds)
+        self.checkArea()
+        self.rect.center = tuple(self.pos)
+
+
+class Tracer(Bullet):
+    ''' Tracer is nearly the same as Bullet, but smaller and with another origin
+        ( bow MG rect, instead cannon) '''
+    side = 15 # long side of bullet rectangle
+    vel = 200.0
+    mass = 10.0
+    color = (200,0,100)
+    maxlifetime = 10.0
+
+    def __init__(self,boss,turret=False):
+        Bullet.__init__(self, boss) 
+    def calculateHeading(self):
+        self.radius = Tracer.side
+        self.angle  = self.boss.tankAngle
+        self.mass = Tracer.mass
+        self.vel = Tracer.vel
+        image = pygame.Surface( (Tracer.side, Tracer.side/4) ) # a line
+        image.fill(self.boss.color)
+        pygame.draw.rect(image,green,(1,1,self.side-1,self.side/4-1) ) # red dot in front
+        rect1 = Tracer.side*3/4, 0, Tracer.side, Tracer.side/4
+        pygame.draw.rect(image,black,rect1) # red dot in front
+        image.set_colorkey(gray)
+        self.image0 = image.convert_alpha()
+        self.image = pygame.transform.rotate(self.image0, self.angle)
+        self.rect = self.image.get_rect()
+        Vd = Vector()
+        Vd.x = cos(self.angle*GRAD)
+        Vd.y = -sin(self.angle*GRAD)
+        self.delta = Vd * self.vel
+    def calculateOrigin(self):
+        Vd = Vector()
+        Vd.x = cos( (30 + self.boss.tankAngle)*GRAD )
+        Vd.y = sin( (-30 - self.boss.tankAngle)*GRAD )
+        self.pos += Vd * (Tank.size/2.0)
+
 def main():
 
     # set sprites group
@@ -180,10 +287,12 @@ def main():
     # set _layer
     Tank._layer = 4   # base layer
     Turret._layer = 6 # above Tank & Tracer
+    Bullet._layer = 7 # to prove that Bullet is in top-layer
     Text._layer = 3   # below Tank
     #assign default groups to each sprite class
     Tank.groups = tankgroup, allgroup
     Turret.groups = allgroup
+    Bullet.groups = bulletgroup, allgroup
     Text.groups = allgroup
 
     player1 = Tank((150,250), 0) # create  first tank, looking north

@@ -28,6 +28,7 @@ forwardkey      = (pygame.K_k, pygame.K_KP8)
 backwardkey     = (pygame.K_j, pygame.K_KP5)
 tankLeftkey     = (pygame.K_a, pygame.K_KP4)
 tankRightkey    = (pygame.K_d, pygame.K_KP6)
+#TankKeys = [firekey,MGfirekey,turrectLeft,turretRightkey,forwardkey,backwardkey,tankLeftkey,tankRightkey]
 
 # paint a grid of white lines
 for x in range(0,screenwidth,screenwidth/xtiles): #start, stop, step
