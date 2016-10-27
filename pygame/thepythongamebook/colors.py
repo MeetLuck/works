@@ -3,10 +3,10 @@ import random
 
 # colors
 white   = Color('white')
+black   = Color('black')
 red     = Color('red')
 green   = Color('green')
 blue    = Color('blue')
-black   = Color('black')
 yellow  = Color('yellow')
 orange  = Color('orange')
 purple  = Color('purple')

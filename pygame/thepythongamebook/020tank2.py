@@ -71,7 +71,6 @@ class Bullet(pygame.sprite.Sprite):
         self.checkArea()
         self.rect.center = tuple(self.pos)
 
-
 class Tracer(Bullet):
     ''' Tracer is nearly the same as Bullet, but smaller and with another origin
         ( bow MG rect, instead cannon) '''

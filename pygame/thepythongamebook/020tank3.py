@@ -7,28 +7,14 @@ from constants020 import *
 import copy
 
 class Tank(pygame.sprite.Sprite):
-    ''' A Tank controlled by the Player
-        this Tank draws its own Turret(including main gun) and its bow rectangle
-        (slit for Tracer Machine Gun) '''
     size = 100
-    recoiltime = 0.75 # how many seconds the cannon is busy after firing one time
-    MGrecoiltime = 0.2 # how many seconds the bow(machine gun) is idel
-    turretTurnSpeed = 25
+    recoiltime = 0.5 #0.75 # how many seconds the cannon is busy after firing one time
+    MGrecoiltime = 0.1 # how many seconds the bow(machine gun) is idel
+    turretTurnSpeed = 1
     tankTurnSpeed = 1 # degrees
     movespeed = 25.0 * 2
-    maxrotate = 360
     book = {} # a book of tanks to store all tanks
     number = 0
-    # KEYs for tank control
-    #    player1, player2
-    firekey     = (pygame.K_SPACE,pygame.K_DOWN)
-    MGfirekey   = (pygame.K_LCTRL, pygame.K_KP_ENTER)
-    turretLeftkey  = (pygame.K_w, pygame.K_LEFT)
-    turretRightkey = (pygame.K_s, pygame.K_RIGHT)
-    forwardkey      = (pygame.K_k, pygame.K_KP8)
-    backwardkey     = (pygame.K_j, pygame.K_KP5)
-    tankLeftkey     = (pygame.K_a, pygame.K_KP4)
-    tankRightkey    = (pygame.K_d, pygame.K_KP6)
     color = ((200,200,0),(0,0,200) )
     msg = ['wasd LCTRL, ijkl','Keypad: 4852, ENTER, cursor']
 
@@ -39,150 +25,145 @@ class Tank(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.pos = Vector(startpos)
         self.delta = Vector()
-        self.ammo = 30 # main gun
-        self.MGammo = 500 # machine gun
+        self.Vd = Vector()
+        self.ammo = 3000 # main gun
+        self.MGammo = 500000 # machine gun
         self.msg =  "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
         Text((screenwidth/2, 30+20*self.number), self.msg) # create status line text sprite
         self.color = Tank.color[self.number]
-        self.turretAngle = angle
+        self.turretAngle = angle #angle+90
         self.tankAngle = angle
         self.setKeys()
+        self.width,self.height = Tank.size,Tank.size
         self.makeTank()
+        Turret(self) # create a Turret for this thank
 
     def makeTank(self):
-        w,h = Tank.size, Tank.size
-        image = pygame.Surface( (w,h) )
-        image.fill(gray)
-        color1 = (90,90,90)
-        # tank decoration
-        rect = image.get_rect()
-        bodyrect  = (rect.left+5,rect.top+5),(w-10,h-10)
-        leftrect  = rect.topleft,(w/6,h)
-        rightrect = (rect.right-w/6,rect.top), (w,h)
-        MGrect = (5+w/6,10),(15,7)
-        center = (w/2,h/2)
-        r = w/3
-        # draw body
-        pygame.draw.rect(image,self.color,bodyrect) # tank body, margin 5
-        # draw leftside
-        pygame.draw.rect(image,color1,leftrect) # tank left
-        # draw rightside
-        pygame.draw.rect(image,color1,rightrect) # right track
-        # draw Machine Gun
-        pygame.draw.rect(image,red,MGrect) # red bow rect left
-        # draw rec Circle for turret
-        pygame.draw.circle(image,red,center,r,2) # red circle for turret
-        #image = pygame.transform.rotate(image,-90) # rotate so as to look EAST
+        image = drawTank(self.width,self.height)
         self.image0 = image.convert_alpha()
         self.image = image.convert_alpha()
         self.rect = self.image0.get_rect()
         # ------ turret ------------
-        self.firestatus = 0.0
-        self.MGfirestatus = 0.0
+        self.cooltime = 0.0
+        self.MGcooltime = 0.0
         self.turndirection = 0
         self.tankturndirection = 0
         self.movespeed = Tank.movespeed
         self.turretTurnSpeed = Tank.turretTurnSpeed
         self.tankTurnSpeed = Tank.tankTurnSpeed
-        #Turret(self) # create a Turret for this thank
 
     def setKeys(self):
-        self.firekey    = Tank.firekey[self.number]
-        self.MGfirekey  = Tank.MGfirekey[self.number]
-        self.turretLeftkey  = Tank.turretLeftkey[self.number]
-        self.turretRightkey = Tank.turretRightkey[self.number]
-        self.forwardkey      = Tank.forwardkey[self.number]
-        self.backwardkey    = Tank.backwardkey[self.number]
-        self.tankLeftkey    = Tank.tankLeftkey[self.number]
-        self.tankRightkey   = Tank.tankRightkey[self.number]
-    def checkFirestatus(self,seconds): # reloading, firestatus
-        if self.firestatus > 0:
-            self.firestatus -= seconds
-            if self.firestatus < 0: self.firestatus = 0
-        if self.MGfirestatus > 0:
-            self.MGfirestatus -= seconds
-            if self.MGfirestatus < 0: self.MGfirestatus = 0
+        self.forwardkey     = forwardkey[self.number]
+        self.backwardkey    = backwardkey[self.number]
+        self.tankLeftkey    = tankLeftkey[self.number]
+        self.tankRightkey   = tankRightkey[self.number]
+        self.firekey        = firekey[self.number]
+        self.MGfirekey      = MGfirekey[self.number]
+        self.turretLeftkey  = turretLeftkey[self.number]
+        self.turretRightkey = turretRightkey[self.number]
+
+
     def rotateTurret(self,pressedkeys):
         self.turndirection = 0 # left/right turret rotation
         if pressedkeys[self.turretLeftkey]:  self.turndirection += 1
         if pressedkeys[self.turretRightkey]: self.turndirection -= 1
+        self.turretAngle += self.turndirection * self.turretTurnSpeed  #* seconds
+
     def rotateTank(self,pressedkeys):
         self.tankturndirection = 0 # reset left/right rotation
         if pressedkeys[self.tankLeftkey]:  self.tankturndirection += 1
         if pressedkeys[self.tankRightkey]: self.tankturndirection -= 1
+        deltaAngle = self.tankturndirection * self.tankTurnSpeed # * seconds
+        self.tankAngle += deltaAngle
+        oldcenter = self.rect.center
+        self.image = pygame.transform.rotate(self.image0, self.tankAngle)
+        self.rect = self.image.get_rect(center = oldcenter)
+        # -- turret autorotate --
+        # if tank is rotating, turret is also rotating with tank!
+        self.turretAngle += deltaAngle
+
+    def checkCooltime(self,seconds): # reloading, firestatus
+        self.cooltime     -= seconds
+        self.MGcooltime -= seconds
+        if self.cooltime < 0: self.cooltime = 0.0
+        if self.MGcooltime < 0: self.MGcooltime = 0.0
+
     def fireCannon(self,pressedkeys):
-        isFireCannon = (self.firestatus ==0 and self.ammo >0 ) and pressedkeys[self.firekey]
-        if not isFireCannon: return
-        # fire Cannon
+        canFireCannon = (self.cooltime == 0 and self.ammo >0 ) and pressedkeys[self.firekey]
+        if not canFireCannon: return
+        # fire Cannon: firestatus == 0
         cannonsound.play()
-        self.firestatus = Tank.recoiltime # seconds until tank can fire again
+        self.cooltime = Tank.recoiltime # seconds until tank can fire again
         self.ammo -= 1
         self.msg =  "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
         Text.book[self.number].newMsg(self.msg)
+
     def fireMG(self,pressedkeys):
         # -- fire bow MG --
-        isFireMG = (self.MGfirestatus ==0 and self.MGammo >0 ) and pressedkeys[self.MGfirekey]
-        if not isFireMG: return
+        canFireMG = (self.MGcooltime ==0 and self.MGammo >0 ) and pressedkeys[self.MGfirekey]
+        if not canFireMG: return
         # fire Machine Gun
         mg2sound.play()
-        self.MGfirestatus = Tank.MGrecoiltime
+        self.MGcooltime = Tank.MGrecoiltime
         self.MGammo -= 1
         self.msg = "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
         Text.book[self.number].newMsg(self.msg)
 
-    def move(self,pressedkeys,seconds):
-        # need +90 degree, because we are heading NORTH
-        # if heading EAST, no need adjustment
+    def setDirection(self,pressedkeys):
+        # we are heading NORTH, tank's forward direction is NORTH 
+        # because rotation and movement direction differ, need +90 degrees compensation
+        # if heading EAST, no need for adjustment
         moveAngle = self.tankAngle + 90
-        self.forward = 0 # movement calculator
-        # if both pressed, self.forward becomes 0
-        if pressedkeys[self.forwardkey]:
-            self.forward += 1
-        if pressedkeys[self.backwardkey]:
-            self.forward -= 1
-        self.delta = Vector()
-        Vd = Vector()
-        if self.forward == 1:
-            Vd.x = +cos(moveAngle*GRAD)
-            Vd.y = -sin(moveAngle*GRAD)
-            self.delta = Vd * self.movespeed
-        if self.forward == -1:
-            Vd.x = -cos(moveAngle*GRAD)
-            Vd.y = +sin(moveAngle*GRAD)
-            self.delta = Vd * self.movespeed
+        isForward  =  pressedkeys[self.forwardkey]
+        isBackward =  pressedkeys[self.backwardkey]
+        if isForward and not isBackward:   # only forward
+            self.Vd.x = +cos(moveAngle*GRAD)
+            self.Vd.y = -sin(moveAngle*GRAD)
+        elif not isForward and isBackward: # only backward
+            self.Vd.x = -cos(moveAngle*GRAD)
+            self.Vd.y = +sin(moveAngle*GRAD)
+        else: # everything else = both pressed or no keypressed
+              # stop Tank by setting direction = 0
+            self.Vd = Vector(0,0)
+
+    def move(self,pressedkeys,seconds):
+        # direction
+        self.setDirection(pressedkeys)
+        # reset delta
+        self.delta = self.Vd * self.movespeed
         self.pos += self.delta * seconds
 
+    def processKeys(self,pressedkeys):
+        self.canFireCannon = False
+        self.canFireMG = False
+        self.canMoveTank = False
+        self.canRotateTank = False
+        self.canRotateTurret = False
+        # -- process keys --
+        if pressedkeys[self.firekey]: self.canFireCannon = True
+        if pressedkeys[self.MGfirekey]: self.canFireMG = True
+        if pressedkeys[self.forwardkey] or pressedkeys[self.backwardkey]:   self.canMoveTank = True
+        if pressedkeys[self.tankLeftkey] or pressedkeys[self.tankRightkey]: self.canRotateTank= True
+        if pressedkeys[self.turretLeftkey] or pressedkeys[self.turretRightkey]: self.canRotateTurret= True
+
     def update(self,seconds):
-        self.checkFirestatus(seconds)
+        self.checkCooltime(seconds)
         # -- process keys --
         pressedkeys = pygame.key.get_pressed()
+        self.processKeys(pressedkeys)
         # -- turret manual rotate
-        self.rotateTurret(pressedkeys)
+        if self.canRotateTurret: self.rotateTurret(pressedkeys)
         # -- tank rotation --
-        self.rotateTank(pressedkeys)
-        # -- turn tank --
-        self.tankAngle += self.tankturndirection * self.tankTurnSpeed # * seconds
-
-        print self.tankAngle
-        # angle etc from Tank(boss)
-        oldcenter = self.rect.center
-        oldrect = self.image.get_rect()
-        self.image = pygame.transform.rotate(self.image0, self.tankAngle)
-        self.rect = self.image.get_rect()
-        self.rect.center = oldcenter
-        # if tank is rotating, turret is also rotating with tank!
-        # -- turret autorotate --
-        self.turretAngle += self.tankturndirection * self.tankTurnSpeed * seconds
-        self.turretAngle += self.turndirection * self.turretTurnSpeed * seconds
+        if self.canRotateTank: self.rotateTank(pressedkeys)
         # -- fire cannon --
-        self.fireCannon(pressedkeys)
+        if self.canFireCannon: self.fireCannon(pressedkeys)
         # -- fire MG(bow) --
-        self.fireMG(pressedkeys)
+        if self.canFireMG: self.fireMG(pressedkeys)
         # -- movement --
-        self.move(pressedkeys,seconds)
+        if self.canMoveTank: self.move(pressedkeys,seconds)
         # -- paint sprite at correct position
         self.rect.center = tuple(self.pos)
-
+        # test
 
 class Turret(pygame.sprite.Sprite):
     """turret on top of tank"""
@@ -191,74 +172,23 @@ class Turret(pygame.sprite.Sprite):
         self.boss = boss
         self.width = self.boss.width        
         self.images = {} # how much recoil after shooting, reverse order of apperance
-        self.images[0] = self.draw_cannon(0)  # idle position
-        self.images[1] = self.draw_cannon(1)
-        self.images[2] = self.draw_cannon(2)
-        self.images[3] = self.draw_cannon(3)
-        self.images[4] = self.draw_cannon(4)
-        self.images[5] = self.draw_cannon(5)
-        self.images[6] = self.draw_cannon(6)
-        self.images[7] = self.draw_cannon(7)
-        self.images[8] = self.draw_cannon(8)  # position of max recoil
-        self.images[9] = self.draw_cannon(4)
-        self.images[10] = self.draw_cannon(0) # idle position
+        for i in range(10):
+            self.images[i]= draw_cannon(boss,i)
+        self.images[10] = draw_cannon(boss,0) # idle position
  
     def update(self, seconds):        
         # painting the correct image of cannon
-        if self.boss.firestatus > 0:
-            self.image = self.images[int(self.boss.firestatus // (Tank.recoiltime / 10.0))]
-        else:
+        if self.boss.cooltime > 0:
+            index = 10.0 * self.boss.cooltime/Tank.recoiltime
+            self.image = self.images[int(index)]
+            print 'cooltime: %.2f   images[%.2f]' %(self.boss.cooltime , index )
+        else: # idle position : cooltime == 0
             self.image = self.images[0]
-        # --------- rotating -------------
-        # angle etc from Tank (boss)
-        oldrect = self.image.get_rect() # store current surface rect
+        # --------- rotating -------------  angle etc from Tank (boss)
         self.image  = pygame.transform.rotate(self.image, self.boss.turretAngle) 
-        self.rect = self.image.get_rect()
         # ---------- move with boss ---------
-        self.rect = self.image.get_rect()
-        self.rect.center = self.boss.rect.center
- 
-    def draw_cannon(self, offset):
-         # painting facing right, offset is the recoil
-         image = pygame.Surface((self.boss.width * 2,self.boss.width * 2)) # created on the fly
-         image.fill((128,128,128)) # fill grey
-         pygame.draw.circle(image, (255,0,0), (self.width,self.width), 22, 0) # red circle
-         pygame.draw.circle(image, (0,255,0), (self.width,self.width), 18, 0) # green circle
-         pygame.draw.rect(image, (255,0,0), (self.width-10, self.width + 10, 15,2)) # turret mg rectangle
-         pygame.draw.rect(image, (0,255,0), (self.width-20 - offset,self.width - 5, self.width - offset,10)) # green cannon
-         pygame.draw.rect(image, (255,0,0), (self.width-20 - offset,self.width - 5, self.width - offset,10),1) # red rect 
-         image.set_colorkey((128,128,128))
-         return image
-# ---------------- End of classes --------------------
-#------------ defs ------------------
-def radians_to_degrees(radians):
-    return (radians / math.pi) * 180.0
- 
-def degrees_to_radians(degrees):
-    return degrees * (math.pi / 180.0)
- 
-def write(msg="pygame is cool"):
-    """helper function for the Text sprite"""
-    myfont = pygame.font.SysFont("None", 28)
-    mytext = myfont.render(msg, True, (255,0,0))
-    mytext = mytext.convert_alpha()
-    return mytext        
- 
-def pressedKeysString():
-    """returns the pressed keys (for the player1 tank) to be displayd in the status line"""
-    pressedkeys = pygame.key.get_pressed()
-    line = ""
-    if pressedkeys[pygame.K_a]:
-        line += "a "
-    if pressedkeys[pygame.K_d]:
-        line += "d "
-    if pressedkeys[pygame.K_w]:
-        line += "w "
-    if pressedkeys[pygame.K_s]:
-        line += "s "
-    if pressedkeys[pygame.K_LCTRL]:
-        line += "LCTRL"
-    return line
+        self.rect = self.image.get_rect(center =self.boss.rect.center)
+        #self.rect.center = self.boss.rect.center
  
 def main():
 
