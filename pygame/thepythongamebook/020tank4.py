@@ -108,7 +108,7 @@ class Tank(pygame.sprite.Sprite):
         canFireMG = self.MGcooltime <= 0 and self.MGammo > 0 and pressedkeys[self.MGfirekey]
         if not canFireMG: return
         # fire Machine Gun
-        Tracer(self, False) # turret mg = False
+        Tracer(self)
         mg2sound.play()
         self.MGcooltime = Tank.MGrecoiltime
         self.MGammo -= 1
@@ -200,7 +200,6 @@ class Bullet(pygame.sprite.Sprite):
         self.delta = Vector(0,0)
         self.setDirection()
         self.setPosition()
-        self.update()
     def setDirection(self):
         self.Vd = Vector(0,0)
         self.Vd.x = cos(self.angle*GRAD)
@@ -252,51 +251,57 @@ class Bullet(pygame.sprite.Sprite):
 class Tracer(Bullet):
     ''' Tracer is nearly the same as Bullet, but smaller and with another origin
         ( bow MG rect, instead cannon) '''
-    side = 15 # long side of bullet rectangle
     vel = 200.0
     mass = 10.0
     color = (200,0,100)
     maxlifetime = 10.0
 
     def __init__(self,boss,turret=False):
-        Bullet.__init__(self, boss) 
         self.radius = Tracer.side
         self.mass = Tracer.mass
         self.vel = Tracer.vel
+        pygame.sprite.Sprite.__init__(self,self.groups)
+        self.boss = boss
+        self.lifetime = 0.0
+        # delta Vector
+        self.delta = self.boss.delta # add boss's movement
+        self.angle  = self.boss.tankAngle + 90 # tank's forward direction
+        self.delta = Vector(0,0)
+        self.setPosition()
+        self.setDirection()
+        self.makeBullet()
+    def setDirection(self):
+        self.Vd = Vector(0,0)
+        self.Vd.x = cos(self.angle*GRAD)
+        self.Vd.y = -sin(self.angle*GRAD)
     def makeBullet(self):
-        image = pygame.Surface( (Tracer.side, Tracer.side/4) ) # a line
-        image.fill(gray)
+        self.width = 8
+        self.height = self.width*4
+        image = pygame.Surface( (self.width,self.height) ) # a line
+        image.fill(darkgray)
         #pygame.draw.rect(image,blue,(1,1,self.side-1,self.side/4-1) ) # red dot in front
-        rect1 = Tracer.side*3/4, 0, Tracer.side, Tracer.side/4
+        #rect1 = Tracer.side*3/4, 0, Tracer.side/4, Tracer.side
+        rect1 = 0, 0, self.width,self.height/4
         pygame.draw.rect(image,red,rect1) # red dot in front
-        image.set_colorkey(gray)
-        self.image0 = image.convert_alpha()
-        self.rect = self.image0.get_rect()
-        self.angle  = self.boss.tankAngle + 90
-        self.image = pygame.transform.rotate(self.image0, self.angle)
-        self.rect = self.image.get_rect(center=self.rect.center)
-#       Vd = Vector()
-#       Vd.x = cos(self.angle*GRAD)
-#       Vd.y = -sin(self.angle*GRAD)
-#       self.delta = Vd * self.vel
-    def getDirection(self,angle):
-        Vd = Vector()
-        Vd.x = cos(angle*GRAD)
-        Vd.y = -sin(angle*GRAD)
-        return Vd
+        #image.set_colorkey(gray)
+        self.image = image.convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.center = tuple(self.Vp)
+        #self.image = pygame.transform.rotate(self.image0, self.angle)
+        #self.rect = self.image.get_rect(center=self.rect.center)
 
     def setPosition(self):
         #self.Vp = copy.copy(self.boss.Vp) # copy boss's position
         #self.Vp = self.boss.Vp - Vector(self.boss.width/2,self.boss.height/2)+Vector(self.boss.MGcenter0)
         x,y = tuple(self.boss.Vc)
-        angle = atan2(y,x)/pi * 180
+        angle = atan2(-y,x)/pi * 180 # y axis UPSIDE DOWN
         magnitude = self.boss.Vc.get_magnitude()
-        print magnitude
-        self.Vp = self.boss.Vp - self.boss.Vd * magnitude
-        #self.Vp = self.boss.Vp + self.getDirection(angle+self.angle)*magnitude
-        #self.Vp = self.boss.Vp + self.boss.Vc
-        print self.boss.Vp, self.boss.Vc
-        print self.angle, angle
+        Vd = Vector()
+        Vd.x = cos( (angle+self.boss.tankAngle)*GRAD )
+        Vd.y = -sin( (angle+self.boss.tankAngle)*GRAD )
+        self.Vp = self.boss.Vp + Vd*magnitude
+        print angle,magnitude
+        print self.Vp
     def move(self,seconds):
         self.delta = self.Vd * self.vel
         self.Vp += self.delta * seconds
