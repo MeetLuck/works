@@ -265,15 +265,16 @@ class Tracer(Bullet):
         self.lifetime = 0.0
         # delta Vector
         self.delta = self.boss.delta # add boss's movement
-        self.angle  = self.boss.tankAngle + 90 # tank's forward direction
+        self.angle  = self.boss.tankAngle# + 90 # tank's forward direction
         self.delta = Vector(0,0)
         self.setPosition()
         self.setDirection()
         self.makeBullet()
     def setDirection(self):
         self.Vd = Vector(0,0)
-        self.Vd.x = cos(self.angle*GRAD)
-        self.Vd.y = -sin(self.angle*GRAD)
+        moveAngle = self.angle+90
+        self.Vd.x = cos(moveAngle*GRAD)
+        self.Vd.y = -sin(moveAngle*GRAD)
     def makeBullet(self):
         self.width = 8
         self.height = self.width*4
@@ -284,11 +285,12 @@ class Tracer(Bullet):
         rect1 = 0, 0, self.width,self.height/4
         pygame.draw.rect(image,red,rect1) # red dot in front
         #image.set_colorkey(gray)
+        self.image0 = image.convert_alpha()
         self.image = image.convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = tuple(self.Vp)
-        #self.image = pygame.transform.rotate(self.image0, self.angle)
-        #self.rect = self.image.get_rect(center=self.rect.center)
+        self.image = pygame.transform.rotate(self.image0, self.angle)
+        self.rect = self.image.get_rect(center=self.rect.center)
 
     def setPosition(self):
         #self.Vp = copy.copy(self.boss.Vp) # copy boss's position

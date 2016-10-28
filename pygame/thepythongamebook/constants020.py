@@ -65,10 +65,6 @@ def drawTank(width,height):
     bodyrect  = (rect.left+5,rect.top+5),(w-10,h-10)
     leftrect  = rect.topleft,(w/6,h)
     rightrect = (rect.right-w/6,rect.top), (w,h)
-    MGrect = pygame.Rect( 5+w/6,10,16,8 )
-    MGcenter = MGrect.center
-    print 'MGcenter:',MGcenter, rect.center
-    Vc = Vector(MGcenter) - Vector(rect.center)
     center = (w/2,h/2)
     r = w/3
     # draw body
@@ -79,8 +75,13 @@ def drawTank(width,height):
     # draw rightside
     pygame.draw.rect(image,color1,rightrect) # right track
     # draw Machine Gun
-    pygame.draw.rect(image,red,MGrect) # red bow rect left
-    pygame.draw.circle(image,blue,MGrect.center,2) # red bow rect left
+    MGrect = pygame.Rect(w/5,4,8,24 )
+    MGcenter = MGrect.center
+    print 'MGcenter:',MGcenter, rect.center
+    Vc = Vector(MGcenter) - Vector(rect.center)
+    pygame.draw.rect(image,black,MGrect) # red bow rect left
+    pygame.draw.circle(image,blue,MGrect.center,4) # red bow rect left
+    pygame.draw.circle(image,blue,MGrect.center,8,2) # red bow rect left
     # draw rec Circle for turret
     pygame.draw.circle(image,red,center,r,2) # red circle for turret
     #image = pygame.transform.rotate(image,-90) # rotate so as to look EAST
