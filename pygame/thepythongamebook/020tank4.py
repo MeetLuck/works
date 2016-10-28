@@ -29,10 +29,11 @@ class Tank(pygame.sprite.Sprite):
         self.turret = Turret(self) # create a Turret for this thank
         self.msg =  "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
         Text((screenwidth/2, 30+20*self.number), self.msg) # create status line text sprite
+        #print self.MGcenter,self.Vp
 
     def makeTank(self,startpos,angle):
         self.width,self.height = Tank.size,Tank.size
-        image,self.MGcenter = drawTank(self.width,self.height)
+        image,MGcenter,Vc = drawTank(self.width,self.height)
         self.image0 = image.convert_alpha()
         self.image = image.convert_alpha()
         self.rect = self.image0.get_rect()
@@ -44,6 +45,9 @@ class Tank(pygame.sprite.Sprite):
         self.Vp = Vector(startpos)
         self.Vp += self.delta
         self.rect.center = tuple(self.Vp)
+        self.MGcenter = MGcenter
+        self.Vc = Vc
+        #self.MGcenter0 = -Vector(self.width/2,self.height/2)+Vector(MGcenter)
         self.tankAngle = angle
         self.movespeed = Tank.movespeed
         # tank constants
@@ -190,13 +194,12 @@ class Bullet(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.boss = boss
         self.lifetime = 0.0
-        self.angle = self.boss.turretAngle
         # delta Vector
         #self.delta = self.boss.delta # add boss's movement
+        self.makeBullet()
         self.delta = Vector(0,0)
         self.setDirection()
         self.setPosition()
-        self.makeBullet()
         self.update()
     def setDirection(self):
         self.Vd = Vector(0,0)
@@ -211,6 +214,7 @@ class Bullet(pygame.sprite.Sprite):
         self.Vp += self.Vd * (Tank.size - 20)
     def makeBullet(self):
         # drawing the bullet and rotating it according to it's launcher
+        self.angle = self.boss.turretAngle
         self.radius = Bullet.side  # for collide_circle
         self.mass = Bullet.mass
         self.vel = Bullet.vel
@@ -238,11 +242,11 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
         elif self.Vp.x > screenwidth or self.Vp.y > screenheight:
             self.kill()
+        #self.rect.center = tuple(self.Vp)
     def update(self,seconds=0.0):
         self.checkLifetime(seconds)
         self.move(seconds)
         self.checkArea()
-        #self.rect.center = tuple(self.Vp)
 
 
 class Tracer(Bullet):
@@ -257,7 +261,6 @@ class Tracer(Bullet):
     def __init__(self,boss,turret=False):
         Bullet.__init__(self, boss) 
         self.radius = Tracer.side
-        self.angle  = self.boss.tankAngle
         self.mass = Tracer.mass
         self.vel = Tracer.vel
     def makeBullet(self):
@@ -269,17 +272,41 @@ class Tracer(Bullet):
         image.set_colorkey(gray)
         self.image0 = image.convert_alpha()
         self.rect = self.image0.get_rect()
+        self.angle  = self.boss.tankAngle + 90
         self.image = pygame.transform.rotate(self.image0, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
 #       Vd = Vector()
 #       Vd.x = cos(self.angle*GRAD)
 #       Vd.y = -sin(self.angle*GRAD)
 #       self.delta = Vd * self.vel
+    def getDirection(self,angle):
+        Vd = Vector()
+        Vd.x = cos(angle*GRAD)
+        Vd.y = -sin(angle*GRAD)
+        return Vd
 
     def setPosition(self):
-        self.Vp = copy.copy(self.boss.Vp) # copy boss's position
-        print self.boss.Vp, Vector(self.boss.MGcenter)
-        self.Vp += -Vector(self.boss.MGcenter)
+        #self.Vp = copy.copy(self.boss.Vp) # copy boss's position
+        #self.Vp = self.boss.Vp - Vector(self.boss.width/2,self.boss.height/2)+Vector(self.boss.MGcenter0)
+        x,y = tuple(self.boss.Vc)
+        angle = atan2(y,x)/pi * 180
+        magnitude = self.boss.Vc.get_magnitude()
+        print magnitude
+        self.Vp = self.boss.Vp - self.boss.Vd * magnitude
+        #self.Vp = self.boss.Vp + self.getDirection(angle+self.angle)*magnitude
+        #self.Vp = self.boss.Vp + self.boss.Vc
+        print self.boss.Vp, self.boss.Vc
+        print self.angle, angle
+    def move(self,seconds):
+        self.delta = self.Vd * self.vel
+        self.Vp += self.delta * seconds
+        self.rect.center = tuple(self.Vp)
+    def update(self,seconds=0.0):
+        self.rect.center = tuple(self.Vp)
+        self.checkLifetime(seconds)
+        self.move(seconds)
+        pygame.draw.circle(self.image,blue,self.rect.center,5)
+        #pygame.draw.circle(self.image,red,(self.Vp.x,self.Vp.y),5)
 
 def main():
 
@@ -314,6 +341,7 @@ def main():
         allgroup.clear(screen, background) # funny effect if you outcomment this line
         allgroup.update(seconds)
         allgroup.draw(screen)
+        #pygame.draw.circle(screen,darkblue,(int(player1.MGcenter.x),int(player1.MGcenter.y)),10)
         pygame.display.flip() # flip the screen 30 times a second
         #pygame.time.wait(100000)
     return 0

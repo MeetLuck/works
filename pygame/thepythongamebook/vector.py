@@ -18,7 +18,7 @@ class Vector:
     def __str__(self):
         return 'Vector(%s,%s)' %(self.x,self.y)
     def __repr__(self):
-        return __str__(self)
+        return self.__str__(self)
     @classmethod
     def from_points(cls,P1,P2):
         return Vector(P1.x-P2.x, P1.y-P2.y)
