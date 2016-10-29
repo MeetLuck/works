@@ -19,6 +19,7 @@ darkgreen  = Color('darkgreen')
 darkgray  = Color('darkgray')
 darkblue    = Color('darkblue')
 darkred    = Color('darkred')
+darkred1 = 150,0,0
 darkorange  = Color('darkorange')
 yellowgreen  = Color('yellowgreen')
 limegreen  = Color('limegreen')
