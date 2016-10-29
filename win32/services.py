@@ -33,6 +33,10 @@ def isBnextday(aday):
     if getBnextday(aday):
         return True
     return False
+def isCnextday(aday):
+    if getCnextday(aday):
+        return True
+    return False
 
 def getAnextday(aday=None):
     if not aday: aday = date.today()
@@ -45,6 +49,12 @@ def getBnextday(bday=None):
     daydelta = date.toordinal(bday) - date.toordinal(startday)
     if daydelta % 18 == 1+1: return bday
     elif daydelta % 18 == 12+1: return bday
+
+def getCnextday(bday=None):
+    if not bday: bday = date.today()
+    daydelta = date.toordinal(bday) - date.toordinal(startday)
+    if daydelta % 18 == 1+2: return bday
+    elif daydelta % 18 == 12+2: return bday
 
 def getRandomThree():
     a = random.randint(0,20)
@@ -135,7 +145,7 @@ def checkService(svcName):
 
 if __name__=='__main__':
     
-    openPortals()
+    #openPortals()
     dnfile(filename=logfile)
     today = date.today()
     for i in range(17,31+1):
@@ -145,5 +155,7 @@ if __name__=='__main__':
         print 'isHoliday: ',isHoliday(aday)
         print 'isAnextday: ',isAnextday(aday)
         print 'isBnextday: ',isBnextday(aday)
+        print 'isCnextday: ',isCnextday(aday)
         print 'Aday =>',getAnextday(aday),
         print 'Bday =>',getBnextday(aday)
+        print 'Cday =>',getCnextday(aday)

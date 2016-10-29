@@ -226,7 +226,7 @@ class Tank(pygame.sprite.Sprite):
         self.backwardkey = Tank.backwardkey[self.number] # reverse tank
         self.tankLeftkey = Tank.tankLeftkey[self.number] # rotate tank
         self.tankRightkey = Tank.tankRightkey[self.number] # rotat tank
-        # painting facing north, have to rotate 90° later
+        # painting facing north, have to rotate 90 later
         image = pygame.Surface((Tank.side,Tank.side)) # created on the fly
         image.fill((128,128,128)) # fill grey
         if self.side > 10:

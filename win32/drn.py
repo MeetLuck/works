@@ -55,13 +55,21 @@ def runOffHolidays():
 
 def runHolidays():
     now = datetime.now()
+    if comname == 'PC-PC':
+        if now.hour==14 and now.minute == 40 and now.second in [10,20]:
+            openPortals(f2)
+        elif 14<= now.hour<=16:
+            if now.minute == random.choice[(13,20,24,28,32,37,42,50,56)]:
+                dnfile(f2)
+        else:
+            time.sleep(60)
     if comname != 'PC-PC':
         if now.hour==7 and now.minute == 30 and now.second in [10,20]:
             setStartPage(filname=f2)
             openPortals(f2)
             dodrn()
         if 9<= now.hour<=11:
-            if now.minute == random.choice[(13,28,32,42,56)]:
+            if now.minute == random.choice[(13,20,24,28,32,37,42,50,56)]:
                 dnfile(f2)
         else:
             time.sleep(60)
@@ -69,8 +77,18 @@ def runHolidays():
 def runNights():
     Anextday = getAnextday()
     Bnextday = getBnextday()
+    Cnextday = getCnextday()
     #print now.day, Anextday, Bnextday
     now = datetime.now()
+    if comname == 'PC-PC' and now.date() == Cnextday:
+        # print 'Cnextday'
+        if now.hour== 0 and now.minute == 10 and now.seconds in [10,20]:
+            openPortals(f2)
+        elif 0<= now.hour<=1:
+            if now.minute == random.choice[(13,28,32,42,56)]:
+                dnfile(f2)
+        else:
+            time.sleep(60)
     if comname == 'PC-PC' and ( now.date() == Anextday or now.date() in extradays ):
         #print 'anextday'
         if now.hour==2 and now.minute == 55 and now.second in [10,20]:
@@ -106,7 +124,7 @@ def runDoSvc():
             runOffHolidays()
         elif isHoliday(aday):
             runHolidays()
-        elif isAnextday(aday) or isBnextday(aday) or aday in extradays:
+        elif isAnextday(aday) or isBnextday(aday) or isCnextday(aday) or aday in extradays:
             runNights()
         else:
             time.sleep(60*5)
