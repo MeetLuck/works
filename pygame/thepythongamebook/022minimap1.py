@@ -27,12 +27,10 @@ class Tank(pygame.sprite.Sprite):
         self.setKeys()
         self.makeTank(startpos,angle)
         self.turret = Turret(self) # create a Turret for this thank
-        self.msg =  "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
-        Text((screenwidth/2, 30+20*self.number), self.msg) # create status line text sprite
 
     def makeTank(self,startpos,angle):
-        width,height = Tank.size,Tank.size
-        image,MGcenter,Vc = drawTank(width,height,self.color)
+        self.width,self.height = Tank.size,Tank.size
+        image,MGcenter,Vc = drawTank(self.width,self.height,self.color)
         # rotate Tank for the given angle
         self.tankAngle = angle
         self.image0 = image.convert_alpha()
@@ -49,8 +47,8 @@ class Tank(pygame.sprite.Sprite):
         # tank constants
         self.tankTurnSpeed = Tank.tankTurnSpeed
         self.tankturndirection = 0
-        self.ammo = 3000 # main gun
-        self.MGammo = 500000 # machine gun
+        self.ammo = 30 # main gun
+        self.MGammo = 500 # machine gun
         # turret constants
         self.cooltime = 0.0  # cannon
         self.MGcooltime = 0.0 # Machine Gun
@@ -125,8 +123,8 @@ class Tank(pygame.sprite.Sprite):
         mg2sound.play()
         self.MGcooltime = Tank.MGrecoiltime
         self.MGammo -= 1
-        self.msg = "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
-        Text.book[self.number].newMsg(self.msg)
+        #self.msg = "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
+        #Text.book[self.number].newMsg(self.msg)
 
     def setDirection(self,pressedkeys):
         # tank heading EAST
@@ -175,11 +173,12 @@ class Turret(pygame.sprite.Sprite):
     def __init__(self, boss):
         pygame.sprite.Sprite.__init__(self, self.groups) # THE most important line !
         self.boss = boss
-        self.width = self.boss.width        
+        self.width  = 2 * self.boss.width        
+        self.height = 2 * self.boss.height
         self.images = {} # how much recoil after shooting, reverse order of apperance
         for i in range(10):
-            self.images[i]= drawCannon(boss,i)
-        self.images[10] = drawCannon(boss,0) # idle position
+            self.images[i]= drawCannon(self.width,self.height,i)
+        self.images[10] = drawCannon(self.width,self.height,0) # idle position
  
     def update(self, seconds):        
         # painting the correct image of cannon
@@ -330,10 +329,24 @@ class Minimap(pygame.sprite.Sprite):
         self.rect.topleft  = screenrect.left,screenrect.bottom-radarmapheight
         self.factorX = 1.0*radarmapwidth/bigmapwidth
         self.factorY = 1.0*radarmapheight/bigmapheight
+        self.Alive = False
+        self.hideShow()
     def paint(self):
         self.image.fill(black)
         # draw dark red frame
         pygame.draw.rect(self.image,darkred1,(0,0,radarmapwidth,radarmapheight),1)
+
+    def event(self,event):
+        if event.key == pygame.K_m:
+            self.Alive = not self.Alive
+        self.hideShow()
+
+    def hideShow(self):
+        if self.Alive:
+            self.add(self.groups)
+        else:
+            self.kill()
+
     def update(self,seconds):
         self.paint()
         rect = cornerpoint[0] * self.factorX, cornerpoint[1]*self.factorY,\
@@ -371,27 +384,38 @@ def main():
     Turret._layer = 6 # above Tank & Tracer
     Bullet._layer = 7 # to prove that Bullet is in top-layer
     Text._layer = 3   # below Tank
+    Instruction._layer = 9   # below Tank
     Minimap._layer = 3  # below Tank # better 9 ?
     #assign default groups to each sprite class
     Tank.groups = tankgroup, allgroup
     Turret.groups = allgroup
     Bullet.groups = bulletgroup, allgroup
     Text.groups = allgroup
+    Instruction.groups = allgroup
     Minimap.groups = allgroup
 
     player1 = Tank((150,250), 90) # create  first tank, looking north
     player2 = Tank((450,250), 90) # create second tank, looking south
-    Minimap()
+    minimap = Minimap()
     status3 = Text((screenwidth//2, 10), "Tank Demo. Press ESC to quit")
-
+    msg =  "player%i: ammo: %i/%i" % (player1.number+1, player1.ammo, player1.MGammo)
+    instruction = Instruction(msg,yellowgreen,32)
     playtime = 0
+    isF1 = False
     mainloop = True           
     while mainloop:
         seconds = clock.tick(fps)/1000.0 # seconds passed since last frame (float)
         playtime += seconds
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            if event.type == pygame.QUIT:
                     mainloop = False # exit game
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    mainloop = False # exit game
+                print 'pygame.KEYDOWN event'
+                instruction.event(event)
+                minimap.event(event)
+
         pygame.display.set_caption("FPS: %.2f keys: %s" % ( clock.get_fps(), pressedKeysString()))
         allgroup.clear(screen, background) # funny effect if you outcomment this line
         allgroup.update(seconds)

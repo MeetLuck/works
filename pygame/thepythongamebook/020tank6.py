@@ -292,7 +292,7 @@ class Tracer(Bullet):
     def makeBullet(self):
         image = self.drawMGBullet()
         self.image0 = image.convert_alpha()
-        self.rect = self.image.get_rect()
+        self.rect = self.image0.get_rect()
         self.rect.center = tuple(self.Vp)
         self.image = pygame.transform.rotate(self.image0, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
@@ -315,7 +315,6 @@ class App:
         Turret.groups = self.allgroup
         Bullet.groups = self.bulletgroup, self.allgroup
         Text.groups = self.allgroup
-
         #player2 = Tank((450,250), 0) # create second tank, looking south
         status3 = Text((self.width//2, 10), "Tank Demo. Press ESC to quit")
 
@@ -349,11 +348,11 @@ class App:
             self.running = False
     def execute(self):
         pass
-    def render(self):
+    def render(self,seconds):
         pygame.display.set_caption("FPS: %.2f keys: %s" % ( self.clock.get_fps(), pressedKeysString()))
         self.allgroup.clear(self.screen, self.background) # funny effect if you outcomment this line
         self.allgroup.update(seconds)
-        self.allgroup.draw(screen)
+        self.allgroup.draw(self.screen)
         pygame.display.flip() # flip the screen 30 times a second
     def cleanup(self):
         pygame.quit()
@@ -363,7 +362,8 @@ class App:
             for event in pygame.event.get():
                 self.onEvent(event)
             #self.execute()
-            self.render()
+            seconds = self.clock.tick(fps)/1000.0 # seconds passed since last frame (float)
+            self.render(seconds)
         self.cleanup()
 
 if __name__ == '__main__':

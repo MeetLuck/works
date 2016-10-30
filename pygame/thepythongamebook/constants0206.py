@@ -21,8 +21,7 @@ tankLeftkey     = (pygame.K_a, pygame.K_KP4)
 tankRightkey    = (pygame.K_d, pygame.K_KP6)
 #TankKeys = [firekey,MGfirekey,turrectLeft,turretRightkey,forwardkey,backwardkey,tankLeftkey,tankRightkey]
 
-
-
+screensize = screenwidth,screenheight = 640,480
 
 # game constants
 BIRDSPEEDMAX = 200
