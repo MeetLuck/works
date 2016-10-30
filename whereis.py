@@ -101,5 +101,5 @@ def main(filename):
 if __name__ == '__main__':
 #   filename = sys.argv[1]
 #   main(filename)
-    main('firefox.exe')
+    main('refreshenv')
 #   main('python.exe')

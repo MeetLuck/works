@@ -99,13 +99,15 @@ def normpaths(paths):
     return paths
 
 def main(depth=0):
-    print sys.argv[0]
-    print sys.argv
     filename = sys.argv[1]
     if len(sys.argv)>=3:
         depth = int(sys.argv[2])
     else:
         depth = 1
+    print 'argv[0]',sys.argv[0]
+    print 'argv',sys.argv
+    print 'depth', depth
+    print 'filename',filename
     print 'start main'
     envpaths = os.environ['path'].split(os.pathsep)
     userpaths = ['c:\\', 'c:\\program files']
@@ -120,7 +122,7 @@ def main(depth=0):
     print '======================'
     print '\n'.join(founds)
 if __name__ == '__main__':
-#   main('firefox.exe')#,1)
+    main()#,1)
 #   print sys.argv[0]
 #   print sys.argv
 #   filename = sys.argv[1]
@@ -128,4 +130,3 @@ if __name__ == '__main__':
 #       depth = int(sys.argv[2])
 #   else:
 #       depth = 1
-    main()
