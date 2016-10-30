@@ -373,6 +373,10 @@ class Minimap(pygame.sprite.Sprite):
             rect.center = center2
             pygame.draw.rect(self.image,color, rect)
 
+class Instruction(pygame.sprite.Sprite):
+    def
+
+
 def main():
     # set sprites group
     tankgroup = pygame.sprite.Group()

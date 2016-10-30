@@ -105,7 +105,7 @@ def drawCannon(boss, offset):
      width,height = 2*boss.width,2*boss.height
      image = pygame.Surface((width,height)) # created on the fly
      rect = image.get_rect()
-     image.fill((gray)) # fill grey
+     image.fill(gray) # fill grey
      image.set_colorkey(gray)
      #pygame.draw.rect(image, green,  (1,1,width-2,height-2),1)
      pygame.draw.circle(image, red,   rect.center, 22) # red circle
@@ -145,6 +145,7 @@ def getClassName(classinstance):
     text = str(classinstance.__class__) # like <class '__main__.XWing'>
     parts = text.split('.') # [ <class '__main__, XWing'> ]
     return parts[-1][0:-2]  # take all except the last 2 charactors('>)
+
 class Text(pygame.sprite.Sprite):
     number = 0
     book = {}
@@ -163,19 +164,77 @@ class Text(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = tuple(self.pos)
 
+def drawInstruction(w,h):
+    image = pygame.Surface( (w,h) )
+    rect = image.get_rect()
+    image.fill(bgcolor)
+    image.set_colorkey(gray)
+    # draw coordinates
+    pygame.draw.line(image,black,rect.midleft,rect.midright,1) # x-coord
+    pygame.draw.line(image,black,rect.midtop,rect.midbottom,1) # y-coord
+    # draw circle
+    r = int(w/4)
+    pygame.draw.circle(image,black,rect.center, r, 1)
+    # draw angle
+    vd = Vector(0,0)
+    vd.x = cos(30*GRAD)
+    vd.y = -sin(30*GRAD)
+    pos1 = Vector(rect.center) + vd* r
+    pos1 = int(pos1.x),int(pos1.y)
+    print pos1
+    pygame.draw.line(image,blue,rect.center,pos1,2)
+    # draw text
+    textsurf = write('Instructions',black)
+    textrect = textsurf.get_rect()
+    pygame.draw.rect(image,blue,rect,2)
+    textrect.topleft = 10,10
+    image.blit(textsurf,textrect)
+    # x,y
+    xsurf = write('x',blue)
+    xrect = xsurf.get_rect()
+    xrect.center = rect.right - 20, rect.centery
+    image.blit(xsurf,xrect)
+    ysurf = write('+y',blue)
+    yrect = ysurf.get_rect()
+    yrect.center = rect.centerx, rect.bottom - 20
+    image.blit(ysurf,yrect)
+    # Tank direction
+    dh=14; dw = dh*6
+    drect = rect.centerx+r/4,rect.centery-dh/2,dw,dh
+    drect = pygame.Rect(drect)
+    pygame.draw.rect(image,red,drect,2)
+    # draw arrow
+    endpoint = drect.midright[0]+14,drect.midright[1]
+    toppoint = endpoint[0]-20,endpoint[1]- 14
+    bottompoint = endpoint[0]-20,endpoint[1]+ 14
+    pointlist = endpoint,toppoint,bottompoint
+    pygame.draw.polygon(image,red,pointlist)
+    return image
+
+
 if __name__ == '__main__':
 
     mainloop = True
-    tanksurf,mgcenter,vc = drawTank(100,100)
+    tanksurf,mgcenter,vc = drawTank(100,100,green)
     tanksurf = tanksurf.convert_alpha()
     tankrect = tanksurf.get_rect()
     tankrect.center = screenrect.center
+    instsurf = drawInstruction(screenwidth-100,screenheight-100)
+    instrect = instsurf.get_rect()
+    instrect.center = screenrect.center
     #cannonsurf = drawCannon(None
+    needhelp = False
     while mainloop:
+        background.fill(bgcolor)
         for e in pygame.event.get():
-            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
-                mainloop = False
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    mainloop = False
+                elif e.key == pygame.K_F1:
+                    needhelp = not needhelp
         #background.fill(bgcolor)
+        if needhelp:
+            background.blit(instsurf,instrect)
         background.blit(tanksurf,tankrect)
         screen.blit(background,(0,0) )
         pygame.display.flip()
