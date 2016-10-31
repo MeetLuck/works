@@ -74,6 +74,7 @@ def openPortals(filename):
         cmd = 'Run,iexplore.exe %s,,Hide' %url
         try:
             ahk.execute(cmd)
+            time.sleep(10.0)
         except:
             filename.write('url  failed at %s\n' %time.ctime() )
         time.sleep(5.0)

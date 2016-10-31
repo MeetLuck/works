@@ -38,18 +38,15 @@ def runOffHolidays():
         if now.hour==7 and now.minute == 20 and now.second in [10,20]:
             openPortals(f2)
             setStartPage(f2)
-            dodrn()
         elif 9<= now.hour<=11:
-            if now.minute == random.choice[(13,20,28,32,42,56)]:
-                dnfile(f2)
+            dnfile(f2)
         else:
             time.sleep(60)
     else:
         if now.hour==12 and now.minute == 40 and now.second in [10,20]:
             openPortals(f2)
         elif 14<= now.hour<=16:
-            if now.minute == random.choice[(13,28,32,42,56)]:
-                dnfile(f2)
+            dnfile(f2)
         else:
             time.sleep(60)
 
@@ -59,18 +56,15 @@ def runHolidays():
         if now.hour==14 and now.minute == 40 and now.second in [10,20]:
             openPortals(f2)
         elif 14<= now.hour<=16:
-            if now.minute == random.choice[(13,20,24,28,32,37,42,50,56)]:
-                dnfile(f2)
+            dnfile(f2)
         else:
             time.sleep(60)
     if comname != 'PC-PC':
         if now.hour==7 and now.minute == 30 and now.second in [10,20]:
-            setStartPage(filname=f2)
+            setStartPage(filename=f2)
             openPortals(f2)
-            dodrn()
         if 9<= now.hour<=11:
-            if now.minute == random.choice[(13,20,24,28,32,37,42,50,56)]:
-                dnfile(f2)
+            dnfile(f2)
         else:
             time.sleep(60)
 
@@ -85,28 +79,25 @@ def runNights():
         if now.hour== 0 and now.minute == 10 and now.seconds in [10,20]:
             openPortals(f2)
         elif 0<= now.hour<=1:
-            if now.minute == random.choice[(13,28,32,42,56)]:
-                dnfile(f2)
+            dnfile(f2)
         else:
             time.sleep(60)
     if comname == 'PC-PC' and ( now.date() == Anextday or now.date() in extradays ):
         #print 'anextday'
         if now.hour==2 and now.minute == 55 and now.second in [10,20]:
-            setStartPage(filname=f2)
+            setStartPage(filename=f2)
             openPortals(f2)
         elif 4<= now.hour<=6:
-            if now.minute == random.choice[(13,28,32,42,56)]:
-                dnfile(f2)
+            dnfile(f2)
         else:
             time.sleep(60)
     elif now.date() == Bnextday:
         #print 'bnextday',Bnextday
         if now.hour==1 and now.minute == 47 and now.second in [10,20]:
             openPortals(f2)
-            setStartPage(filname=f2)
+            setStartPage(filename=f2)
         elif 3<= now.hour<=4:
-            if now.minute == random.choice[(13,28,32,42,56)]:
-                dnfile(f2)
+            dnfile(f2)
         else:
             time.sleep(60)
     else:
@@ -128,6 +119,7 @@ def runDoSvc():
             runNights()
         else:
             time.sleep(60*5)
+        time.sleep(30)
 
 class drn(win32serviceutil.ServiceFramework):
     _svc_name_ = "drn"

@@ -3,12 +3,12 @@
     and shooting tracers at the end of it's bow Machine Gun
     and from the turret-machine gun (co-axial with main gun)
     '''
-from constants022 import *
+from constants022A import *
 import copy
 
 class Tank(pygame.sprite.Sprite):
     size = 100
-    recoiltime = 0.5 #0.75 # how many seconds the cannon is busy after firing one time
+    recoiltime = 1 #0.75 # how many seconds the cannon is busy after firing one time
     MGrecoiltime = 0.1 # how many seconds the bow(machine gun) is idel
     turretTurnSpeed = 1
     tankTurnSpeed = 1 # degrees
@@ -17,8 +17,10 @@ class Tank(pygame.sprite.Sprite):
     number = 0
     color = ((200,200,0),(0,0,200) )
     msg = ['wasd LCTRL, ijkl','Keypad: 4852, ENTER, cursor']
+    folder = 'data'
 
-    def __init__(self,startpos=(150,150),angle=0):
+    def __init__(self,world,startpos=(150,150),angle=0):
+        self.world = world
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.color = Tank.color[self.number]
         self.number = Tank.number
@@ -27,41 +29,34 @@ class Tank(pygame.sprite.Sprite):
         self.setKeys()
         self.makeTank(startpos,angle)
         self.turret = Turret(self) # create a Turret for this thank
-        self.msg =  "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
-        Text((screenwidth/2, 30+20*self.number), self.msg) # create status line text sprite
-        #print self.MGcenter,self.Vp
+        self.gethit = False
 
     def makeTank(self,startpos,angle):
         self.width,self.height = Tank.size,Tank.size
         image,MGcenter,Vc = drawTank(self.width,self.height,self.color)
+        # rotate Tank for the given angle
         self.tankAngle = angle
         self.image0 = image.convert_alpha()
         self.rect = self.image0.get_rect()
-        image = pygame.transform.rotate(self.image0,self.tankAngle) # rotate by given angle
+        image = pygame.transform.rotate(self.image0,self.tankAngle)
         self.image = image.convert_alpha()
         self.rect = self.image.get_rect(center=self.rect.center)
-        # direction Vector Vd = 0 -> stop
-        self.Vd = Vector(0,0)
-        # movement Vector delta 
-        self.delta = self.Vd * self.movespeed
         # position Vector Vp
         self.Vp = Vector(startpos)
-        self.Vp += self.delta
         self.rect.center = tuple(self.Vp)
         self.MGcenter = MGcenter
         self.Vc = Vc
-        #self.MGcenter0 = -Vector(self.width/2,self.height/2)+Vector(MGcenter)
         self.movespeed = Tank.movespeed
         # tank constants
         self.tankTurnSpeed = Tank.tankTurnSpeed
         self.tankturndirection = 0
-        self.ammo = 3000 # main gun
-        self.MGammo = 500000 # machine gun
-        # ------ turret ------------
+        self.ammo = 30 # main gun
+        self.MGammo = 500 # machine gun
+        # turret constants
         self.cooltime = 0.0  # cannon
         self.MGcooltime = 0.0 # Machine Gun
         self.turndirection = 0
-        self.turretAngle = angle #+90
+        self.turretAngle = angle
         self.turretTurnSpeed = Tank.turretTurnSpeed
 
     def setKeys(self):
@@ -75,12 +70,16 @@ class Tank(pygame.sprite.Sprite):
         self.turretRightkey = turretRightkey[self.number]
 
     def rotateTurret(self,pressedkeys):
+        doRotateTurret = pressedkeys[self.turretLeftkey] or pressedkeys[self.turretRightkey]
+        if not doRotateTurret: return
         self.turndirection = 0 # left/right turret rotation
         if pressedkeys[self.turretLeftkey]:  self.turndirection += 1
         if pressedkeys[self.turretRightkey]: self.turndirection -= 1
         self.turretAngle += self.turndirection * self.turretTurnSpeed  #* seconds
 
     def rotateTank(self,pressedkeys):
+        doRotateTank = pressedkeys[self.tankLeftkey] or pressedkeys[self.tankRightkey]
+        if not doRotateTank: return
         self.tankturndirection = 0 # reset left/right rotation
         if pressedkeys[self.tankLeftkey]:  self.tankturndirection += 1
         if pressedkeys[self.tankRightkey]: self.tankturndirection -= 1
@@ -96,12 +95,9 @@ class Tank(pygame.sprite.Sprite):
         diffAngle = targetAngle - self.turretAngle
         if diffAngle < 0: diffAngle += 360
         diffAngle = diffAngle % 360
-        if abs(diffAngle) == 0: 
-            self.turndirection = 0
-        elif diffAngle < 180:
-            self.turndirection = +1/4.0
-        elif diffAngle > 180:
-            self.turndirection = -1/4.0
+        if abs(diffAngle) < 1: self.turndirection = 0
+        elif diffAngle < 180:   self.turndirection = +1/4.0
+        elif diffAngle > 180:   self.turndirection = -1/4.0
         self.turretAngle += self.turndirection * self.turretTurnSpeed
         #print targetAngle, self.turretAngle, diffAngle
         #print self.turretAngle 
@@ -111,27 +107,25 @@ class Tank(pygame.sprite.Sprite):
         self.MGcooltime   -= seconds
 
     def fireCannon(self,pressedkeys):
-        canFireCannon = self.cooltime <= 0 and self.ammo >0 and pressedkeys[self.firekey]
-        if not canFireCannon: return
+        doFireCannon = self.cooltime <= 0 and self.ammo >0 and pressedkeys[self.firekey]
+        if not doFireCannon: return
         # fire Cannon: cooltime == 0
         Bullet(self)
-        cannonsound.play()
+        self.world.cannonsound.play()
         self.cooltime = Tank.recoiltime # seconds until tank can fire again
         self.ammo -= 1
-        self.msg =  "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
-        Text.book[self.number].newMsg(self.msg)
 
     def fireMG(self,pressedkeys):
         # -- fire bow MG --
-        canFireMG = self.MGcooltime <= 0 and self.MGammo > 0 and pressedkeys[self.MGfirekey]
-        if not canFireMG: return
+        doFireMG = self.MGcooltime <= 0 and self.MGammo > 0 and pressedkeys[self.MGfirekey]
+        if not doFireMG: return
         # fire Machine Gun
         Tracer(self)
-        mg2sound.play()
+        self.world.mg2sound.play()
         self.MGcooltime = Tank.MGrecoiltime
         self.MGammo -= 1
-        self.msg = "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
-        Text.book[self.number].newMsg(self.msg)
+        #self.msg = "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
+        #Text.book[self.number].newMsg(self.msg)
 
     def setDirection(self,pressedkeys):
         # tank heading EAST
@@ -145,6 +139,8 @@ class Tank(pygame.sprite.Sprite):
             self.Vd.y += +sin(self.tankAngle*GRAD)
 
     def move(self,pressedkeys,seconds):
+        doMoveTank =  pressedkeys[self.forwardkey] or pressedkeys[self.backwardkey]
+        if not doMoveTank: return
         # direction
         self.setDirection(pressedkeys)
         # delta
@@ -155,26 +151,26 @@ class Tank(pygame.sprite.Sprite):
     def update(self,seconds):
         # reduce cooltime
         self.reduceCooltime(seconds)
+        # hit check
+        if self.gethit:
+            print 'gethit'
+            self.world.hitsound.play()
+            #self.world.mg3sound.play()
         # -- process keys --
         pressedkeys = pygame.key.get_pressed()
         # -- rotate turret --
         if self.number == 1:
-            #print 'self.number:',self.number,self.turretAngle
             self.autotarget()
-        elif self.number == 0:
-            #print 'self.number',self.number,self.turretAngle
-            if pressedkeys[self.turretLeftkey] or pressedkeys[self.turretRightkey]:
-                self.rotateTurret(pressedkeys)
+        else:
+            self.rotateTurret(pressedkeys)
         # -- rotate tank --
-        if pressedkeys[self.tankLeftkey] or pressedkeys[self.tankRightkey]:
-            self.rotateTank(pressedkeys)
+        self.rotateTank(pressedkeys)
         # -- fire cannon --
-        if pressedkeys[self.firekey]: self.fireCannon(pressedkeys)
+        self.fireCannon(pressedkeys)
         # -- fire MG(bow) --
-        if pressedkeys[self.MGfirekey]: self.fireMG(pressedkeys)
+        self.fireMG(pressedkeys)
         # -- move Tank --
-        if pressedkeys[self.forwardkey] or pressedkeys[self.backwardkey]:
-            self.move(pressedkeys,seconds)
+        self.move(pressedkeys,seconds)
         # -- paint sprite at correct position
         #self.rect.center = tuple(self.Vp)
 
@@ -183,11 +179,12 @@ class Turret(pygame.sprite.Sprite):
     def __init__(self, boss):
         pygame.sprite.Sprite.__init__(self, self.groups) # THE most important line !
         self.boss = boss
-        self.width = self.boss.width        
+        self.width  = 2 * self.boss.width        
+        self.height = 2 * self.boss.height
         self.images = {} # how much recoil after shooting, reverse order of apperance
         for i in range(10):
-            self.images[i]= drawCannon(boss,i)
-        self.images[10] = drawCannon(boss,0) # idle position
+            self.images[i]= drawCannon(self.width,self.height,i)
+        self.images[10] = drawCannon(self.width,self.height,0) # idle position
  
     def update(self, seconds):        
         # painting the correct image of cannon
@@ -223,10 +220,8 @@ class Bullet(pygame.sprite.Sprite):
         self.tracer = False
         self.maxlifetime = Bullet.maxlifetime
         self.color = self.boss.color
-        # delta Vector
-        #self.delta = self.boss.delta # add boss's movement
         self.makeBullet()
-        self.delta = Vector(0,0)
+        #self.delta = Vector(0,0)
         self.setDirection()
         self.setPosition()
 
@@ -327,25 +322,39 @@ class Tracer(Bullet):
     def makeBullet(self):
         image = self.drawMGBullet()
         self.image0 = image.convert_alpha()
-        self.rect = self.image0.get_rect()
-        self.rect.center = tuple(self.Vp)
         self.image = pygame.transform.rotate(self.image0, self.angle)
-        self.rect = self.image.get_rect(center=self.rect.center)
+        self.rect = self.image.get_rect( center=tuple(self.Vp) ) #self.rect.center = tuple(self.Vp)
 
 class Minimap(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self,world):
+        self.world = world
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.image = pygame.Surface( (radarmapwidth,radarmapheight) )
         self.paint()
         self.rect = self.image.get_rect()
         #self.rect.topleft  = screenwidth - radarmapwidth,0
+        screenrect = self.world.screen.get_rect()
         self.rect.topleft  = screenrect.left,screenrect.bottom-radarmapheight
         self.factorX = 1.0*radarmapwidth/bigmapwidth
         self.factorY = 1.0*radarmapheight/bigmapheight
+        self.Alive = False
+        self.hideShow()
     def paint(self):
         self.image.fill(black)
         # draw dark red frame
         pygame.draw.rect(self.image,darkred1,(0,0,radarmapwidth,radarmapheight),1)
+
+    def event(self,event):
+        if event.key == pygame.K_m:
+            self.Alive = not self.Alive
+        self.hideShow()
+
+    def hideShow(self):
+        if self.Alive:
+            self.add(self.groups)
+        else:
+            self.kill()
+
     def update(self,seconds):
         self.paint()
         rect = cornerpoint[0] * self.factorX, cornerpoint[1]*self.factorY,\
@@ -373,45 +382,125 @@ class Minimap(pygame.sprite.Sprite):
             rect.center = center2
             pygame.draw.rect(self.image,color, rect)
 
+class Text(pygame.sprite.Sprite):
+    number = 0
+    book = {}
+    def __init__(self,pos,msg):
+        self.number = Text.number
+        Text.number += 1
+        Text.book[self.number] = self
+        pygame.sprite.Sprite.__init__(self,self.groups)
+        self.pos = Vector(pos)
+        self.newMsg(msg)
+    def update(self,seconds):
+        pass
+    def newMsg(self,msg,color=black,fontsize=20):
+        self.msg = msg
+        self.image = write(msg,color,fontsize)
+        self.rect = self.image.get_rect()
+        self.rect.center = tuple(self.pos)
 
-def main():
-    # set sprites group
-    tankgroup = pygame.sprite.Group()
-    bulletgroup = pygame.sprite.Group()
-    allgroup = pygame.sprite.LayeredUpdates()
-    # set _layer
-    Tank._layer = 4   # base layer
-    Turret._layer = 6 # above Tank & Tracer
-    Bullet._layer = 7 # to prove that Bullet is in top-layer
-    Text._layer = 3   # below Tank
-    Minimap._layer = 3  # below Tank # better 9 ?
-    #assign default groups to each sprite class
-    Tank.groups = tankgroup, allgroup
-    Turret.groups = allgroup
-    Bullet.groups = bulletgroup, allgroup
-    Text.groups = allgroup
-    Minimap.groups = allgroup
+class Instruction(pygame.sprite.Sprite):
+    number = 0
+    book = {}
+    def __init__(self,world,color=black,fontsize=20):
+        self.world = world
+        self.number = Instruction.number
+        Instruction.number += 1
+        Instruction.book[self.number] = self
+        pygame.sprite.Sprite.__init__(self,self.groups)
+        self.width,self.height = screenwidth-100, screenheight-100
+        self.draw()
+        self.setPosition()
+        self.F1 = False
+        self.kill()
+    def setPosition(self):
+        screenrect = self.world.screen.get_rect()
+        self.rect.center = screenrect.center
+    def write(self,msg,color,fontsize):
+        # text 
+        msgsurf = write(msg,purple,24)
+        msgrect = msgsurf.get_rect()
+        msgrect.topleft = 20,60
+        self.image.blit(msgsurf,msgrect)
+    def event(self,e):
+        if e.key == pygame.K_F1:
+            self.F1 = not self.F1
+        if self.F1:
+            self.add(self.groups)
+        else:
+            self.kill()
+    def update(self,seconds):
+        pass
+    def drawText(self,topleft,msg,color=black,fontsize=18):
+        # draw text
+        textsurf = write(msg,color,fontsize)
+        textrect = textsurf.get_rect()
+        textrect.topleft = topleft
+        self.image.blit(textsurf,textrect)
 
-    player1 = Tank((150,250), 90) # create  first tank, looking north
-    player2 = Tank((450,250), 90) # create second tank, looking south
-    Minimap()
-    status3 = Text((screenwidth//2, 10), "Tank Demo. Press ESC to quit")
-
-    playtime = 0
-    mainloop = True           
-    while mainloop:
-        seconds = clock.tick(fps)/1000.0 # seconds passed since last frame (float)
-        playtime += seconds
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    mainloop = False # exit game
-        pygame.display.set_caption("FPS: %.2f keys: %s" % ( clock.get_fps(), pressedKeysString()))
-        allgroup.clear(screen, background) # funny effect if you outcomment this line
-        allgroup.update(seconds)
-        allgroup.draw(screen)
-        pygame.display.flip() # flip the screen 30 times a second
-        #pygame.time.wait(100000)
-    return 0
- 
-if __name__ == '__main__':
-    main()
+    def draw(self):
+        w,h = self.width,self.height
+        #w,h = screenwidth/2,screenheight/2
+        self.image = pygame.Surface( (w,h) )
+        self.image.fill(bgcolor)
+        #self.image.set_colorkey(bgcolor)
+        self.image = self.image.convert_alpha()
+        self.rect = self.image.get_rect()
+        # draw coordinates
+        pygame.draw.line(self.image,gridcolor,self.rect.midleft,self.rect.midright,1) # x-coord
+        pygame.draw.line(self.image,gridcolor,self.rect.midtop,self.rect.midbottom,1) # y-coord
+        # draw circle
+        r = int(w/4)
+        pygame.draw.circle(self.image,gridcolor,self.rect.center, r, 1)
+        # draw angle
+        vd = Vector(0,0)
+        vd.x = cos(30*GRAD)
+        vd.y = -sin(30*GRAD)
+        pos1 = Vector(self.rect.center) + vd* r
+        pos1 = int(pos1.x),int(pos1.y)
+        print pos1
+        pygame.draw.line(self.image,blue,self.rect.center,pos1,2)
+        # draw frame
+        pygame.draw.rect(self.image,gridcolor,self.rect,1)
+        # x,y
+        xsurf = write('x',blue,26)
+        xrect = xsurf.get_rect()
+        xrect.center = self.rect.right - 20, self.rect.centery
+        self.image.blit(xsurf,xrect)
+        ysurf = write('+y',blue,26)
+        yrect = ysurf.get_rect()
+        yrect.center = self.rect.centerx, self.rect.bottom - 20
+        self.image.blit(ysurf,yrect)
+        # draw Tank
+        tanksurf,a,b = drawTank(w/8,h/8,green)
+        tankrect = tanksurf.get_rect()
+        tankrect.center = self.rect.center
+        self.image.blit(tanksurf,tankrect)
+        # draw Cannon
+        cannonsurf = drawCannon(self.width/4,self.height/4)
+        cannonrect = cannonsurf.get_rect()
+        #pygame.draw.rect(cannonsurf,red,cannonrect,2) frame
+        cannonrect.center = self.rect.center
+        self.image.blit(cannonsurf,cannonrect)
+        # Tank Forward direction
+        dh=14; dw = dh*6
+        drect = self.rect.centerx+r/2, self.rect.centery-dh/2,dw,dh
+        drect = pygame.Rect(drect)
+        pygame.draw.rect(self.image,red,drect)
+        # draw Forward arrow
+        endpoint = drect.midright[0]+14,drect.midright[1]
+        toppoint = endpoint[0]-20,endpoint[1]- 14
+        bottompoint = endpoint[0]-20,endpoint[1]+ 14
+        pointlist = endpoint,toppoint,bottompoint
+        pygame.draw.polygon(self.image,red,pointlist)
+        self.drawText((20,20),'press F1 for Instructions',purple,22)
+        self.drawText((20,50),'press M for Mini map',purple,22)
+        self.drawText((20,100),'move Forward  : K',black)
+        self.drawText((20,120),'move Backward : J',black)
+        self.drawText((20,140),'rotate Tank Left: A',black)
+        self.drawText((20,160),'rotate Tank Right: S',black)
+        self.drawText((20,180),'rotate Cannon Left: D',black)
+        self.drawText((20,200),'rotate Cannon Right: F',black)
+        self.drawText((20,220),'fire Cannon: SPACE',black)
+        self.drawText((20,240),'fire Machine Gun: L',black)

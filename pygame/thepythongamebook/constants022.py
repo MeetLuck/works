@@ -20,7 +20,6 @@ cornerpoint = [0,0] # left upper edge of visible screen rect inside bigmap
 radarmapwidth = 200
 radarmapheight = 150
 
-
 # initialize pygame
 pygame.mixer.pre_init(44100,-16,2,2048)
 pygame.init()
@@ -217,7 +216,7 @@ class Instruction(pygame.sprite.Sprite):
         #w,h = screenwidth/2,screenheight/2
         self.image = pygame.Surface( (w,h) )
         self.image.fill(bgcolor)
-        #self.image.set_colorkey(bgcolor)
+        self.image.set_colorkey(bgcolor)
         self.image = self.image.convert_alpha()
         self.rect = self.image.get_rect()
         # draw coordinates
@@ -268,14 +267,14 @@ class Instruction(pygame.sprite.Sprite):
         pointlist = endpoint,toppoint,bottompoint
         pygame.draw.polygon(self.image,red,pointlist)
         self.drawText((20,20),'Instructions',black,32)
-        self.drawText((20,80),'move Forward  : K',black)
-        self.drawText((20,100),'move Backward : J',black)
-        self.drawText((20,120),'rotate Tank Left: A',black)
-        self.drawText((20,140),'rotate Tank Right: S',black)
-        self.drawText((20,160),'rotate Cannon Left: D',black)
-        self.drawText((20,180),'rotate Cannon Right: F',black)
-        self.drawText((20,200),'fire Cannon: SPACE',black)
-        self.drawText((20,220),'fire Machine Gun: L',black)
+        self.drawText((20,100),'move Forward  : K',black)
+        self.drawText((20,120),'move Backward : J',black)
+        self.drawText((20,140),'rotate Tank Left: A',black)
+        self.drawText((20,160),'rotate Tank Right: S',black)
+        self.drawText((20,180),'rotate Cannon Left: D',black)
+        self.drawText((20,200),'rotate Cannon Right: F',black)
+        self.drawText((20,220),'fire Cannon: SPACE',black)
+        self.drawText((20,240),'fire Machine Gun: L',black)
 
 if __name__ == '__main__':
 
