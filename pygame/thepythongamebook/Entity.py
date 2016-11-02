@@ -6,6 +6,30 @@
 from constants022A import *
 import copy
 
+
+class Lifebar(pygame.sprite.Sprite):
+    """shows a bar with the health of Tank"""
+    def __init__(self, boss):
+        pygame.sprite.Sprite.__init__(self,self.groups)
+        self.boss = boss
+        self.image = pygame.Surface((self.boss.rect.width,7))
+        self.image.set_colorkey(black) # black transparent
+        pygame.draw.rect(self.image, green, (0,0,self.boss.rect.width,7),1)
+        self.rect = self.image.get_rect()
+        self.oldpercent = 0
+        self.bossnumber = self.boss.number # the unique number (name) of my boss
+        
+    def update(self, time):
+        self.percent = self.boss.health / self.boss.healthful
+        if self.percent != self.oldpercent:
+            w = int(self.boss.rect.width * self.percent)
+            h = 5
+            pygame.draw.rect(self.image, red, (1,1,self.boss.rect.width-2,h)) # fill black
+            pygame.draw.rect(self.image, green, (1,1,w,h)) # fill green
+        self.oldpercent = self.percent
+        self.rect.centerx = self.boss.rect.centerx
+        self.rect.centery = (self.boss.rect.centery - self.boss.rect.height /2) - 10  # top - 10
+
 class Tank(pygame.sprite.Sprite):
     size = 100
     recoiltime = 1 #0.75 # how many seconds the cannon is busy after firing one time
@@ -30,6 +54,7 @@ class Tank(pygame.sprite.Sprite):
         self.makeTank(startpos,angle)
         self.turret = Turret(self) # create a Turret for this thank
         self.gethit = False
+        self.lifebar = Lifebar(self)
 
     def makeTank(self,startpos,angle):
         self.width,self.height = Tank.size,Tank.size
@@ -50,8 +75,10 @@ class Tank(pygame.sprite.Sprite):
         # tank constants
         self.tankTurnSpeed = Tank.tankTurnSpeed
         self.tankturndirection = 0
-        self.ammo = 30 # main gun
+        self.ammo = 100 # main gun
         self.MGammo = 500 # machine gun
+        self.healthful = 100.0
+        self.health    = 100.0
         # turret constants
         self.cooltime = 0.0  # cannon
         self.MGcooltime = 0.0 # Machine Gun
@@ -110,7 +137,7 @@ class Tank(pygame.sprite.Sprite):
         doFireCannon = self.cooltime <= 0 and self.ammo >0 and pressedkeys[self.firekey]
         if not doFireCannon: return
         # fire Cannon: cooltime == 0
-        Bullet(self)
+        self.bullet = Bullet(self)
         self.world.cannonsound.play()
         self.cooltime = Tank.recoiltime # seconds until tank can fire again
         self.ammo -= 1
@@ -120,7 +147,7 @@ class Tank(pygame.sprite.Sprite):
         doFireMG = self.MGcooltime <= 0 and self.MGammo > 0 and pressedkeys[self.MGfirekey]
         if not doFireMG: return
         # fire Machine Gun
-        Tracer(self)
+        self.tracer = Tracer(self)
         self.world.mg2sound.play()
         self.MGcooltime = Tank.MGrecoiltime
         self.MGammo -= 1
@@ -148,13 +175,26 @@ class Tank(pygame.sprite.Sprite):
         self.Vp += self.delta * seconds
         self.rect.center = tuple(self.Vp)
 
+    def checkHit(self):
+        if self.gethit:
+            print 'gethit'
+            self.world.hitsound.play()
+            self.health -= 10
+            if self.health <= 0:
+                self.kill()
+    def kill(self):
+        print 'get killed =>',self
+        self.lifebar.kill()
+        self.turret.kill()
+        for _ in range(random.randint(20,40)):
+            Explosion(self.Vp)
+        del Tank.book[self.number]
+        pygame.sprite.Sprite.kill(self)
     def update(self,seconds):
         # reduce cooltime
         self.reduceCooltime(seconds)
         # hit check
-        if self.gethit:
-            print 'gethit'
-            self.world.hitsound.play()
+        self.checkHit()
             #self.world.mg3sound.play()
         # -- process keys --
         pressedkeys = pygame.key.get_pressed()
@@ -185,7 +225,7 @@ class Turret(pygame.sprite.Sprite):
         for i in range(10):
             self.images[i]= drawCannon(self.width,self.height,i)
         self.images[10] = drawCannon(self.width,self.height,0) # idle position
- 
+
     def update(self, seconds):        
         # painting the correct image of cannon
         if self.boss.cooltime > 0:
@@ -200,6 +240,50 @@ class Turret(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center =self.boss.rect.center)
         #self.rect.center = self.boss.rect.center
  
+
+class Fragment(pygame.sprite.Sprite):
+    """a fragment of an exploding Bird"""
+    gravity = True # fragments fall down ?
+    def __init__(self, Vp):
+        pygame.sprite.Sprite.__init__(self, self.groups)
+        r = random.randint(128-100,128+100)
+        g = random.randint(128-100,128+100)
+        b = random.randint(128-120,128+120)
+        randomcolor = g,g,g
+        self.makeImage(4,4,randomcolor)
+        self.Vp = Vp
+        self.setPosition()
+        self.setDirection(maxspeed=20)
+        self.lifetime = 0.1 + 0.5*random.random() # max 6 seconds
+        self.time = 0.0
+    def makeImage(self,w,h,randomcolor):
+        self.image = pygame.Surface((w,h))
+        self.image.set_colorkey(black) # black transparent
+        randomradius = random.randint(1,w/2)
+        pygame.draw.circle(self.image, randomcolor, (w/2,h/2), randomradius)
+        self.image = self.image.convert_alpha()
+        self.rect = self.image.get_rect()
+    def setDirection(self,maxspeed):
+        self.Vd = Vector()
+        self.Vd.x = random.randint(-maxspeed,+maxspeed)
+        self.Vd.y = random.randint(-maxspeed,+maxspeed)
+    def setPosition(self):
+        self.rect.center = tuple(self.Vp)
+    def update(self, seconds):
+        self.time += seconds
+        self.Vp += self.Vd * seconds
+        self.setPosition()
+        if self.time > self.lifetime:
+            self.kill() 
+
+class Explosion(Fragment):
+    def __init__(self,Vp):
+        Fragment.__init__(self,Vp)
+        r = random.randint(128-100,128+100)
+        randomcolor = r,0,0
+        self.makeImage(40,40,randomcolor)
+        self.setDirection(maxspeed=60)
+        self.lifetime = 0.5 + 2*random.random() # max 6 seconds
 
 class Bullet(pygame.sprite.Sprite):
     ''' a big projectile fired by the thank's main cannon'''
@@ -263,6 +347,15 @@ class Bullet(pygame.sprite.Sprite):
         self.delta = self.Vd * self.vel
         self.Vp += self.delta * seconds
         self.rect.center = tuple(self.Vp)
+    def kill(self):
+        for _ in range(random.randint(5,10)):
+            Fragment(self.Vp)
+        if Bullet.book[self.number]:
+            del Bullet.book[self.number]
+            #Bullet.number -= 1
+        pygame.sprite.Sprite.kill(self)
+
+
 #   def checkArea(self):
 #       if self.Vp.x < 0 or self.Vp.y < 0:
 #           self.kill()
@@ -368,7 +461,12 @@ class Minimap(pygame.sprite.Sprite):
             rect = pygame.Rect(0,0,8,8)
             rect.center = center
             pygame.draw.rect(self.image,color,rect)
+
+        for bullet in Bullet.groups[0]:
+            print 'bullet =>',bullet, bullet.number
+
         for bulletNo in Bullet.book:
+            #if Bullet.book[bulletNo]:
             if Bullet.book[bulletNo].tracer:
                 dotsize = 2 # tracer
             else:

@@ -22,10 +22,13 @@ class World:
         Text._layer = 3   # below Tank
         Instruction._layer = 9   # below Tank
         Minimap._layer = 3  # below Tank # better 9 ?
+        Fragment._layer = 99
         #assign default groups to each sprite class
         Tank.groups = self.tankgroup, self.allgroup
         Turret.groups = self.allgroup
         Bullet.groups = self.bulletgroup, self.allgroup
+        Fragment.groups = self.allgroup
+        Lifebar.groups = self.allgroup
         Text.groups = self.allgroup
         Instruction.groups = self.allgroup
         Minimap.groups = self.allgroup
@@ -87,10 +90,9 @@ class World:
             # you can do without that argument collided and only the self.rects will be checked
             for bullet in hitgroup:
                 if bullet.boss.number != tank.number:
-                    print 'crash tank',bullet.boss.number
-                    bullet.boss.gethit = True # will get a blue border from Bird.update()
-                    bullet.kill()
-                    #crashbird.kill()   # this would remove him from all his groups
+                    print 'gethit tank',bullet.boss.number, tank.number
+                    tank.gethit = True # will get a blue border from Bird.update()
+                    bullet.kill() # remove bullet from all the groups
 
     def render(self,seconds):
         pygame.display.set_caption("FPS: %.2f keys: %s" % ( self.clock.get_fps(), pressedKeysString()))
