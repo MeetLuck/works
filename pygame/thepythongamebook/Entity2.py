@@ -287,10 +287,6 @@ class Explosion(Fragment):
 
 class Bullet(pygame.sprite.Sprite):
     ''' a big projectile fired by the thank's main cannon'''
-    side = 7  # small side of bullet retangle
-    vel = 180.0 # velocity
-    mass = 50.0
-    maxlifetime = 10.0 # seconds
     book = {}
     number = 0
 
@@ -298,16 +294,7 @@ class Bullet(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.boss = boss
         self.lifetime = 0.0
-        self.number = Bullet.number
-        Bullet.number += 1
-        Bullet.book[self.number] = self
-        self.tracer = False
-        self.maxlifetime = Bullet.maxlifetime
         self.color = self.boss.color
-        self.makeBullet()
-        #self.delta = Vector(0,0)
-        self.setDirection()
-        self.setPosition()
 
     def setDirection(self):
         self.Vd = Vector(0,0)
@@ -322,13 +309,46 @@ class Bullet(pygame.sprite.Sprite):
         self.Vp = copy.copy(self.boss.Vp) # copy boss's position
         self.Vp += self.Vd * (Tank.size - 20)
 
-    def makeBullet(self):
+    def checkLifetime(self,seconds): # kill it if too old
+        self.lifetime += seconds
+        if self.lifetime > self.maxlifetime:
+            self.kill()
+    def move(self,seconds):
+        self.delta = self.Vd * self.vel
+        self.Vp += self.delta * seconds
+        self.rect.center = tuple(self.Vp)
+
+    def update(self,seconds=0.0):
+        self.checkLifetime(seconds)
+        self.move(seconds)
+        #self.checkArea()
+
+class CannonBall(Bullet):
+    side = 7  # small side of bullet retangle
+    vel = 180.0 # velocity
+    mass = 50.0
+    maxlifetime = 10.0 # seconds
+    book = {}
+    number = 0
+    def __init__(self,boss):
+        Bullet.__init__(self,boss)
+        self.number = CannonBall.number
+        CannonBall.number += 1
+        CannonBall.book[self.number] = self
+        self.tracer = False
+        self.maxlifetime = CannonBall.maxlifetime
+        self.makeCannonBall()
+        #self.delta = Vector(0,0)
+        self.setDirection()
+        self.setPosition()
+
+    def makeCannonBall(self):
         # drawing the bullet and rotating it according to it's launcher
         self.angle = self.boss.turretAngle
-        self.radius = Bullet.side  # for collide_circle
-        self.mass = Bullet.mass
-        self.vel = Bullet.vel
-        image = pygame.Surface( (2*Bullet.side,Bullet.side) ) # rect 2 x 1 
+        self.radius = CannonBall.side  # for collide_circle
+        self.mass = CannonBall.mass
+        self.vel = CannonBall.vel
+        image = pygame.Surface( (2*CannonBall.side,CannonBall.side) ) # rect 2 x 1 
         image.fill(gray)
         pygame.draw.rect(image,self.color,(0,0,4,15) )
         pygame.draw.circle(image,self.color,(int(1.5*self.side),self.side//2),self.side//2)
@@ -338,36 +358,15 @@ class Bullet(pygame.sprite.Sprite):
         self.image0 = image.convert_alpha()
         self.image = pygame.transform.rotate(self.image0,self.angle)
         self.rect = self.image.get_rect()
-
-    def checkLifetime(self,seconds): # kill it if too old
-        self.lifetime += seconds
-        if self.lifetime > self.maxlifetime:
-            self.kill()
-    def move(self,seconds):
-        self.delta = self.Vd * self.vel
-        self.Vp += self.delta * seconds
-        self.rect.center = tuple(self.Vp)
     def kill(self):
         for _ in range(random.randint(5,10)):
             Fragment(self.Vp)
-        if Bullet.book[self.number]:
-            del Bullet.book[self.number]
+        if CannonBall.book[self.number]:
+            del CannonBall.book[self.number]
             #Bullet.number -= 1
         pygame.sprite.Sprite.kill(self)
 
-
-#   def checkArea(self):
-#       if self.Vp.x < 0 or self.Vp.y < 0:
-#           self.kill()
-#       elif self.Vp.x > screenwidth or self.Vp.y > screenheight:
-#           self.kill()
-        #self.rect.center = tuple(self.Vp)
-    def update(self,seconds=0.0):
-        self.checkLifetime(seconds)
-        self.move(seconds)
-        #self.checkArea()
-
-class Tracer(Bullet):
+class MGBullet(Bullet):
     ''' Tracer is nearly the same as Bullet, but smaller and with another origin
         ( bow MG rect, instead cannon) '''
     vel = 200.0
@@ -377,9 +376,9 @@ class Tracer(Bullet):
     size = 8
     def __init__(self,boss,turret=False):
         pygame.sprite.Sprite.__init__(self,self.groups)
-        self.number = Bullet.number
-        Bullet.number += 1
-        Bullet.book[self.number] = self
+        self.number = Tracer.number
+        MGBullet.number += 1
+        MGBullet.book[self.number] = self
         self.tracer = True
         self.radius = Tracer.size
         self.mass = Tracer.mass
@@ -390,7 +389,7 @@ class Tracer(Bullet):
         self.angle = self.boss.tankAngle# + 90 # tank's forward direction
         self.setPosition()
         self.setDirection()
-        self.makeBullet()
+        self.makeMGBullet()
     def setPosition(self): # starting pos
         x,y = tuple(self.boss.Vc)
         angle = atan2(-y,x)/pi * 180 # y axis UPSIDE DOWN
@@ -411,7 +410,7 @@ class Tracer(Bullet):
         pygame.draw.circle(image,black,c,r)
         image.set_colorkey(gray)
         return image
-    def makeBullet(self):
+    def makeMGBullet(self):
         image = self.drawMGBullet()
         self.image0 = image.convert_alpha()
         self.image = pygame.transform.rotate(self.image0, self.angle)
