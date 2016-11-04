@@ -11,7 +11,9 @@ red = pygame.Color('red')
 green = pygame.Color('green')
 nestposition = 320,240
 nestsize = 100
+nestcolor = (200,250,200)
 ANTCOUNT = 20
+
 # initialize pygame
 pygame.init()
 screen = pygame.display.set_mode(screensize,0,32)
@@ -20,7 +22,7 @@ leafimage = pygame.image.load('leaf.png').convert_alpha()
 spiderimage = pygame.image.load('spider.png').convert_alpha()
 clock = pygame.time.Clock()
 
-class State(object):
+class State(object): # Exploring, Seeking, Hunting
     def __init__(self,name):
         self.name = name
     def doActions(self):
@@ -29,10 +31,10 @@ class State(object):
         pass
     def entryActions(self):  # called when entering new-state
         pass
-    def exitActions(self):   # called when exiting old-state
+    def exitActions(self):   # called when exiting current-state
         pass
 
-class StateMachine(object):
+class StateMachine(object): # brain
 
     def __init__(self):
         self.states = {}
@@ -44,41 +46,41 @@ class StateMachine(object):
 
     def think(self):  # change State according to conditions
         if not self.activestate: return
-        # active state
+        # --- active state starts ---
         self.activestate.doActions()
         # for exploring state -> go random dest
+        newstate = self.activestate.checkConditions()
+        # exploring, seeking a leaf, delivering a leaf, hunting a spider
+        if newstate:
+            self.setState(newstate)
 
-        newstate_name = self.activestate.checkConditions()
-        # exploring a leaf, seeking a leaf, , delivering a leaf, hunting a spider
-        if newstate_name:
-            self.setState(newstate_name)
-
-    def setState(self,newstate_name):
+    def setState(self,newstate):
         if self.activestate:
             self.activestate.exitActions() # run when exiting current state
-        self.activestate = self.states[newstate_name]
+        self.activestate = self.states[newstate]
         self.activestate.entryActions()    # run when entering new state
 
 class World(object):
 
     def __init__(self):
         self.entities = {}
-        self.entity_id = 0
+        self.entityID = 0
         self.bgsurf = pygame.surface.Surface(screensize).convert()
         self.bgsurf.fill(white)
-        pygame.draw.circle(self.bgsurf,(200,250,200),nestposition, int(nestsize))
+        # draw nest
+        pygame.draw.circle(self.bgsurf, nestcolor, nestposition, int(nestsize))
 
     def addEntity(self,entity):
-        self.entities[self.entity_id] = entity
-        entity.id = self.entity_id
-        self.entity_id += 1
+        self.entities[self.entityID] = entity
+        entity.ID = self.entityID
+        self.entityID += 1
 
     def removeEntity(self,entity):
-        del self.entities[entity.id]
+        del self.entities[entity.ID]
 
-    def get(self,entity_id):  # get entity using entities[entity_id]
-        if entity_id in self.entities.keys():
-            return self.entities[entity_id]
+    def get(self,entityID):  # get entity using entities[entityID]
+        if entityID in self.entities.keys():
+            return self.entities[entityID]
         return None
 
     def process(self,timepassed):
@@ -101,17 +103,18 @@ class World(object):
                     return entity # inside erange
         return None
 
-class GameEntity(object): # such as 'leaf','ant','spider'
-
+class GameEntity(object):
+    # such as 'leaf','ant','spider'
     def __init__(self,world,name,image):
         self.world = world
         self.name  = name
+        self.ID = 0
         self.image = image
+        self.speed = 0
         self.location    = Vector2(0,0)
         self.destination = Vector2(0,0)
-        self.brain = StateMachine() # state machine
-        self.id = 0
-        self.speed = 0
+        # brain
+        self.brain = StateMachine()
 
     def render(self,surface):
         x,y = self.location
@@ -123,18 +126,20 @@ class GameEntity(object): # such as 'leaf','ant','spider'
         # 2. move entity according to the entity's State
         self.brain.think() # state machine.think()
         # change State such as Exploring,Seeking,Delivering,Hunting
+        self.move()
 
-        if self.speed > 0 and self.location != self.destination:
-            # difference between destination and location Vectors
-            #vec_to_destination = self.destination - self.location
-            difference = self.destination - self.location
-            # get magnitude 
-            distance = difference.get_length()
-            # get direction => heading
-            direction = difference.get_normalized()
-            travel_distance = min(distance, self.speed * timepassed)
-            # move entity 
-            self.location += travel_distance * direction
+    def move(self):
+        if self.speed <= 0 or self.location == self.destination: return
+        # --- move Entity ---
+        # difference between destination and location Vectors
+        difference = self.destination - self.location
+        # get magnitude 
+        distance = difference.get_length()
+        # get direction => heading
+        direction = difference.get_normalized()
+        #travel_distance = min(distance, self.speed * timepassed)
+        self.location += direction * self.speed * timepassed
+        #self.location += travel_distance * direction
 
 class Leaf(GameEntity):
     def __init__(self,world,image):
@@ -151,9 +156,9 @@ class Spider(GameEntity):
     def bitten(self):
         self.health -= 1
         if self.health <= 0:
-            self.speed = 0
+            self.speed = 0 # stop
             self.image = self.deadimage
-        self.speed = 140
+        self.speed = 140   # runaway
 
     def render(self,surface):
         GameEntity.render(self,surface)
@@ -174,12 +179,13 @@ class Spider(GameEntity):
 class Ant(GameEntity):
 
     def __init__(self,world,image):
+        # call base Class __init__
         GameEntity.__init__(self,world,'ant',image)
+        # define states
         exploringstate = AntStateExploring(self)   # self = Ant object
         seekingstate = AntStateSeeking(self)
         deliveringstate = AntStateDelivering(self)
         huntingstate = AntStateHunting(self)
-
         # self.bain = StateMachin() from GameEntity(base class)
         self.brain.addState(exploringstate)
         self.brain.addState(seekingstate)
@@ -217,19 +223,25 @@ class AntStateExploring(State):
         self.ant.destination = Vector2( randint(0,screenwidth), randint(0,screenheight))
 
     def doActions(self):
-        if randint(1,20) == 1:
+        if randint(1,20) == 1: # 5% chance of radom destination
             self.randomDestination()
 
-    def checkConditions(self):
+    def checkLeaf(self):
         leaf = self.ant.world.getCloseEntity('leaf',self.ant.location)
         if leaf: # if leaf is not None:
-            self.ant.leaf_id = leaf.id
+            self.ant.leaf_id = leaf.ID
             return 'seeking'  # change to Seeking State
+
+    def checkSpider(self):
         spider = self.ant.world.getCloseEntity('spider',nestposition,nestsize)
         if spider: # if spider is not None:
             if self.ant.location.get_distance_to(spider.location) < 100:
-                self.ant.spider_id = spider.id
+                self.ant.spider_id = spider.ID
                 return 'hunting' # change to Hunting State
+
+    def checkConditions(self):
+        self.checkLeaf()
+        self.checkSpider()
         return None
 
     def entryActions(self):   # when entering Exploring State from other State
@@ -285,6 +297,7 @@ class AntStateHunting(State):
     def doActions(self):
         spider = self.ant.world.get(self.ant.spider_id)
         if spider is None: return None
+        # --- found spider ---
         self.ant.destination = spider.location
         if self.ant.location.get_distance_to(spider.location) < 15:
             if randint(1,5) == 1:
@@ -323,12 +336,12 @@ def run():
             if event.type == QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
                 pygame.quit(); exit()
 
-        if randint(2,100) == 1: # make Leaf in the 2% chance
+        if randint(1,1000) <= 20: # make Leaf in the 2% chance
             leaf = Leaf(world,leafimage)
             leaf.location = Vector2(randint(0,screenwidth-1),randint(0,screenheight-1))
             world.addEntity(leaf)  # add leaf to the world
 
-        if randint(5,1000) == 1:   # make spider in the 0.5% chance
+        if randint(1,1000) <= 2:   # make spider in the 0.5% chance
             spider = Spider(world, spiderimage)
             spider.location = Vector2( -50, randint(0,screenheight) )
             spider.destination = Vector2(screenwidth+50, randint(0, screenheight) )

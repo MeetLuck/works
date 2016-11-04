@@ -6,51 +6,54 @@
 from constants022A import *
 import copy
 
-
 class Lifebar(pygame.sprite.Sprite):
     """shows a bar with the health of Tank"""
     def __init__(self, boss):
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.boss = boss
         self.oldpercent = 0
-        self.bossnumber = self.boss.number # the unique number (name) of my boss
         self.makeLifebar()
+        self.move()
     def makeLifebar(self):
         self.width,self.height = self.boss.width,7
-        self.size = self.width,self.height
-        image = pygame.Surface(self.size)
-        image.set_colorkey(black) # black transparent
-        pygame.draw.rect(image, green, (0,0,self.width,self.height),1)
+        image = pygame.Surface( [self.width,self.height] )
+        image.set_colorkey(black)
+        pygame.draw.rect(image, darkgreen, (0,0,self.width,self.height),1)
         self.image0 = image.convert_alpha() 
         self.rect = self.image0.get_rect()
-        self.rotate()
-    def setPosition(self): # starting pos
-        self.Vp = Vector()
-        self.Vp.x = self.boss.Vp.x
-        self.Vp.y = self.boss.Vp.y - self.boss.height/2 - 10
-        x,y = tuple(self.boss.Vc)
+    def setDirection(self): # starting pos
+        Vp = Vector()
+        Vp.x = 0 # relative boss's center
+        Vp.y = 0 - self.boss.height/2 - 5 
+        x,y = tuple(Vp)
         angle = atan2(-y,x)/pi * 180 # minus y because y-axis UPSIDE DOWN
-        magnitude = self.boss.Vc.get_magnitude()
-        Vd = Vector()
-        Vd.x = cos( (angle+self.boss.tankAngle)*GRAD )
-        Vd.y = -sin( (angle+self.boss.tankAngle)*GRAD )
-        self.Vp = self.boss.Vp + Vd*magnitude
+        self.magnitude = Vp.get_magnitude()
+        self.Vd = Vector()
+        self.Vd.x = +cos( (angle+self.boss.tankAngle)*GRAD )
+        self.Vd.y = -sin( (angle+self.boss.tankAngle)*GRAD )
+    def setPosition(self):
+        self.Vp = self.boss.Vp + self.Vd * self.magnitude
+        self.rect.center = tuple(self.Vp)
+    def move(self):
+        self.rotate()
+        self.setDirection()
+        self.setPosition()
     def rotate(self):
         # --------- rotating -------------  angle etc from Tank (boss)
-        print 'tankAngle: ',self.boss.tankAngle
+        #print 'tankAngle: ',self.boss.tankAngle
         self.image  = pygame.transform.rotate(self.image0, self.boss.tankAngle) 
         # ---------- move with boss ---------
         self.rect = self.image.get_rect(center = self.rect.center)
-        
     def update(self, time):
         self.percent = self.boss.health / self.boss.healthful
         if self.percent != self.oldpercent:
-            w = int(self.width * self.percent)
-            h = 5
-            pygame.draw.rect(self.image, red, (1,1,self.width-2,self.height)) # fill black
-            pygame.draw.rect(self.image, green, (1,1,self.width,self.height)) # fill green
+            w,h = int(self.width * self.percent), 5
+            # draw on the original image before rotating
+            # draw GREEN rect on top of RED rect
+            pygame.draw.rect(self.image0, red, (1,1,self.width-2,h)) # fill RED
+            pygame.draw.rect(self.image0, green, (1,1,w,h)) # fill green
+        self.move()
         self.oldpercent = self.percent
-        self.rotate()
 
 class Tank(pygame.sprite.Sprite):
     size = 100
