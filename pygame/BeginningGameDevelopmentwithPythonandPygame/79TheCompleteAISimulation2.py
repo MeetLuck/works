@@ -3,13 +3,10 @@ from class79 import *
 
 class World(object):
 
-    def __init__(self,screen):
+    def __init__(self,background):
         self.entities = {}
         self.entityID = 0
-        self.bgsurf = pygame.surface.Surface(screen.get_size()).convert()
-        self.bgsurf.fill(white)
-        # draw nest
-        pygame.draw.circle(self.bgsurf, nestcolor, nestposition, int(nestsize))
+        self.background = background
 
     def addEntity(self,entity):
         self.entities[self.entityID] = entity
@@ -23,15 +20,6 @@ class World(object):
         if entityID in self.entities.keys():
             return self.entities[entityID]
         return None
-
-    def process(self,timepassed):
-        for entity in self.entities.values():
-            entity.process(timepassed)
-
-    def render(self,surface):
-        surface.blit(self.bgsurf,(0,0))
-        for entity in self.entities.values():
-            entity.render(surface)
 
     def getCloseEntity(self,name,location,erange=100):
         # name = entity such as 'leaf','spider'
@@ -49,8 +37,8 @@ class App:
 
     def __init__(self):
         # make world
-        self.initPygame()
-        self.world = World(self.screen)
+        self.OnInit()
+        self.world = World(self.background)
         self.running = True
         for antNum in range(ANTCOUNT):
             # make ant object
@@ -60,20 +48,53 @@ class App:
             ant.brain.setState('exploring')
             # add ant to the world
             self.world.addEntity(ant)
+
     def initPygame(self):
         # initialize pygame
         pygame.init()
-        self.screensize = self.screenwidth,self.screenheight = 640,480
-        self.screen     = pygame.display.set_mode(self.screensize,0,32)
+        self.screen     = pygame.display.set_mode(screensize,0,32)
+        self.background = pygame.Surface(screensize)
+        self.background.fill(bgcolor)
+        self.background = self.background.convert()
+        self.drawNest()
+        self.screen.blit(self.background,(0,0))
         self.antimage   = pygame.image.load('ant.png').convert_alpha()
         self.leafimage  = pygame.image.load('leaf.png').convert_alpha()
         self.spiderimage = pygame.image.load('spider.png').convert_alpha()
         self.clock = pygame.time.Clock()
         self.fps = 60
+    def drawNest(self):
+        # draw nest
+        pygame.draw.circle(self.background, nestcolor, nestposition, int(nestsize))
+
+    def setGroups(self):
+        # set sprites group
+        self.antgroup = pygame.sprite.Group()
+        self.leafgroup = pygame.sprite.Group()
+        self.spidergroup = pygame.sprite.Group()
+        self.allgroup = pygame.sprite.LayeredUpdates()
+        # set _layer
+        Ant._layer      = 4 
+        Leaf._layer     = 4
+        Spider._layer   = 4
+        #assign default groups to each sprite class
+        Ant.groups      = self.antgroup,    self.allgroup
+        Leaf.groups     = self.leafgroup,   self.allgroup
+        Spider.groups   = self.spidergroup, self.allgroup
+
+    def OnInit(self):
+        self.initPygame()
+        self.setGroups()
 
     def onEvent(self,event):
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.running = False # exit game
+    def render(self,seconds):
+        pygame.display.set_caption("FPS: %.2f " % self.clock.get_fps() )
+        self.allgroup.clear(self.screen, self.background) # funny effect if you outcomment this line
+        self.allgroup.update(seconds)
+        self.allgroup.draw(self.screen)
+        pygame.display.flip() # flip the screen 30 times a second
 
     def cleanUp(self):
         pygame.quit()
@@ -85,22 +106,16 @@ class App:
                 self.onEvent(event)
             if randint(1,50) == 1: # 1/50 -> make Leaf in the 2% chance
                 leaf = Leaf(self.world,self.leafimage)
-                leaf.location = Vector2(randint(0,self.screenwidth-1),randint(0,self.screenheight-1))
+                leaf.location = Vector2(randint(0,screenwidth-1),randint(0,screenheight-1))
                 self.world.addEntity(leaf)  # add leaf to the world
-            if randint(1,200) == 1:   # 5/1000  -> make spider in the 0.5% chance
-                spider = Spider(self.world, self.spiderimage)
-                spider.location = Vector2( -50, randint(0,self.screenheight) )
-                spider.destination = Vector2(self.screenwidth+50, randint(0, self.screenheight) )
-                self.world.addEntity(spider)  # add spider to the world
+#           if randint(1,200) == 1:   # 5/1000  -> make spider in the 0.5% chance
+#               spider = Spider(self.world, self.spiderimage)
+#               spider.location = Vector2( -50, randint(0,screenheight) )
+#               spider.destination = Vector2(screenwidth+50, randint(0, screenheight) )
+#               self.world.addEntity(spider)  # add spider to the world
 
-            timepassed = self.clock.tick(self.fps)/1000.0
-            # process all entities in the world
-            # entity.process(timepassed)
-            self.world.process(timepassed)
-            # draw world
-            self.world.render(self.screen)
-            # update display
-            pygame.display.update()
+            seconds = self.clock.tick(self.fps)/1000.0
+            self.render(seconds)
         self.cleanUp()
 
 if __name__ ==  '__main__':

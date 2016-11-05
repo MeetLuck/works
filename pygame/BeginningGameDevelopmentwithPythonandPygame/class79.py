@@ -2,17 +2,15 @@ import pygame
 from pygame.locals import *
 from random import randint,choice
 from gameobjects.vector2 import Vector2
+from colors import *
 
 # constants
 screensize = screenwidth,screenheight = 640,480
-fps = 60
-white = pygame.Color('white')
-red = pygame.Color('red')
-green = pygame.Color('green')
+bgcolor = pygame.Color('gray')
 nestposition = 320,240
 nestsize = 100
 nestcolor = (200,250,200)
-ANTCOUNT = 20
+ANTCOUNT = 5 #20
 
 class State(object): # Exploring, Seeking, Hunting
     def __init__(self,name):
@@ -52,30 +50,37 @@ class StateMachine(object): # brain
         self.activestate = self.states[newstate]
         self.activestate.entryActions()    # run when entering new state
 
-class GameEntity(object):
+class GameEntity(pygame.sprite.Sprite):
     # such as 'leaf','ant','spider'
-    def __init__(self,world,name,image):
+    def __init__(self,world,name,image,groups):
+        pygame.sprite.Sprite.__init__(self,groups)
+        #super(GameEntity,self).__init__(groups)
         self.world = world
         self.name  = name
         self.ID = 0
         self.image = image
+        self.rect = self.image.get_rect()
         self.speed = 0
         self.location    = Vector2(0,0)
         self.destination = Vector2(0,0)
         # brain
         self.brain = StateMachine()
 
-    def render(self,surface):
+#   def draw(self):
+#       print 'draw',self
+#       self.world.background.blit(self.image, (x-w/2,y-h/2) )
+    def setCenter(self):
         x,y = self.location
         w,h = self.image.get_size()
-        surface.blit(self.image, (x-w/2,y-h/2) )
+        self.rect.center = x-w/2,y-h/2
 
-    def process(self,timepassed):
+    def update(self,timepassed):
         # 1. change State
         # 2. move entity according to the entity's State
         self.brain.think() # state machine.think()
         # change State such as Exploring,Seeking,Delivering,Hunting
         self.move(timepassed)
+        self.setCenter()
 
     def move(self,timepassed):
         if self.speed <= 0 or self.location == self.destination: return
@@ -92,12 +97,15 @@ class GameEntity(object):
 
 class Leaf(GameEntity):
     def __init__(self,world,image):
-        GameEntity.__init__(self,world,'leaf',image)
+        GameEntity.__init__(self,world,'leaf',image,self.groups)
+    def update(self,timepassed):
+        self.setCenter()
+        print self.rect.center
 
 class Spider(GameEntity):
 
     def __init__(self,world,image):
-        GameEntity.__init__(self,world,'spider',image)
+        GameEntity.__init__(self,world,'spider',image,self.groups)
         self.deadimage = pygame.transform.flip(image,0,1)
         self.health = 25
         self.speed = 50 + randint(-20,20)
@@ -109,7 +117,7 @@ class Spider(GameEntity):
             self.image = self.deadimage
         self.speed = 140   # runaway
 
-    def render(self,surface):
+    def draw(self,surface):
         GameEntity.render(self,surface)
         x,y = self.location
         w,h = self.image.get_size()
@@ -118,18 +126,20 @@ class Spider(GameEntity):
         surface.fill( red,  (barX,barY,25,4) )
         surface.fill( green,(barX,barY,self.health,4) )
 
-    def process(self,timepassed):
+    def update(self,timepassed):
         x,y = self.location
         if x > screenwidth + 2:
             self.world.removeEntity(self)
             return
-        GameEntity.process(self,timepassed)
+        GameEntity.update(self,timepassed)
 
 class Ant(GameEntity):
 
     def __init__(self,world,image):
         # call base Class __init__
-        GameEntity.__init__(self,world,'ant',image)
+        GameEntity.__init__(self,world,'ant',image,self.groups)
+        self.world = world
+        self.background = self.world.background
         # define states
         exploringstate = AntStateExploring(self)   # self = Ant object
         seekingstate = AntStateSeeking(self)
@@ -141,24 +151,26 @@ class Ant(GameEntity):
         self.brain.addState(deliveringstate)
         self.brain.addState(huntingstate)
 
-        self.carryimage = None
+        self.carryentity = None
 
-    def carry(self,image):
-        self.carryimage = image
+    def carry(self,entity):
+        self.carryentity = entity
 
-    def drop(self,surface):
-        if self.carryimage:
+    def drop(self): #,surface):
+        if self.carryentity:
             x,y = self.location
-            w,h = self.carryimage.get_size()
-            surface.blit(self.carryimage, (x-w,y-h/2))
-            self.carryimage = None
-
-    def render(self,surface):
-        GameEntity.render(self,surface)
-        if self.carryimage:
+            #w,h = self.carryimage.get_size()
+            self.carryentity.location = self.location 
+            #self.background.blit(self.carryimage, (x-w,y-h/2))
+            self.carryentity = None
+    def update(self,seconds):
+        GameEntity.update(self,seconds)
+        if self.carryentity:
             x,y = self.location
-            w,h = self.carryimage.get_size()
-            surface.blit(self.carryimage, (x-w,y-h/2))
+            #w,h = entity.image.get_size()
+            self.carryentity.location = self.location #x-w,y-h/2
+
+
 
 class AntStateExploring(State):
     # Exploring State -> leaf   -> Seeking State
@@ -211,8 +223,7 @@ class AntStateSeeking(State):
         if self.ant.location.get_distance_to(leaf.location) < 5:
             # if found leaf and in the range of 5 pixel
             # change State to Delivering
-            self.ant.carry(leaf.image)
-            # re
+            self.ant.carry(leaf)
             self.ant.world.removeEntity(leaf)
             return 'delivering'
         return None
@@ -229,9 +240,9 @@ class AntStateDelivering(State):
         self.ant = ant
     def checkConditions(self):
         if Vector2(*nestposition).get_distance_to(self.ant.location) < nestsize:
-            if randint(1,10) == 1:
-                self.ant.drop(self.ant.world.bgsurf)
-                return 'exploring'
+            #if randint(1,2) == 1:
+            self.ant.drop()
+            return 'exploring'
         return None
     def entryActions(self):
         self.ant.speed = 60

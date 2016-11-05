@@ -204,7 +204,7 @@ class Ant(GameEntity):
             surface.blit(self.carryimage, (x-w,y-h/2))
             self.carryimage = None
 
-    def render(self,surface):
+    def render(self,surface): # draw
         GameEntity.render(self,surface)
         if self.carryimage:
             x,y = self.location
@@ -223,7 +223,7 @@ class AntStateExploring(State):
         self.ant.destination = Vector2( randint(0,screenwidth), randint(0,screenheight))
 
     def doActions(self):
-        if randint(1,20) == 1: # 5% chance of radom destination
+        if randint(1,20) == 1: # 5% chance of getting random destination
             self.randomDestination()
 
     def foundLeaf(self):
