@@ -32,11 +32,11 @@ class Lifebar(pygame.sprite.Sprite):
         self.Vd.x = +cos( (angle+self.boss.tankAngle)*GRAD )
         self.Vd.y = -sin( (angle+self.boss.tankAngle)*GRAD )
     def setPosition(self):
+        self.setDirection()
         self.Vp = self.boss.Vp + self.Vd * self.magnitude
         self.rect.center = tuple(self.Vp)
     def move(self):
         self.rotate()
-        self.setDirection()
         self.setPosition()
     def rotate(self):
         # --------- rotating -------------  angle etc from Tank (boss)

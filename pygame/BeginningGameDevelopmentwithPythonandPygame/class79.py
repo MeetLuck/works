@@ -14,14 +14,6 @@ nestsize = 100
 nestcolor = (200,250,200)
 ANTCOUNT = 20
 
-# initialize pygame
-pygame.init()
-screen = pygame.display.set_mode(screensize,0,32)
-antimage = pygame.image.load('ant.png').convert_alpha()
-leafimage = pygame.image.load('leaf.png').convert_alpha()
-spiderimage = pygame.image.load('spider.png').convert_alpha()
-clock = pygame.time.Clock()
-
 class State(object): # Exploring, Seeking, Hunting
     def __init__(self,name):
         self.name = name
@@ -59,49 +51,6 @@ class StateMachine(object): # brain
             self.activestate.exitActions() # run when exiting current state
         self.activestate = self.states[newstate]
         self.activestate.entryActions()    # run when entering new state
-
-class World(object):
-
-    def __init__(self):
-        self.entities = {}
-        self.entityID = 0
-        self.bgsurf = pygame.surface.Surface(screensize).convert()
-        self.bgsurf.fill(white)
-        # draw nest
-        pygame.draw.circle(self.bgsurf, nestcolor, nestposition, int(nestsize))
-
-    def addEntity(self,entity):
-        self.entities[self.entityID] = entity
-        entity.ID = self.entityID
-        self.entityID += 1
-
-    def removeEntity(self,entity):
-        del self.entities[entity.ID]
-
-    def get(self,entityID):  # get entity using entities[entityID]
-        if entityID in self.entities.keys():
-            return self.entities[entityID]
-        return None
-
-    def process(self,timepassed):
-        for entity in self.entities.values():
-            entity.process(timepassed)
-
-    def render(self,surface):
-        surface.blit(self.bgsurf,(0,0))
-        for entity in self.entities.values():
-            entity.render(surface)
-
-    def getCloseEntity(self,name,location,erange=100):
-        # name = entity such as 'leaf','spider'
-        # distance = from location to entity location
-        location = Vector2(*location)
-        for entity in self.entities.values():
-            if entity.name == name:
-                distance = location.get_distance_to(entity.location)
-                if distance < erange:
-                    return entity # inside erange
-        return None
 
 class GameEntity(object):
     # such as 'leaf','ant','spider'
@@ -238,7 +187,6 @@ class AntStateExploring(State):
             if self.ant.location.get_distance_to(spider.location) < 100:
                 self.ant.spider_id = spider.ID
                 return True
-                #return 'hunting' # change to Hunting State
 
     def checkConditions(self):
         if self.foundLeaf(): return 'seeking'
@@ -319,43 +267,3 @@ class AntStateHunting(State):
         self.speed = 160 + randint(0,50)
     def exitActions(self):
         self.got_kill = False
-
-def run():
-    # make world
-    world = World()
-    for antNum in range(ANTCOUNT):
-        # make ant object
-        ant = Ant(world,antimage)
-        ant.location = Vector2( randint(0,screenwidth),randint(0,screenheight))
-        # set ant's State as Exploring
-        ant.brain.setState('exploring')
-        # add ant to the world
-        world.addEntity(ant)
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
-                pygame.quit(); exit()
-
-        if randint(1,1000) <= 20: # make Leaf in the 2% chance
-            leaf = Leaf(world,leafimage)
-            leaf.location = Vector2(randint(0,screenwidth-1),randint(0,screenheight-1))
-            world.addEntity(leaf)  # add leaf to the world
-
-        if randint(1,1000) <= 2:   # make spider in the 0.5% chance
-            spider = Spider(world, spiderimage)
-            spider.location = Vector2( -50, randint(0,screenheight) )
-            spider.destination = Vector2(screenwidth+50, randint(0, screenheight) )
-            world.addEntity(spider)  # add spider to the world
-
-        timepassed = clock.tick(fps)/1000.0
-        # process all entities in the world
-        # entity.process(timepassed)
-        world.process(timepassed)
-        # draw world
-        world.render(screen)
-        # update display
-        pygame.display.update()
-
-if __name__ ==  '__main__':
-    run()
