@@ -41,7 +41,7 @@ class StateMachine(object): # brain
         self.activestate = None
 
     def addState(self,state):
-       " add state such as exploring,seeking,hunting "
+       " add state such as exploring,seeking,delivering,hunting "
        self.states[state.name] = state
 
     def think(self):  # change State according to conditions
@@ -55,6 +55,7 @@ class StateMachine(object): # brain
             self.setState(newstate)
 
     def setState(self,newstate):
+        # exit action --> entry action
         if self.activestate:
             self.activestate.exitActions() # run when exiting current state
         self.activestate = self.states[newstate]
