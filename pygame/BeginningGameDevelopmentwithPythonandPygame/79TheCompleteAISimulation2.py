@@ -36,21 +36,15 @@ class World(object):
 class App:
 
     def __init__(self):
-        # make world
         self.OnInit()
         self.world = World(self.background)
         self.running = True
-        for antNum in range(ANTCOUNT):
-            # make ant object
+        for antNum in range(ANTCOUNT): # make ant object
             ant = Ant(self.world,self.antimage)
             ant.location = Vector2( randint(0,screenwidth),randint(0,screenheight))
-            # set ant's State as Exploring
-            ant.brain.setState('exploring')
-            # add ant to the world
             self.world.addEntity(ant)
 
     def initPygame(self):
-        # initialize pygame
         pygame.init()
         self.screen     = pygame.display.set_mode(screensize,0,32)
         self.background = pygame.Surface(screensize)
@@ -64,7 +58,6 @@ class App:
         self.clock = pygame.time.Clock()
         self.fps = 60
     def drawNest(self):
-        # draw nest
         pygame.draw.circle(self.background, nestcolor, nestposition, int(nestsize))
 
     def setGroups(self):
@@ -104,15 +97,15 @@ class App:
         while self.running:
             for event in pygame.event.get():
                 self.onEvent(event)
-            if randint(1,50) == 1: # 1/50 -> make Leaf in the 2% chance
+            if randint(1,100) == 1: # 1/50 -> make Leaf in the 2% chance
                 leaf = Leaf(self.world,self.leafimage)
                 leaf.location = Vector2(randint(0,screenwidth-1),randint(0,screenheight-1))
                 self.world.addEntity(leaf)  # add leaf to the world
-#           if randint(1,200) == 1:   # 5/1000  -> make spider in the 0.5% chance
-#               spider = Spider(self.world, self.spiderimage)
-#               spider.location = Vector2( -50, randint(0,screenheight) )
-#               spider.destination = Vector2(screenwidth+50, randint(0, screenheight) )
-#               self.world.addEntity(spider)  # add spider to the world
+            if randint(1,200) == 1:   # 5/1000  -> make spider in the 0.5% chance
+                spider = Spider(self.world, self.spiderimage)
+                spider.location = Vector2( -50, randint(0,screenheight) )
+                spider.destination = Vector2(screenwidth+50, randint(0, screenheight) )
+                self.world.addEntity(spider)  # add spider to the world
 
             seconds = self.clock.tick(self.fps)/1000.0
             self.render(seconds)
