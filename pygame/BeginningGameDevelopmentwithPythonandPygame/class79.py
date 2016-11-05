@@ -61,8 +61,6 @@ class GameEntity(pygame.sprite.Sprite):
         # brain
         self.brain = Brain()
 
-#   def draw(self):
-#       print 'draw',self
     def setCenter(self):
         x,y = self.location
         w,h = self.image.get_size()
@@ -94,7 +92,7 @@ class Leaf(GameEntity):
         GameEntity.__init__(self,world,'leaf',image,self.groups)
     def update(self,timepassed):
         self.setCenter()
-        #print 'Leaft update',self.ID,self.rect.center
+        #print 'Leaf update',self.ID,self.rect.center
 
 class Lifebar(GameEntity):
     def draw(self,surface):
@@ -142,7 +140,7 @@ class Ant(GameEntity):
         seekingstate = AntStateSeeking(self)
         deliveringstate = AntStateDelivering(self)
         huntingstate = AntStateHunting(self)
-        # self.bain = StateMachin() from GameEntity(base class)
+        # add State to brain
         self.brain.addState(exploringstate)
         self.brain.addState(seekingstate)
         self.brain.addState(deliveringstate)
@@ -193,6 +191,7 @@ class AntStateExploring(State):
         if leaf:
             self.ant.leafID = leaf.ID
             return True
+
     def foundSpider(self):
         spider = self.ant.world.getCloseEntity('spider',nestposition,nestsize)
         if spider and self.ant.location.get_distance_to(spider.location) < 100:
