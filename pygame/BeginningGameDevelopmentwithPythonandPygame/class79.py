@@ -28,8 +28,9 @@ class Brain(object): # brain
     def addState(self,state):
        " add state such as exploring,seeking,hunting "
        self.states[state.name] = state
+
     def think(self):  # change State according to conditions
-        if not self.activestate: return
+        if not self.activestate: return # for spider, leaf
         # --- active state starts ---
         self.activestate.doActions()
         # for exploring state -> go random dest
@@ -37,6 +38,7 @@ class Brain(object): # brain
         # exploring, seeking a leaf, delivering a leaf, hunting a spider
         if newstate:
             self.setActiveState(newstate)
+
     def setActiveState(self,newstate):
         if self.activestate:
             self.activestate.exitActions() # run when exiting current state
@@ -128,6 +130,7 @@ class Spider(GameEntity):
             return
         GameEntity.update(self,timepassed)
 
+
 class Ant(GameEntity):
 
     def __init__(self,world,image):
@@ -163,16 +166,28 @@ class Ant(GameEntity):
             self.carryentity.location = self.location[:]
 
 class AntStateExploring(State):
-    # Exploring State -> leaf   -> Seeking State
-    # Exploring State -> spider -> Hunting State
+    # Exploring State -> found leaf   -> change state to Seeking State
+    # Exploring State -> found spider -> change state to Hunting State
     def __init__(self,ant):
         State.__init__(self,'exploring') # self.name = 'exploring' by calling State constructor
         self.ant = ant
-    def randomDestination(self):
-        self.ant.destination = Vector2( randint(0,screenwidth), randint(0,screenheight))
+
     def doActions(self):
         if randint(1,20) == 1: # 5% chance of random destination
             self.randomDestination()
+
+    def changeState(self):
+        if self.foundLeaf():      return 'seeking'
+        elif self.foundSpider():  return 'hunting'
+        else:                     return  None
+
+    def entryActions(self):   # when entering Exploring State from other State
+        self.ant.speed = 120 + randint(-30,30)
+        self.randomDestination()
+
+    def randomDestination(self):
+        self.ant.destination = Vector2( randint(0,screenwidth), randint(0,screenheight))
+
     def foundLeaf(self):
         leaf = self.ant.world.getCloseEntity('leaf',self.ant.location)
         if leaf:
@@ -183,13 +198,6 @@ class AntStateExploring(State):
         if spider and self.ant.location.get_distance_to(spider.location) < 100:
             self.ant.spiderID = spider.ID
             return True
-    def changeState(self):
-        if self.foundLeaf():    return 'seeking'
-        if self.foundSpider():  return 'hunting'
-        return None
-    def entryActions(self):   # when entering Exploring State from other State
-        self.ant.speed = 120 + randint(-30,30)
-        self.randomDestination()
 
 class AntStateSeeking(State):
 
@@ -200,16 +208,17 @@ class AntStateSeeking(State):
 
     def changeState(self):
         leaf = self.ant.world.get(self.ant.leafID)
-        if not leaf: return 'exploring'
+        if not leaf:
+            return 'exploring'
+        elif leaf and self.ant.location.get_distance_to(leaf.location) < 5:
         # if found leaf and in the range of 5 pixel, change State to Delivering
-        if leaf and self.ant.location.get_distance_to(leaf.location) < 5:
             self.ant.carry(leaf)
             self.ant.world.removeEntity(leaf)
             return 'delivering'
-        else: # leaf is too far
+        else: # leaf is too far, do not change state
             return None
 
-    def entryActions(self):
+    def entryActions(self): # from exploring state
         leaf = self.ant.world.get(self.ant.leafID)
         if leaf: 
             self.ant.destination = leaf.location
@@ -219,12 +228,13 @@ class AntStateDelivering(State):
     def __init__(self,ant):
         State.__init__(self,'delivering')
         self.ant = ant
+
     def changeState(self):
         if Vector2(*nestposition).get_distance_to(self.ant.location) < nestsize-10:
             if randint(1,10) == 1:
                 self.ant.drop()
                 return 'exploring'
-        return None
+        return None   # do not change state
 
     def entryActions(self):
         self.ant.speed = 60
@@ -262,5 +272,6 @@ class AntStateHunting(State):
 
     def entryActions(self):
         self.speed = 160 + randint(0,50)
+
     def exitActions(self):
         self.got_kill = False
