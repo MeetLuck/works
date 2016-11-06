@@ -16,7 +16,7 @@ class State(object): # Exploring, Seeking, Hunting
     def __init__(self,name):
         self.name = name
     def doActions(self):    pass
-    def changeState(self):  pass
+    def checkCondition(self):  pass
     def entryActions(self): pass
     def exitActions(self):  pass
 
@@ -25,6 +25,7 @@ class Brain(object): # brain
     def __init__(self):
         self.states = {}
         self.activestate = None
+
     def addState(self,state):
        " add state such as exploring,seeking,hunting "
        self.states[state.name] = state
@@ -34,7 +35,7 @@ class Brain(object): # brain
         # --- active state starts ---
         self.activestate.doActions()
         # for exploring state -> go random dest
-        newstate = self.activestate.changeState()
+        newstate = self.activestate.checkCondition()
         # exploring, seeking a leaf, delivering a leaf, hunting a spider
         if newstate:
             self.setActiveState(newstate)
@@ -174,7 +175,7 @@ class AntStateExploring(State):
         if randint(1,20) == 1: # 5% chance of random destination
             self.randomDestination()
 
-    def changeState(self):
+    def checkCondition(self):
         if self.foundLeaf():      return 'seeking'
         elif self.foundSpider():  return 'hunting'
         else:                     return  None
@@ -205,7 +206,7 @@ class AntStateSeeking(State):
         self.ant = ant
         self.leafID = None
 
-    def changeState(self):
+    def checkCondition(self):
         leaf = self.ant.world.get(self.ant.leafID)
         if not leaf:
             return 'exploring'
@@ -228,7 +229,7 @@ class AntStateDelivering(State):
         State.__init__(self,'delivering')
         self.ant = ant
 
-    def changeState(self):
+    def checkCondition(self):
         if Vector2(*nestposition).get_distance_to(self.ant.location) < nestsize-10:
             if randint(1,10) == 1:
                 self.ant.drop()
@@ -259,7 +260,7 @@ class AntStateHunting(State):
                     self.ant.world.removeEntity(spider)
                     self.got_kill = True
 
-    def changeState(self): # <-- from hunting state
+    def checkCondition(self): # <-- from hunting state
         if self.got_kill:
             return 'delivering'
         # spider is alive
