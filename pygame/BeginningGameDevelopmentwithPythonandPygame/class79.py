@@ -41,6 +41,7 @@ class Brain(object): # brain
             self.setActiveState(newstate)
 
     def setActiveState(self,newstate):
+        # exitAction(currentstate) => set activestate => entryAction(newstate)
         if self.activestate:
             self.activestate.exitActions() # run when exiting current state
         self.activestate = self.states[newstate]

@@ -3,8 +3,6 @@ from math import pi,sin,cos,atan,atan2
 from colors import *
 from vector import Vector
 # game constants
-#fps = 1
-# config
 fps = 60
 xtiles,ytiles = 15,15
 folder = 'data'
@@ -22,20 +20,7 @@ radarmapheight = 150
 screensize = screenwidth,screenheight = 640,480
 screensize = screenwidth,screenheight = 800,600
 
-
-# KEYs for tank control
-MGfirekey   = (pygame.K_l, pygame.K_KP_ENTER)
-firekey     = (pygame.K_SPACE,pygame.K_DOWN)
-tankLeftkey     = (pygame.K_a, pygame.K_KP4)
-tankRightkey    = (pygame.K_s, pygame.K_KP6)
-turretLeftkey  = (pygame.K_d, pygame.K_LEFT)
-turretRightkey = (pygame.K_f, pygame.K_RIGHT)
-forwardkey      = (pygame.K_k, pygame.K_KP8)
-backwardkey     = (pygame.K_j, pygame.K_KP5)
-#TankKeys = [firekey,MGfirekey,turrectLeft,turretRightkey,forwardkey,backwardkey,tankLeftkey,tankRightkey]
-
 # game constants
-BIRDSPEEDMAX = 200
 FRAGMENTMAXSPEED = 200
 FRICTION = 0.999
 FORCEOFGRAVITY = 2.81 # in pixel per seconds
@@ -74,8 +59,6 @@ def drawTank(width,height,color):
     print 'MGcenter:',MGcenter, rect.center
     return image,MGcenter,Vc
 
-#def drawCannon(boss, offset):
-     #width,height = 2*boss.width,2*boss.height
 def drawCannon(width,height, offset=0):
      # painting facing right, offset is the recoil
      image = pygame.Surface((width,height)) # created on the fly
