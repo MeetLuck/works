@@ -27,13 +27,16 @@ class World:
     def getCloseEntity(self,name,location,erange=100):
         # name = entity such as 'leaf','spider'
         # distance = from location to entity location
-        print 'get close entity'
-        location = Vector2(*location)
         for entity in self.entities.values():
-            if entity.name == name:
-                distance = location.get_distance_to(entity.location)
-                if distance < erange:
-                    return entity # inside erange
+            if entity.name != name: continue
+            # if entity.name == name
+            print 'get close entity=>',name
+            distance = location.get_distance_to(entity.Vp)
+            print 'distance',distance
+            print 'location, entity',location,entity.Vp
+            if distance < erange:
+                print 'entity =>',entity.name
+                return entity # inside erange
         return None
 
 class App:
@@ -103,6 +106,8 @@ class App:
         self.setGroups()
         self.player = Player(self.world,'player',(150,250), 0) # create  first tank, looking north
         self.ai = AI(self.world,'ai',(450,250), 90) # create second tank, looking south
+        self.world.addEntity(self.player)
+        self.world.addEntity(self.ai)
         self.minimap = Minimap(self)
         status3 = Text((screenwidth//2, 10), "Tank Demo. Press ESC to quit")
         self.instruction = Instruction(self,yellowgreen,32)

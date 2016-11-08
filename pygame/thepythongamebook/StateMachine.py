@@ -1,6 +1,7 @@
 ''' State and Brain class '''
 from random import randint
 from vector import Vector
+#from gameobjects.vector2 import Vector2
 from math import sin,cos,atan2,pi
 import copy
 GRAD = 2*pi/360
@@ -27,10 +28,11 @@ class Brain(object): # brain
         # --- Only continue if there is an active state ---
         if self.activestate is None: return # for spider, leaf
         # --- Perfrom the actions of the active state, and check conditions
-        self.activestate.doActions()
         newstate = self.activestate.checkCondition()
         if newstate:
             self.setActiveState(newstate)
+        else:
+            self.activestate.doActions()
 
     def setActiveState(self,newstate):
         # exitAction(currentstate) => set activestate => entryAction(newstate)
@@ -57,11 +59,12 @@ class AIStateExploring(State):
         if randint(1,20) == 1:
             self.randomDirection()
     def checkCondition(self):
-        player = self.ai.world.getCloseEntity('player', self.ai.nestposition, self.ai.nestsize)
+        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 300) #self.ai.nestsize)
         print 'player',player
         if player is None: return None
         # there is a player nearby
         self.ai.playerID = player.ID
+        print 'go hunting',player
         return 'hunting'
     def entryActions(self):
         # start with random speed and direction
@@ -75,9 +78,11 @@ class AIStateHunting(State):
         self.gotkill = False
     def doActions(self):
         player = self.ai.world.getEntity(self.ai.playerID)
+        print '----------------- HUNTING %s ----------------------',player
         if player is None: return None
         self.ai.destination = copy.copy(player.Vp)
-        if self.ai.Vp.get_distance_to(player.Vp) < 100:
+        if self.ai.Vp.get_distance_to(player.Vp) < 200:
+            print 'autotarget',player
             self.ai.autotarget(player)
             if player.health <= 0:
                 self.ai.world.removeEntity(player)
@@ -86,13 +91,13 @@ class AIStateHunting(State):
         if self.gotkill:
             return 'exploring'
         else: # player is alive
-            player = self.ai.world.get(self.ai.playerID)
+            player = self.ai.world.getEntity(self.ai.playerID)
             if player is None:
                 return 'exploring'
         return None # stay in hunting
 
     def entryActions(self):
-        self.ai.speed *=  2.0
+        self.ai.speed /=  4.0
 
     def exitActions(self):
         self.gotkill = False

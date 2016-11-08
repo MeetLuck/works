@@ -27,6 +27,16 @@ class Vector:
     def normalize(self):
         self.x /= self.get_magnitude()
         self.y /= self.get_magnitude()
+    def get_distance_to(self, other):
+        """Returns the distance to a point.
+        @param: A Vector2 or list-like object with at least 2 values.
+        @return: distance
+        """
+        if not isinstance(other,Vector):
+            other = Vector(other)
+        diff = other - self
+        return diff.get_magnitude()
+
     def __iter__(self): # tu = tuple(Vector(x,y))
         return iter( (self.x,self.y) )
     def __add__(self,other):
