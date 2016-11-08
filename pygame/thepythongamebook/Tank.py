@@ -94,15 +94,12 @@ class Tank(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.image0, self.tankAngle)
         self.rect = self.image.get_rect(center = self.rect.center) #center = oldcenter = self.rect.center
 
-        #print targetAngle, self.turretAngle, diffAngle
-        #print self.turretAngle 
-
     def reduceCooltime(self,seconds): # reloading, firestatus
         self.cooltime     -= seconds
         self.MGcooltime   -= seconds
 
-    def fireCannon(self,pressedkeys):
-        doFireCannon = self.cooltime <= 0 and self.ammo >0 and pressedkeys[self.firekey]
+    def fireCannon(self):
+        doFireCannon = self.cooltime <= 0 and self.ammo >0
         if not doFireCannon: return
         # fire Cannon: cooltime == 0
         self.bullet = CannonBall(self)
@@ -110,17 +107,15 @@ class Tank(pygame.sprite.Sprite):
         self.cooltime = Tank.recoiltime # seconds until tank can fire again
         self.ammo -= 1
 
-    def fireMG(self,pressedkeys):
+    def fireMG(self):
         # -- fire bow MG --
-        doFireMG = self.MGcooltime <= 0 and self.MGammo > 0 and pressedkeys[self.MGfirekey]
+        doFireMG = self.MGcooltime <= 0 and self.MGammo > 0
         if not doFireMG: return
         # fire Machine Gun
         self.mgbullet = MGBullet(self)
         self.world.mg2sound.play()
         self.MGcooltime = Tank.MGrecoiltime
         self.MGammo -= 1
-        #self.msg = "player%i: ammo: %i/%i keys: %s" % (self.number+1, self.ammo, self.MGammo, Tank.msg[self.number])
-        #Text.book[self.number].newMsg(self.msg)
 
     def setDirection(self,pressedkeys):
         # tank heading EAST
@@ -133,11 +128,7 @@ class Tank(pygame.sprite.Sprite):
             self.Vd.x += -cos(self.tankAngle*GRAD)
             self.Vd.y += +sin(self.tankAngle*GRAD)
 
-    def move(self,pressedkeys,seconds):
-        doMoveTank =  pressedkeys[self.forwardkey] or pressedkeys[self.backwardkey]
-        if not doMoveTank: return
-        # direction
-        self.setDirection(pressedkeys)
+    def move(self,seconds):
         # delta
         self.delta = self.Vd * self.speed
         self.Vp += self.delta * seconds
@@ -176,11 +167,16 @@ class Tank(pygame.sprite.Sprite):
         self.rotateTurret(pressedkeys)
         # -- rotate tank --
         self.rotateTank(pressedkeys)
-        # -- fire cannon --
-        self.fireCannon(pressedkeys)
+        # -- fire cannon -- 
+        if pressedkeys[self.firekey]:
+            self.fireCannon()
         # -- fire MG(bow) --
-        self.fireMG(pressedkeys)
+        if pressedkeys[self.MGfirekey]:
+            self.fireMG()
+        # --- set direction --
+        self.setDirection(pressedkeys)
         # -- move Tank --
-        self.move(pressedkeys,seconds)
+        if pressedkeys[self.forwardkey] or pressedkeys[self.backwardkey]:
+            self.move(seconds)
         # -- paint sprite at correct position
         #self.rect.center = tuple(self.Vp)

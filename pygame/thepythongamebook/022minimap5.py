@@ -7,9 +7,11 @@ from Ai import *
 
 class World:
 
-    def __init__(self):
+    def __init__(self,screen,background):
         self.entities = {}
         self.entityID = 0
+        self.screen = screen
+        self.background = background
 
     def addEntity(self,entity):
         self.entities[self.entityID] = entity
@@ -38,6 +40,21 @@ class World:
                 print 'entity =>',entity.name
                 return entity # inside erange
         return None
+
+    def create(self):
+        # paint a grid of white lines
+        screenwidth,screenheight = self.screen.get_size()
+        self.aistartpos = screenwidth*3/4,screenheight/2
+        for x in range(0,screenwidth,screenwidth/xtiles): #start, stop, step
+            pygame.draw.line(self.background,gridcolor, (x,0), (x,screenheight))
+        for y in range(0,screenheight,screenheight/ytiles): #start, stop, step
+            pygame.draw.line(self.background,gridcolor, (0,y), (screenwidth,y))
+        # paint upper rectangle to have background for text
+        pygame.draw.rect(self.background,lightgray, (0,0,screenwidth, 70))
+        pygame.draw.circle(self.background, green,self.aistartpos, screenwidth/4)
+        pygame.draw.circle(self.background, red,self.aistartpos, 10)
+        self.screen.blit(self.background, (0,0)) # delete all
+
 
 class App:
     def __init__(self):
@@ -78,15 +95,6 @@ class App:
         self.background = pygame.Surface((self.screen.get_size()))
         self.background.fill(bgcolor) # fill grey light blue:(128,128,255) 
         self.background = self.background.convert()
-
-        # paint a grid of white lines
-        for x in range(0,screenwidth,screenwidth/xtiles): #start, stop, step
-            pygame.draw.line(self.background,gridcolor, (x,0), (x,screenheight))
-        for y in range(0,screenheight,screenheight/ytiles): #start, stop, step
-            pygame.draw.line(self.background,gridcolor, (0,y), (screenwidth,y))
-        # paint upper rectangle to have background for text
-        pygame.draw.rect(self.background,lightgray, (0,0,screenwidth, 70))
-        self.screen.blit(self.background, (0,0)) # delete all
         self.clock = pygame.time.Clock()    # create pygame clock object
 
     def loadSound(self):
@@ -100,12 +108,13 @@ class App:
         self.world.cannonhitsound = pygame.mixer.Sound(os.path.join(folder,'cannoncrash.ogg'))
 
     def onInit(self):
-        self.world = World()
         self.initPygame()
+        self.world = World(self.screen,self.background)
+        self.world.create()
         self.loadSound()
         self.setGroups()
         self.player = Player(self.world,'player',(150,250), 0) # create  first tank, looking north
-        self.ai = AI(self.world,'ai',(450,250), 90) # create second tank, looking south
+        self.ai = AI(self.world,'ai',self.world.aistartpos, 90) # create second tank, looking south
         self.world.addEntity(self.player)
         self.world.addEntity(self.ai)
         self.minimap = Minimap(self)

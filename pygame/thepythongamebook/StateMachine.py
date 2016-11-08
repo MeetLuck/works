@@ -49,17 +49,12 @@ class AIStateExploring(State):
         angle = randint(-180,180)
         self.ai.tankAngle += angle
         self.ai.turretAngle += angle
-        Vd = Vector(0,0)
-        Vd.x += +cos(self.ai.tankAngle*GRAD)
-        Vd.y += -sin(self.ai.tankAngle*GRAD)
-        print 'AI randomDirection'
-        self.ai.Vd = Vd
     def doActions(self):
         # change direction in the 5% change
         if randint(1,20) == 1:
             self.randomDirection()
     def checkCondition(self):
-        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 300) #self.ai.nestsize)
+        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 600) #self.ai.nestsize)
         print 'player',player
         if player is None: return None
         # there is a player nearby
@@ -81,7 +76,7 @@ class AIStateHunting(State):
         print '----------------- HUNTING %s ----------------------',player
         if player is None: return None
         self.ai.destination = copy.copy(player.Vp)
-        if self.ai.Vp.get_distance_to(player.Vp) < 200:
+        if self.ai.Vp.get_distance_to(player.Vp) < 300:
             print 'autotarget',player
             self.ai.autotarget(player)
             if player.health <= 0:
@@ -97,7 +92,12 @@ class AIStateHunting(State):
         return None # stay in hunting
 
     def entryActions(self):
-        self.ai.speed /=  4.0
+        self.ai.speed /=  2.0
+        self.ai.turretTurnSpeed *= 2.0
+        self.ai.tankTurnSpeed *= 2.0
 
     def exitActions(self):
         self.gotkill = False
+        self.ai.speed *=  2.0
+        self.ai.turretTurnSpeed /= 2.0
+        self.ai.tankTurnSpeed /= 2.0
