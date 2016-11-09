@@ -9,11 +9,11 @@ import copy
 
 class Tank(pygame.sprite.Sprite):
     size = 100
-    recoiltime = 1 #0.75 # how many seconds the cannon is busy after firing one time
-    MGrecoiltime = 0.1 # how many seconds the bow(machine gun) is idel
+    recoiltime = 2*0.75 # how many seconds the cannon is busy after firing one time
+    MGrecoiltime = 0.25 # how many seconds the bow(machine gun) is idel
     turretTurnSpeed = 1
     tankTurnSpeed = 1 # degrees
-    speed = 25.0 * 2
+    speed = 25.0 * 3
     book = {} # a book of tanks to store all tanks
     number = 0
     color = ((200,200,0),(0,0,200) )

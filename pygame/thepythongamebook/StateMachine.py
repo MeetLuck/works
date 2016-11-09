@@ -42,25 +42,31 @@ class Brain(object): # brain
         self.activestate.entryActions()    # when entering new state
 
 class AIStateExploring(State):
+
     def __init__(self,ai):
         State.__init__(self,'exploring')
         self.ai = ai
+
     def randomDirection(self):
-        angle = randint(-180,180)
+        if self.ai.IsOutOfNest(): return
+        angle = randint(-15,15)
         self.ai.tankAngle += angle
         self.ai.turretAngle += angle
+
     def doActions(self):
         # change direction in the 5% change
         if randint(1,20) == 1:
             self.randomDirection()
+
     def checkCondition(self):
-        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 600) #self.ai.nestsize)
+        player = self.ai.world.getCloseEntity('player', self.ai.Vp, self.ai.nestsize) #self.ai.nestsize)
         print 'player',player
         if player is None: return None
         # there is a player nearby
         self.ai.playerID = player.ID
         print 'go hunting',player
         return 'hunting'
+
     def entryActions(self):
         # start with random speed and direction
         self.ai.speed /= 2.0
@@ -71,17 +77,22 @@ class AIStateHunting(State):
         State.__init__(self,'hunting')
         self.ai = ai
         self.gotkill = False
+
+    def getPlayer(self):
+        return self.ai.world.getEntity(self.ai.playerID)
+
     def doActions(self):
-        player = self.ai.world.getEntity(self.ai.playerID)
-        print '----------------- HUNTING %s ----------------------',player
+        player = self.getPlayer()
         if player is None: return None
+        print '----------------- HUNTING %s ----------------------',player
         self.ai.destination = copy.copy(player.Vp)
-        if self.ai.Vp.get_distance_to(player.Vp) < 300:
+        if self.ai.Vp.get_distance_to(player.Vp) < self.ai.nestsize: #/2:
             print 'autotarget',player
             self.ai.autotarget(player)
             if player.health <= 0:
                 self.ai.world.removeEntity(player)
                 self.getkill = True
+
     def checkCondition(self):
         if self.gotkill:
             return 'exploring'
@@ -89,15 +100,20 @@ class AIStateHunting(State):
             player = self.ai.world.getEntity(self.ai.playerID)
             if player is None:
                 return 'exploring'
-        return None # stay in hunting
+        return None
+
+#           if player:
+#               return None # -> stay in Hunting
+#           else: # player is out of range
+#               return 'exploring'
 
     def entryActions(self):
-        self.ai.speed /=  2.0
+        self.ai.speed *=  2.0
         self.ai.turretTurnSpeed *= 2.0
         self.ai.tankTurnSpeed *= 2.0
 
     def exitActions(self):
         self.gotkill = False
-        self.ai.speed *=  2.0
+        self.ai.speed /=  2.0
         self.ai.turretTurnSpeed /= 2.0
         self.ai.tankTurnSpeed /= 2.0

@@ -2,6 +2,12 @@ import pygame,random,os
 from math import pi,sin,cos,atan,atan2
 from colors import *
 from vector import Vector
+import logging
+
+# logging
+LOG_FILENAME = 'ai.log'
+logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG,)
+
 # game constants
 fps = 60
 xtiles,ytiles = 15,15
@@ -17,8 +23,8 @@ scrollstepy = 3 # how many pixels to scroll when pressing cursor key
 cornerpoint = [0,0] # left upper edge of visible screen rect inside bigmap
 radarmapwidth = 200
 radarmapheight = 150
-screensize = screenwidth,screenheight = 640,480
-screensize = screenwidth,screenheight = 800,600
+#screensize = screenwidth,screenheight = 640,480
+screensize = screenwidth,screenheight = 1024,768
 
 # game constants
 FRAGMENTMAXSPEED = 200

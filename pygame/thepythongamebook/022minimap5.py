@@ -32,27 +32,28 @@ class World:
         for entity in self.entities.values():
             if entity.name != name: continue
             # if entity.name == name
-            print 'get close entity=>',name
+            #print 'get close entity=>',name
             distance = location.get_distance_to(entity.Vp)
-            print 'distance',distance
-            print 'location, entity',location,entity.Vp
+            #print 'distance',distance
+            #print 'location, entity',location,entity.Vp
             if distance < erange:
-                print 'entity =>',entity.name
+                #print 'entity =>',entity.name
                 return entity # inside erange
         return None
 
     def create(self):
         # paint a grid of white lines
         screenwidth,screenheight = self.screen.get_size()
-        self.aistartpos = screenwidth*3/4,screenheight/2
+        self.ainestposition = screenwidth*3/4,screenheight/2
+        self.ainestsize =  screenwidth/2
         for x in range(0,screenwidth,screenwidth/xtiles): #start, stop, step
             pygame.draw.line(self.background,gridcolor, (x,0), (x,screenheight))
         for y in range(0,screenheight,screenheight/ytiles): #start, stop, step
             pygame.draw.line(self.background,gridcolor, (0,y), (screenwidth,y))
         # paint upper rectangle to have background for text
         pygame.draw.rect(self.background,lightgray, (0,0,screenwidth, 70))
-        pygame.draw.circle(self.background, green,self.aistartpos, screenwidth/4)
-        pygame.draw.circle(self.background, red,self.aistartpos, 10)
+        pygame.draw.circle(self.background, green,self.ainestposition, self.ainestsize/2)
+        pygame.draw.circle(self.background, red,self.ainestposition, 10)
         self.screen.blit(self.background, (0,0)) # delete all
 
 
@@ -60,6 +61,7 @@ class App:
     def __init__(self):
         self.running = True
         self.onInit()
+
     def setGroups(self):
         # set sprites group
         self.tankgroup = pygame.sprite.Group()
@@ -114,7 +116,7 @@ class App:
         self.loadSound()
         self.setGroups()
         self.player = Player(self.world,'player',(150,250), 0) # create  first tank, looking north
-        self.ai = AI(self.world,'ai',self.world.aistartpos, 90) # create second tank, looking south
+        self.ai = AI(self.world,'ai',self.world.ainestposition, 90) # create second tank, looking south
         self.world.addEntity(self.player)
         self.world.addEntity(self.ai)
         self.minimap = Minimap(self)
