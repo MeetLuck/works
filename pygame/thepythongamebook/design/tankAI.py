@@ -3,6 +3,7 @@
     and shooting tracers at the end of it's bow Machine Gun
     and from the turret-machine gun (co-axial with main gun)
     '''
+
 from Ai import *
 
 fps = 4*60
@@ -81,7 +82,7 @@ class App:
         Instruction._layer = 9   # below Tank
         Minimap._layer = 3  # below Tank # better 9 ?
         Fragment._layer = 99
-        #assign default groups to each sprite class
+        # assign default groups to each sprite class
         Tank.groups = self.tankgroup, self.allgroup
         Turret.groups = self.allgroup
         CannonBall.groups = self.CannonBallgroup, self.allgroup
@@ -158,10 +159,17 @@ class App:
         self.allgroup.clear(self.screen, self.background) # funny effect if you outcomment this line
         self.allgroup.update(seconds)
         self.allgroup.draw(self.screen)
+        self.writeState()
         pygame.display.flip() # flip the screen 30 times a second
 
     def cleanUp(self):
         pygame.quit()
+
+    def writeState(self):
+        self.wolrd.get
+        activestate = self.world.ai.brain.activestate
+        text = write('enter %s' %activestate)
+        self.background.blit( text,(20,self.world.screenheight-40) )
 
     def mainloop(self):
         while self.running:

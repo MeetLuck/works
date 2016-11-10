@@ -42,11 +42,13 @@ class Brain(object): # brain
         self.activestate = self.states[newstate]
         self.activestate.entryActions()    # when entering new state
 
+
 class AIStateExploring(State):
 
     def __init__(self,ai):
         State.__init__(self,'exploring')
         self.ai = ai
+        self.world = self.ai.world
 
     def randomDirection(self):
         self.ai.tankturndirection = randint(-1,1) 
@@ -68,6 +70,8 @@ class AIStateExploring(State):
 
     def entryActions(self):
         # start with random speed and direction
+#       textsurf = write('enter Exploring state')
+#       self.world.background.blit(textsurf,(20,self.world.screenheight-40) )
         self.ai.speed /= 2.0
         self.randomDirection()
 
@@ -76,6 +80,7 @@ class AIStateHome(State):
     def __init__(self,ai):
         State.__init__(self,'home')
         self.ai = ai
+        self.world = self.ai.world
 
     def doActions(self):
         if self.ai.IsOutOfNest():
@@ -104,6 +109,11 @@ class AIStateHome(State):
         self.ai.playerID = player.ID
         print 'go hunting',player
         return 'hunting'
+
+    def entryActions(self):
+        pass
+#       textsurf = write('enter Home state')
+#       self.world.background.blit(textsurf,(20,self.world.screenheight-40) )
 
 
 class AIStateHunting(State):
@@ -145,8 +155,8 @@ class AIStateHunting(State):
 #               return 'exploring'
 
     def entryActions(self):
-        textsurf = write('enter Hunting')
-        self.world.background.blit(textsurf,(20,self.world.screenheight-40) )
+#       textsurf = write('enter Hunting')
+#       self.world.background.blit(textsurf,(20,self.world.screenheight-40) )
         self.ai.speed *= 1.2 
         self.ai.turretTurnSpeed *= 1.2 
         self.ai.tankTurnSpeed *= 1.2
