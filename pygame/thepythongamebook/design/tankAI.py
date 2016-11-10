@@ -5,6 +5,8 @@
     '''
 from Ai import *
 
+fps = 4*60
+
 class World:
 
     def __init__(self,screen,background):
@@ -45,6 +47,7 @@ class World:
     def create(self):
         # paint a grid of white lines
         screenwidth,screenheight = self.screen.get_size()
+        self.screenwidth,self.screenheight = self.screen.get_size()
         self.ainestposition = screenwidth*3/4,screenheight/2
         self.ainestsize =  screenwidth/2
         for x in range(0,screenwidth,screenwidth/xtiles): #start, stop, step
@@ -102,7 +105,7 @@ class App:
 
     def loadSound(self):
         # ---------- load sound -----------
-        folder = 'data'
+        folder = '../data'
         self.world.cannonsound = pygame.mixer.Sound(os.path.join(folder,'cannon.ogg'))
         self.world.mg1sound = pygame.mixer.Sound(os.path.join(folder,'mg1.ogg'))
         self.world.mg2sound = pygame.mixer.Sound(os.path.join(folder,'mg2.ogg'))

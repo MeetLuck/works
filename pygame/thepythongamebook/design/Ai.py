@@ -21,10 +21,12 @@ class AI(Tank):
         logging.debug('nestsize %d' %self.nestsize)
         # define states
         exploringstate = AIStateExploring(self)
+        homestate = AIStateHome(self)
         huntingstate   = AIStateHunting(self)
         # add State to brain
         self.brain = Brain()
         self.brain.addState(exploringstate)
+        self.brain.addState(homestate)
         self.brain.addState(huntingstate)
         # set ant's State as Exploring
         self.brain.setActiveState('exploring')
@@ -78,15 +80,11 @@ class AI(Tank):
         distance = self.Vp.get_distance_to(self.nestposition)
         print 'distance: ', distance
         if abs(self.Vp.get_distance_to(self.nestposition) ) >= int(self.nestsize/2.0):
-            print 'nest size/2',int(self.nestsize/2)
-            print 'out of nest',self.Vp, self.nestposition
+#           print 'nest size/2',int(self.nestsize/2)
+#           print 'out of nest',self.Vp, self.nestposition
             return True
 
     def move(self,seconds):
-        if self.IsOutOfNest():
-            self.tankturndirection += 1
-        else:
-            self.tankturndirection = 0
         # direction
         self.calculateDirection()
         self.rotateTank()
