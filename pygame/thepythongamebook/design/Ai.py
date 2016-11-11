@@ -12,10 +12,7 @@ class AI(Tank):
         Tank.__init__(self,world,name,startpos,angle)
         self.nestposition = Vector(self.world.ainestposition)
         self.nestsize = self.world.ainestsize
-        self.turretTurnSpeed = Tank.turretTurnSpeed / 2.0
-        self.tankTurnSpeed   = Tank.tankTurnSpeed / 2.0
-        self.tankturndirection = 0
-        self.speed = Tank.speed * 1.5 #25.0 * 2
+        self.resetSpeed()
         # logging
         logging.debug('nestposition %s' %self.nestposition)
         logging.debug('nestsize %d' %self.nestsize)
@@ -31,36 +28,43 @@ class AI(Tank):
         # set ant's State as Exploring
         self.brain.setActiveState('exploring')
 
-    def fireCannon(self):
-        doFireCannon = self.cooltime <= 0 and self.ammo >0
-        if not doFireCannon: return
-        # fire Cannon: cooltime == 0
-        self.bullet = CannonBall(self)
-        self.world.cannonsound.play()
-        self.cooltime = Tank.recoiltime # seconds until tank can fire again
-        self.ammo -= 1
+    def resetSpeed(self):
+        self.turretTurnSpeed = 2*Tank.turretTurnSpeed 
+        self.tankTurnSpeed   = Tank.tankTurnSpeed
+        self.tankturndirection = 0
+        self.turndirection = 0
+        self.speed = Tank.speed * 0.5
 
-
-    def autoDirection(self,player):
+    def getdiffAngle(self,player):
         delta = player.Vp - self.Vp
         targetAngle = atan2(-delta.y,delta.x)/pi * 180
         diffAngle = targetAngle - self.turretAngle
+        if diffAngle < 0: diffAngle += 360
+        diffAngle %= 360
         return diffAngle
 
+    def autorotateTank(self,player):
+        diffAngle = self.getdiffAngle(player)
+        if abs(diffAngle) < 10:
+            self.tankAngle += 0
+            self.fireMG()
+        else:
+            self.tankAngle += diffAngle/10
+
     def autotarget(self,player):
-        diffAngle = self.autoDirection(player)
+        diffAngle = self.getdiffAngle(player)
         # auto turn tank,turret 
-        self.tankAngle   += diffAngle # * 4/10.0
-        self.turretAngle += diffAngle # * 4/10.0
+        # self.tankAngle   += diffAngle/10 # * 4/10.0
+        # self.turretAngle += diffAngle/10 # * 4/10.0
         # auto targeting
-        if diffAngle < 0: diffAngle += 360
-        diffAngle = diffAngle % 360
         if abs(diffAngle) < 15:
             self.turndirection = 0
             self.fireCannon()
-        elif diffAngle < 180:   self.turndirection = +1/4.0
-        elif diffAngle > 180:   self.turndirection = -1/4.0
-        self.turretAngle += self.turndirection * self.turretTurnSpeed
+        elif diffAngle < 180:   self.turndirection = +1
+        elif diffAngle > 180:   self.turndirection = -1
+        #self.tankturndirection = self.turndirection
+        #self.tankAngle += self.turndirection * self.tankTurnSpeed
+        #self.turretAngle += self.turndirection * self.turretTurnSpeed
 
     def calculateDirection(self):
         self.Vd = Vector(0,0)
@@ -68,26 +72,30 @@ class AI(Tank):
         self.Vd.y += -sin(self.tankAngle*GRAD)
 
     def rotateTank(self):
-        deltaAngle = self.tankturndirection * self.tankTurnSpeed # * seconds
-        self.tankAngle   += deltaAngle
-        self.turretAngle += deltaAngle # turret autorotate if tank is rotating
+        tankdeltaAngle = self.turndirection * self.tankTurnSpeed # * seconds
+        turretdeltaAngle = self.turndirection * self.turretTurnSpeed # * seconds
+        print 'deltaAngle',tankdeltaAngle
+        self.tankAngle   += tankdeltaAngle
+        self.turretAngle += turretdeltaAngle # turret autorotate if tank is rotating
         self.image = pygame.transform.rotate(self.image0, self.tankAngle)
         self.rect = self.image.get_rect(center = self.rect.center) #center = oldcenter = self.rect.center
         self.image = pygame.transform.rotate(self.image0, self.tankAngle)
         self.rect = self.image.get_rect(center = self.rect.center) #center = oldcenter = self.rect.center
 
+        self.turndirection = 0
+
     def IsOutOfNest(self):
         distance = self.Vp.get_distance_to(self.nestposition)
         print 'distance: ', distance
-        if abs(self.Vp.get_distance_to(self.nestposition) ) >= int(self.nestsize/2.0):
+        if abs(self.Vp.get_distance_to(self.nestposition) ) >= self.nestsize:
 #           print 'nest size/2',int(self.nestsize/2)
 #           print 'out of nest',self.Vp, self.nestposition
             return True
 
     def move(self,seconds):
         # direction
-        self.calculateDirection()
         self.rotateTank()
+        self.calculateDirection()
         self.delta = self.Vd * self.speed
         self.Vp += self.delta * seconds
         self.rect.center = tuple(self.Vp)

@@ -1,10 +1,6 @@
 ''' State and Brain class '''
-from random import randint
-from vector import Vector
-#from gameobjects.vector2 import Vector2
-from math import sin,cos,atan2,pi
-import copy
 from constants import *
+import copy
 GRAD = 2*pi/360
 
 class State(object): # Exploring, Seeking, Hunting
@@ -14,6 +10,12 @@ class State(object): # Exploring, Seeking, Hunting
     def checkCondition(self):   pass
     def entryActions(self):     pass
     def exitActions(self):      pass
+
+    def getPlayer(self):
+        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 2*self.ai.nestsize) #self.ai.nestsize)
+        return player
+    def randomDirection(self):
+        self.ai.turndirection = randint(-1,1) 
 
 class Brain(object): # brain
     def __init__(self):
@@ -25,7 +27,6 @@ class Brain(object): # brain
        self.states[state.name] = state
 
     def think(self):
-        #print 'think',self.activestate
         # --- Only continue if there is an active state ---
         if self.activestate is None: return # for spider, leaf
         # --- Perfrom the actions of the active state, and check conditions
@@ -50,9 +51,6 @@ class AIStateExploring(State):
         self.ai = ai
         self.world = self.ai.world
 
-    def randomDirection(self):
-        self.ai.tankturndirection = randint(-1,1) 
-
     def doActions(self):
         # change direction in the 5% change
         if randint(1,10) == 1:
@@ -61,7 +59,7 @@ class AIStateExploring(State):
     def checkCondition(self):
         if self.ai.IsOutOfNest():
             return 'home'
-        player = self.ai.world.getCloseEntity('player', self.ai.Vp, self.ai.nestsize) #self.ai.nestsize)
+        player = self.getPlayer()
         if player:
             # there is a player nearby
             self.ai.playerID = player.ID
@@ -69,10 +67,8 @@ class AIStateExploring(State):
         return None # back to Exploring
 
     def entryActions(self):
-        # start with random speed and direction
-#       textsurf = write('enter Exploring state')
-#       self.world.background.blit(textsurf,(20,self.world.screenheight-40) )
-        self.ai.speed /= 2.0
+        self.ai.resetSpeed()
+        self.ai.turretAngle = self.ai.tankAngle
         self.randomDirection()
 
 class AIStateHome(State):
@@ -87,13 +83,18 @@ class AIStateHome(State):
             delta =  self.ai.nestposition - self.ai.Vp
             targetAngle = atan2(-delta.y,delta.x)/pi * 180
             diffAngle = targetAngle - self.ai.tankAngle
+            if diffAngle < 0: 
+                diffAngle += 360
+            diffAngle = diffAngle % 360
             #self.tankAngle += diffAngle
-            if abs(diffAngle) < 60:
-                self.ai.tankturndirection = 0
-            elif diffAngle > 0:
-                self.ai.tankturndirection = -1
-            else:
-                self.ai.tankturndirection = +1
+            if abs(diffAngle) < 30:
+                self.ai.turndirection = 0
+                self.ai.speed = 2*self.ai.__class__.speed 
+            else: 
+                self.ai.turndirection = 4 
+                #self.ai.speed = 0.5* self.ai.__class__.speed
+                self.ai.speed = 1.0 * self.ai.__class__.speed 
+                print 'home diffAngle', diffAngle
             logging.debug('targetAngle: %s' %targetAngle)
             logging.debug('tankAngle: %s' %self.ai.tankAngle)
             logging.debug('diffAngle: %s' %diffAngle)
@@ -101,8 +102,8 @@ class AIStateHome(State):
 
     def checkCondition(self):
         if self.ai.IsOutOfNest():
-            return None
-        player = self.ai.world.getCloseEntity('player', self.ai.Vp, self.ai.nestsize) #self.ai.nestsize)
+            return None # return to "home state"
+        player = self.getPlayer()
         print 'player',player
         if player is None: return 'exploring'
         # there is a player nearby
@@ -111,9 +112,9 @@ class AIStateHome(State):
         return 'hunting'
 
     def entryActions(self):
-        pass
-#       textsurf = write('enter Home state')
-#       self.world.background.blit(textsurf,(20,self.world.screenheight-40) )
+        self.ai.turretAngle = self.ai.tankAngle
+    def exitAction(self):
+        self.ai.resetSpeed()
 
 
 class AIStateHunting(State):
@@ -123,46 +124,35 @@ class AIStateHunting(State):
         self.world = self.ai.world
         self.gotkill = False
 
-    def getPlayer(self):
-        return self.ai.world.getEntity(self.ai.playerID)
-
     def doActions(self):
         player = self.getPlayer()
-        if player is None: return None
+        if player is None: return
         print '----------------- HUNTING %s ----------------------',player
-        self.ai.destination = copy.copy(player.Vp)
-        if self.ai.Vp.get_distance_to(player.Vp) < self.ai.nestsize: #/2:
-            print 'autotarget',player
-            self.ai.autotarget(player)
-            if player.health <= 0:
-                self.ai.world.removeEntity(player)
-                self.getkill = True
+        distance = self.ai.Vp.get_distance_to(player.Vp) #< 2.0*self.ai.nestsize: #/2:
+        print 'distance to player => ',distance
+        print 'autotarget =>',player
+        self.ai.autorotateTank(player)
+        self.ai.autotarget(player)
+        if player.health <= 0:
+            self.ai.world.removeEntity(player)
+            self.getkill = True
 
     def checkCondition(self):
-        if self.ai.IsOutOfNest():
+#       if self.ai.IsOutOfNest():
+#           return 'home'
+        distance = self.ai.Vp.get_distance_to(self.ai.nestposition) #< 2.0*self.ai.nestsize: #/2:
+        if distance > self.ai.nestsize * 3.5:
             return 'home'
         if self.gotkill:
             return 'exploring'
-        else: # player is alive
-            player = self.ai.world.getEntity(self.ai.playerID)
-            if player is None:
-                return 'exploring'
-        return None
-
-#           if player:
-#               return None # -> stay in Hunting
-#           else: # player is out of range
-#               return 'exploring'
+        player = self.getPlayer()
+        if player is None:
+            return 'exploring'
+        else:
+            return None
 
     def entryActions(self):
-#       textsurf = write('enter Hunting')
-#       self.world.background.blit(textsurf,(20,self.world.screenheight-40) )
-        self.ai.speed *= 1.2 
-        self.ai.turretTurnSpeed *= 1.2 
-        self.ai.tankTurnSpeed *= 1.2
+        self.ai.resetSpeed()
 
     def exitActions(self):
         self.gotkill = False
-#       self.ai.speed /=  2.0
-#       self.ai.turretTurnSpeed /= 2.0
-#       self.ai.tankTurnSpeed /= 2.0

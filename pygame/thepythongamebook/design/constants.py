@@ -1,5 +1,6 @@
 import pygame,random,os
 from math import pi,sin,cos,atan,atan2
+from random import randint
 from colors import *
 from vector import Vector
 import logging

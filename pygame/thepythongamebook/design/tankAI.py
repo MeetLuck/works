@@ -6,7 +6,26 @@
 
 from Ai import *
 
-fps = 4*60
+fps = 10
+
+class Text(pygame.sprite.Sprite):
+    number = 0
+    book = {}
+    def __init__(self,pos,msg):
+        self.number = Text.number
+        Text.number += 1
+        Text.book[self.number] = self
+        pygame.sprite.Sprite.__init__(self)
+        self.pos = Vector(pos)
+        self.newMsg(msg)
+    def update(self,seconds):
+        pass
+    def newMsg(self,msg,color=black,fontsize=20):
+        self.msg = msg
+        self.image = write(msg,color,fontsize)
+        self.rect = self.image.get_rect()
+        self.rect.center = tuple(self.pos)
+
 
 class World:
 
@@ -29,6 +48,12 @@ class World:
             return self.entities[entityID]
         return None
 
+    def getAi(self):
+        for entity in self.entities.values():
+            if entity.name == 'ai':
+                return entity
+        return None
+
     def getCloseEntity(self,name,location,erange=100):
         # name = entity such as 'leaf','spider'
         # distance = from location to entity location
@@ -44,20 +69,19 @@ class World:
                 return entity # inside erange
         return None
 
-
     def create(self):
         # paint a grid of white lines
         screenwidth,screenheight = self.screen.get_size()
         self.screenwidth,self.screenheight = self.screen.get_size()
-        self.ainestposition = screenwidth*3/4,screenheight/2
-        self.ainestsize =  screenwidth/2
+        self.ainestposition = int(screenwidth*2.0/4.0), int(screenheight/2.0)
+        self.ainestsize =  int(screenwidth/4.0)
         for x in range(0,screenwidth,screenwidth/xtiles): #start, stop, step
             pygame.draw.line(self.background,gridcolor, (x,0), (x,screenheight))
         for y in range(0,screenheight,screenheight/ytiles): #start, stop, step
             pygame.draw.line(self.background,gridcolor, (0,y), (screenwidth,y))
         # paint upper rectangle to have background for text
         pygame.draw.rect(self.background,lightgray, (0,0,screenwidth, 70))
-        pygame.draw.circle(self.background, green,self.ainestposition, self.ainestsize/2)
+        pygame.draw.circle(self.background, green,self.ainestposition, self.ainestsize)
         pygame.draw.circle(self.background, red,self.ainestposition, 10)
         self.screen.blit(self.background, (0,0)) # delete all
 
@@ -157,19 +181,20 @@ class App:
     def render(self,seconds):
         pygame.display.set_caption("FPS: %.2f keys: %s" % ( self.clock.get_fps(), pressedKeysString()))
         self.allgroup.clear(self.screen, self.background) # funny effect if you outcomment this line
+        self.writeState()
         self.allgroup.update(seconds)
         self.allgroup.draw(self.screen)
-        self.writeState()
         pygame.display.flip() # flip the screen 30 times a second
 
     def cleanUp(self):
         pygame.quit()
 
     def writeState(self):
-        self.wolrd.get
-        activestate = self.world.ai.brain.activestate
-        text = write('enter %s' %activestate)
-        self.background.blit( text,(20,self.world.screenheight-40) )
+        ai = self.world.getAi()
+        activestate = ai.brain.activestate
+        pos = 200,self.world.screenheight-60
+        self.text = Text(pos,'enter %s' %activestate)
+        self.allgroup.add(self.text)
 
     def mainloop(self):
         while self.running:
@@ -178,6 +203,7 @@ class App:
                 self.onEvent(event)
             self.collision()
             self.render(seconds)
+            self.allgroup.remove(self.text)
         self.cleanUp()
 
 if __name__ == '__main__':

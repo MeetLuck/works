@@ -138,7 +138,7 @@ class Tank(pygame.sprite.Sprite):
         if self.getCannonhit:
             print 'getCannonhit'
             self.world.cannonhitsound.play()
-            self.health -= 10
+            self.health -= 5
         if self.getMGhit:
             print 'getCannonhit'
             self.world.hitsound.play()
