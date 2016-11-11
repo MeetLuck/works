@@ -6,7 +6,7 @@
 
 from Ai import *
 
-fps = 100*60
+fps = 30
 
 class World:
 
@@ -164,7 +164,6 @@ class App:
                     print 'gethit tank',mgbullet.boss.number, tank.number
                     tank.getMGhit = True # will get a blue border from Bird.update()
                     mgbullet.kill() # remove bullet from all the groups
-
     def render(self,seconds):
         #pygame.display.set_caption("FPS: %.2f keys: %s" % ( self.clock.get_fps(), pressedKeysString()))
         self.allgroup.clear(self.screen, self.background) # funny effect if you outcomment this line

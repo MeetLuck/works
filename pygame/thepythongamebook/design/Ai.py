@@ -36,6 +36,7 @@ class AI(Tank):
         self.speed = Tank.speed / 2.0
 
     def getdiffAngle(self,player):
+        if player is None: return
         delta = player.Vp - self.Vp
         targetAngle = atan2(-delta.y,delta.x)/pi * 180
         diffAngle = targetAngle - self.turretAngle
@@ -53,10 +54,10 @@ class AI(Tank):
         elif diffAngle < 180:   self.tankturndirection = +15
         elif diffAngle > 180:   self.tankturndirection = -15
 
-        deltaAngle = self.tankturndirection * self.tankTurnSpeed
+#       deltaAngle = self.tankturndirection * self.tankTurnSpeed
 
-        self.tankAngle += deltaAngle
-        self.turretAngle += deltaAngle
+#       self.tankAngle += deltaAngle
+#       self.turretAngle += deltaAngle
         print diffAngle,deltaAngle
 
     def autotarget(self,player):

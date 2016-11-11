@@ -12,11 +12,16 @@ class State(object): # Exploring, Seeking, Hunting
     def exitActions(self):      pass
 
     def getPlayer(self):
-        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 2*self.ai.nestsize) #self.ai.nestsize)
+        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 0.2*self.ai.nestsize) #self.ai.nestsize)
         return player
 
     def randomDirection(self):
-        self.ai.tankturndirection = randint(-1,1) 
+        delta =  self.ai.Vp - self.ai.nestposition
+        if abs(delta.get_magnitude > self.ai.nestsize * 0.8: return
+        self.ai.tankturndirection = randint(-15,15) 
+        deltaAngle = self.ai.tankturndirection*self.ai.tankTurnSpeed
+        self.ai.tankAngle   += deltaAngle 
+        self.ai.turretAngle += deltaAngle
 
 class Brain(object): # brain
     def __init__(self):
@@ -79,27 +84,31 @@ class AIStateHome(State):
         self.ai = ai
         self.world = self.ai.world
 
+    def getdiffAnglefromNest(self):
+        delta =  self.ai.nestposition - self.ai.Vp
+        targetAngle = atan2(-delta.y,delta.x)/pi * 180
+        diffAngle = targetAngle - self.ai.tankAngle
+        if diffAngle < 0: 
+            diffAngle += 360
+        diffAngle = diffAngle % 360
+        return diffAngle
+
     def doActions(self):
         if self.ai.IsOutOfNest():
-            delta =  self.ai.nestposition - self.ai.Vp
-            targetAngle = atan2(-delta.y,delta.x)/pi * 180
-            diffAngle = targetAngle - self.ai.tankAngle
-            if diffAngle < 0: 
-                diffAngle += 360
-            diffAngle = diffAngle % 360
+            diffAngle = self.getdiffAnglefromNest()
             #self.tankAngle += diffAngle
-            if abs(diffAngle) < 30:
+            if abs(diffAngle) <= 15*2:
                 self.ai.tankturndirection = 0
-                self.ai.speed = 2*self.ai.__class__.speed 
-            else: 
-                self.ai.tankturndirection = 4 
-                #self.ai.speed = 0.5* self.ai.__class__.speed
-                self.ai.speed = 1.0 * self.ai.__class__.speed 
-                print 'home diffAngle', diffAngle
-            logging.debug('targetAngle: %s' %targetAngle)
+                self.ai.speed  = self.ai.__class__.speed * 2
+            self.ai.tankturndirection = +15
+
+            deltaAngle = self.ai.tankturndirection * self.ai.tankTurnSpeed
+
+            self.ai.tankAngle += deltaAngle
+            self.ai.turretAngle += deltaAngle
+
             logging.debug('tankAngle: %s' %self.ai.tankAngle)
             logging.debug('diffAngle: %s' %diffAngle)
-            logging.debug('delta: %s' %delta)
 
     def checkCondition(self):
         if self.ai.IsOutOfNest():
