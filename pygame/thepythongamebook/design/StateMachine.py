@@ -14,8 +14,9 @@ class State(object): # Exploring, Seeking, Hunting
     def getPlayer(self):
         player = self.ai.world.getCloseEntity('player', self.ai.Vp, 2*self.ai.nestsize) #self.ai.nestsize)
         return player
+
     def randomDirection(self):
-        self.ai.turndirection = randint(-1,1) 
+        self.ai.tankturndirection = randint(-1,1) 
 
 class Brain(object): # brain
     def __init__(self):
@@ -88,10 +89,10 @@ class AIStateHome(State):
             diffAngle = diffAngle % 360
             #self.tankAngle += diffAngle
             if abs(diffAngle) < 30:
-                self.ai.turndirection = 0
+                self.ai.tankturndirection = 0
                 self.ai.speed = 2*self.ai.__class__.speed 
             else: 
-                self.ai.turndirection = 4 
+                self.ai.tankturndirection = 4 
                 #self.ai.speed = 0.5* self.ai.__class__.speed
                 self.ai.speed = 1.0 * self.ai.__class__.speed 
                 print 'home diffAngle', diffAngle
@@ -132,7 +133,7 @@ class AIStateHunting(State):
         print 'distance to player => ',distance
         print 'autotarget =>',player
         self.ai.autorotateTank(player)
-        self.ai.autotarget(player)
+        #self.ai.autotarget(player)
         if player.health <= 0:
             self.ai.world.removeEntity(player)
             self.getkill = True

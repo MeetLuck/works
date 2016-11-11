@@ -6,26 +6,7 @@
 
 from Ai import *
 
-fps = 10
-
-class Text(pygame.sprite.Sprite):
-    number = 0
-    book = {}
-    def __init__(self,pos,msg):
-        self.number = Text.number
-        Text.number += 1
-        Text.book[self.number] = self
-        pygame.sprite.Sprite.__init__(self)
-        self.pos = Vector(pos)
-        self.newMsg(msg)
-    def update(self,seconds):
-        pass
-    def newMsg(self,msg,color=black,fontsize=20):
-        self.msg = msg
-        self.image = write(msg,color,fontsize)
-        self.rect = self.image.get_rect()
-        self.rect.center = tuple(self.pos)
-
+fps = 100*60
 
 class World:
 
@@ -51,6 +32,12 @@ class World:
     def getAi(self):
         for entity in self.entities.values():
             if entity.name == 'ai':
+                return entity
+        return None
+
+    def getPlayer(self):
+        for entity in self.entities.values():
+            if entity.name == 'player':
                 return entity
         return None
 
@@ -179,7 +166,7 @@ class App:
                     mgbullet.kill() # remove bullet from all the groups
 
     def render(self,seconds):
-        pygame.display.set_caption("FPS: %.2f keys: %s" % ( self.clock.get_fps(), pressedKeysString()))
+        #pygame.display.set_caption("FPS: %.2f keys: %s" % ( self.clock.get_fps(), pressedKeysString()))
         self.allgroup.clear(self.screen, self.background) # funny effect if you outcomment this line
         self.writeState()
         self.allgroup.update(seconds)
@@ -191,10 +178,15 @@ class App:
 
     def writeState(self):
         ai = self.world.getAi()
+        player = self.world.getPlayer()
         activestate = ai.brain.activestate
         pos = 200,self.world.screenheight-60
-        self.text = Text(pos,'enter %s' %activestate)
-        self.allgroup.add(self.text)
+        self.showstate = Text(pos,'enter %s' %activestate)
+        diffAngle = ai.getdiffAngle(player)
+        pos1 = pos[0]+500,pos[1]
+        self.showdiffAngle = Text(pos1,' diffAngle %s' %diffAngle) 
+        self.allgroup.add(self.showstate)
+        self.allgroup.add(self.showdiffAngle)
 
     def mainloop(self):
         while self.running:
@@ -203,7 +195,8 @@ class App:
                 self.onEvent(event)
             self.collision()
             self.render(seconds)
-            self.allgroup.remove(self.text)
+            self.allgroup.remove(self.showstate)
+            self.allgroup.remove(self.showdiffAngle)
         self.cleanUp()
 
 if __name__ == '__main__':

@@ -33,7 +33,7 @@ class AI(Tank):
         self.tankTurnSpeed   = Tank.tankTurnSpeed
         self.tankturndirection = 0
         self.turndirection = 0
-        self.speed = Tank.speed * 0.5
+        self.speed = Tank.speed / 2.0
 
     def getdiffAngle(self,player):
         delta = player.Vp - self.Vp
@@ -45,17 +45,19 @@ class AI(Tank):
 
     def autorotateTank(self,player):
         diffAngle = self.getdiffAngle(player)
-        if abs(diffAngle) < 10:
-            self.tankAngle += 0
+        #self.tankAngle   += diffAngle # * 4/10.0
+        #self.turretAngle += diffAngle # * 4/10.0
+        if abs(diffAngle) <= 15:
+            self.tankturndirection = 0
             self.fireMG()
-        else:
-            self.tankAngle += diffAngle
+        elif diffAngle < 180:   self.tankturndirection = +15
+        elif diffAngle > 180:   self.tankturndirection = -15
 
-        print diffAngle,self.tankAngle
-    def normalizeAngle(self):
-        if self.tankAngle <0:
-            self.tankAngle += 360
-        self.tankAngle %= 360
+        deltaAngle = self.tankturndirection * self.tankTurnSpeed
+
+        self.tankAngle += deltaAngle
+        self.turretAngle += deltaAngle
+        print diffAngle,deltaAngle
 
     def autotarget(self,player):
         diffAngle = self.getdiffAngle(player)

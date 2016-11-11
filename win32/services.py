@@ -70,6 +70,7 @@ def openPortals(filename):
         filename.write('url dntofile failed at %s\n' %time.ctime() )
 
     urls =['www.naver.com','www.zum.com','www.daum.net','www.auction.co.kr','http://www.liveman.co.kr']
+
     for url in urls:
         cmd = 'Run,iexplore.exe %s,,Hide' %url
         try:
@@ -149,7 +150,7 @@ if __name__=='__main__':
     #openPortals()
     dnfile(filename=logfile)
     today = date.today()
-    for i in range(17,31+1):
+    for i in range(1,30):
         aday = date(today.year,today.month,i) 
         print 'day =>',aday 
         print 'isOffday: ',isOffHoliday(aday)

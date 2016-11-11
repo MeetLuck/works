@@ -94,7 +94,7 @@ def pressedKeysString():
     pressedkeys = pygame.key.get_pressed()
     line = ""
     if pressedkeys[pygame.K_a]: line += "a "
-    if pressedkeys[pygame.K_d]: line += "d "
+    if pressedkeys[pygame.K_s]: line += "d "
     if pressedkeys[pygame.K_j]: line += "j "
     if pressedkeys[pygame.K_k]: line += "k "
     if pressedkeys[pygame.K_LCTRL]: line += "LCTRL"
@@ -113,6 +113,23 @@ def getClassName(classinstance):
     return parts[-1][0:-2]  # take all except the last 2 charactors('>)
 
 
+class Text(pygame.sprite.Sprite):
+    number = 0
+    book = {}
+    def __init__(self,pos,msg):
+        self.number = Text.number
+        Text.number += 1
+        Text.book[self.number] = self
+        pygame.sprite.Sprite.__init__(self)
+        self.pos = Vector(pos)
+        self.newMsg(msg)
+    def update(self,seconds):
+        pass
+    def newMsg(self,msg,color=black,fontsize=20):
+        self.msg = msg
+        self.image = write(msg,color,fontsize)
+        self.rect = self.image.get_rect()
+        self.rect.center = tuple(self.pos)
 
 if __name__ == '__main__':
 
