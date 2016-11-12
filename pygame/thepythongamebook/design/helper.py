@@ -10,12 +10,10 @@ class Minimap(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.image = pygame.Surface( (radarmapwidth,radarmapheight) )
         self.paint()
-        self.rect = self.image.get_rect()
-        #self.rect.topleft  = screenwidth - radarmapwidth,0
         self.setPosition()
         self.factorX = 1.0*radarmapwidth/bigmapwidth
         self.factorY = 1.0*radarmapheight/bigmapheight
-        self.Alive = False
+        self.Show = False
         self.hideShow()
 
     def setPosition(self):
@@ -27,14 +25,15 @@ class Minimap(pygame.sprite.Sprite):
         self.image.fill(black)
         # draw dark red frame
         pygame.draw.rect(self.image,darkred1,(0,0,radarmapwidth,radarmapheight),1)
+        self.rect = self.image.get_rect()
 
     def event(self,event):
         if event.key == pygame.K_m:
-            self.Alive = not self.Alive
+            self.Show = not self.Show
         self.hideShow()
 
     def hideShow(self):
-        if self.Alive:
+        if self.Show:
             self.add(self.groups)
         else:
             self.kill()

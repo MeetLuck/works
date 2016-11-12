@@ -33,15 +33,33 @@ FORCEOFGRAVITY = 2.81 # in pixel per seconds
 def drawTank(width,height,color):
     w,h = width,height
     image = pygame.Surface( (w,h) )
-    image.fill(gray)
-    color1 = (90,90,190)
+    image.fill(bgcolor)
+    # Tank color: blue for player, red for Ai
+    r,g,b,a = color
+    darkness = 0.8
+    if b>0: # player
+        b = int(b*darkness)
+        basecolor = r,g,b
+        color1 = 0,64,b
+        turretcolor = red
+        MGcolor = red
+        MGoutercolor = 32*6,32,0
+        MGinnercolor = MGcolor
+    else:  # ai
+        r = int(r*darkness)
+        basecolor = r,g,b
+        color1 = r,64,0 
+        turretcolor = blue
+        MGcolor = blue
+        MGoutercolor = 0,32,32*6
+        MGinnercolor = MGcolor
     # tank decoration
     rect = image.get_rect()
     bodyrect  = (rect.left+5,rect.top+5),(w-10,h-10)
     toprect   = rect.topleft,(w,h/6)
     bottomrect = (rect.left,rect.bottom-h/6), (w,h/6)
     # draw body
-    pygame.draw.rect(image,color,bodyrect) # tank body, margin 5
+    pygame.draw.rect(image,basecolor,bodyrect) # tank body, margin 5
     # draw topside
     pygame.draw.rect(image,color1,toprect) # tank left
     # draw bottomside
@@ -52,13 +70,13 @@ def drawTank(width,height,color):
     MGcenter = rect.right - w/6, rect.top + h/6 + r
     MGrect = (MGcenter[0],MGcenter[1]-ir/2), (3*ir,ir)
     MGrect = pygame.Rect(MGrect)
-    pygame.draw.circle(image,blue,MGcenter,r,2)    # outer circle for MG
-    pygame.draw.circle(image,darkblue,MGcenter,ir) # inner circle for MG
-    pygame.draw.rect(image,darkblue,MGrect)        # blue rect for MG
+    pygame.draw.circle(image,MGoutercolor,MGcenter,r,2)    # outer circle for MG
+    pygame.draw.circle(image,MGinnercolor,MGcenter,ir) # inner circle for MG
+    pygame.draw.rect(image,MGcolor,MGrect)        # blue rect for MG
     # draw rec Circle for turret
     center = (w/2,h/2)
     cr = w/3
-    pygame.draw.circle(image,red,center,cr,2) # red circle for turret
+    pygame.draw.circle(image,turretcolor,center,cr,4) # red circle for turret
     #image = pygame.transform.rotate(image,-90) # rotate so as to look EAST
     Vc = Vector(MGcenter) - Vector(rect.center)
     print 'MGcenter:',MGcenter, rect.center
@@ -133,13 +151,26 @@ class Text(pygame.sprite.Sprite):
 if __name__ == '__main__':
 
     mainloop = True
-    tanksurf,mgcenter,vc = drawTank(100,100,green)
+    pygame.init()
+    screen = pygame.display.set_mode( screensize )
+    screenrect = screen.get_rect()
+    background = pygame.Surface((screen.get_size()))
+    background.fill(bgcolor) # fill grey light blue:(128,128,255) 
+    background = background.convert()
+    clock = pygame.time.Clock()    # create pygame clock object
+    # draw tank
+    tanksurf,mgcenter,vc = drawTank(100,100,blue)
     tanksurf = tanksurf.convert_alpha()
     tankrect = tanksurf.get_rect()
-    tankrect.center = screenrect.center
-    instsurf = drawInstruction(screenwidth-100,screenheight-100)
-    instrect = instsurf.get_rect()
-    instrect.center = screenrect.center
+    tankrect.center = (screenwidth/2)/2, screenheight/2
+    # draw Ai
+    aisurf,mgcenter,vc = drawTank(100,100,red)
+    aisurf = aisurf.convert_alpha()
+    airect = aisurf.get_rect()
+    airect.center = (screenwidth/2)*3/2, screenheight/2
+    #instsurf = drawInstruction(screenwidth-100,screenheight-100)
+    #instrect = instsurf.get_rect()
+    #instrect.center = screenrect.center
     #cannonsurf = drawCannon(None
     needhelp = False
     while mainloop:
@@ -151,9 +182,10 @@ if __name__ == '__main__':
                 elif e.key == pygame.K_F1:
                     needhelp = not needhelp
         #background.fill(bgcolor)
-        if needhelp:
-            background.blit(instsurf,instrect)
+#       if needhelp:
+#           background.blit(instsurf,instrect)
         background.blit(tanksurf,tankrect)
+        background.blit(aisurf,airect)
         screen.blit(background,(0,0) )
         pygame.display.flip()
         clock.tick(fps)

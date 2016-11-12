@@ -11,8 +11,8 @@ class State(object): # Exploring, Seeking, Hunting
     def entryActions(self):     pass
     def exitActions(self):      pass
 
-    def getPlayer(self):
-        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 1.5*self.ai.nestsize) #self.ai.nestsize)
+    def getClosePlayer(self):
+        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 2.0*self.ai.nestsize) #self.ai.nestsize)
         return player
 
     def randomDirection(self):
@@ -55,7 +55,6 @@ class AIStateExploring(State):
     def __init__(self,ai):
         State.__init__(self,'exploring')
         self.ai = ai
-        self.world = self.ai.world
 
     def doActions(self):
         # change direction in the 5% change
@@ -65,12 +64,12 @@ class AIStateExploring(State):
     def checkCondition(self):
         if self.ai.IsOutOfNest():
             return 'home'
-        player = self.getPlayer()
-        if player:
-            # there is a player nearby
+        player = self.getClosePlayer()
+        if player: # there is a player nearby
             self.ai.playerID = player.ID
             return 'hunting'
-        return None # back to Exploring
+        else:
+            return None # back to Exploring
 
     def entryActions(self):
         self.ai.resetSpeed()
@@ -82,7 +81,6 @@ class AIStateHome(State):
     def __init__(self,ai):
         State.__init__(self,'home')
         self.ai = ai
-        self.world = self.ai.world
 
     def getdiffAnglefromNest(self):
         delta =  self.ai.nestposition - self.ai.Vp
@@ -94,31 +92,33 @@ class AIStateHome(State):
         return diffAngle
 
     def doActions(self):
-        if self.ai.IsOutOfNest():
-            diffAngle = self.getdiffAnglefromNest()
-            #self.tankAngle += diffAngle
-            if abs(diffAngle) <= 15*2:
-                self.ai.tankturndirection = 0
-                self.ai.speed  = self.ai.__class__.speed * 1.5 
-            else:
-                self.ai.tankturndirection = +15
+        if not self.ai.IsOutOfNest(): return
+        # ai out of its nest
+        diffAngle = self.getdiffAnglefromNest()
+        #self.tankAngle += diffAngle
+        if abs(diffAngle) <= 15*2:
+            self.ai.tankturndirection = 0
+            #self.ai.speed  = self.ai.__class__.speed * 1.5 
+        else:
+            self.ai.tankturndirection = +15
 
-            deltaAngle = self.ai.tankturndirection * self.ai.tankTurnSpeed
-            self.ai.tankAngle += deltaAngle
-            self.ai.turretAngle += deltaAngle
-            logging.debug('tankAngle: %s' %self.ai.tankAngle)
-            logging.debug('diffAngle: %s' %diffAngle)
+        deltaAngle = self.ai.tankturndirection * self.ai.tankTurnSpeed
+        self.ai.tankAngle += deltaAngle
+        self.ai.turretAngle += deltaAngle
+
+        logging.debug('tankAngle: %s' %self.ai.tankAngle)
+        logging.debug('diffAngle: %s' %diffAngle)
 
     def checkCondition(self):
         if self.ai.IsOutOfNest():
             return None # return to "home state"
-        player = self.getPlayer()
-        if player is None:
-            return 'exploring'
-        else: # there is a player nearby
-            self.ai.playerID = player.ID
-            print 'go hunting',player
-            return 'hunting'
+        else:
+            player = self.getClosePlayer()
+            if player:
+                self.ai.playerID = player.ID
+                return 'hunting'
+            else:
+                return 'exploring'
 
     def entryActions(self):
         self.ai.turretAngle = self.ai.tankAngle
@@ -130,16 +130,14 @@ class AIStateHunting(State):
     def __init__(self,ai):
         State.__init__(self,'hunting')
         self.ai = ai
-        self.world = self.ai.world
         self.gotkill = False
 
     def doActions(self):
-        player = self.getPlayer()
+        player = self.getClosePlayer()
         if player is None: return
         print '----------------- HUNTING %s ----------------------',player
         distance = self.ai.Vp.get_distance_to(player.Vp) #< 2.0*self.ai.nestsize: #/2:
         print 'distance to player => ',distance
-        print 'autotarget =>',player
         if distance > 1.5*self.ai.nestsize/2.0:
             self.ai.resetSpeed()
             self.ai.autorotateTank(player)
@@ -148,23 +146,24 @@ class AIStateHunting(State):
             self.ai.speed = 0
             self.ai.autorotateTank(player)
             self.ai.fireMG()
-        #self.ai.autotarget(player)
         if player.health <= 0:
             self.ai.world.removeEntity(player)
-            self.getkill = True
+            self.gotkill = True
 
     def checkCondition(self):
-#       if self.ai.IsOutOfNest():
-#           return 'home'
+#       if self.ai.IsOutOfNest():  return 'home'
         distance = self.ai.Vp.get_distance_to(self.ai.nestposition) #< 2.0*self.ai.nestsize: #/2:
+        # --- ai is far from its nest ----
         if distance > self.ai.nestsize * 2.0:
             return 'home'
+        # --- player killed ---
         if self.gotkill:
             return 'exploring'
-        player = self.getPlayer()
+        # --- player alive ---
+        player = self.getClosePlayer()
         if player is None:
             return 'exploring'
-        else:
+        else: # player is out of sight
             return None
 
     def entryActions(self):

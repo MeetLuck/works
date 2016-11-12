@@ -16,7 +16,7 @@ class Tank(pygame.sprite.Sprite):
     speed = 25.0 * 2.5 
     book = {} # a book of tanks to store all tanks
     number = 0
-    color = ((200,200,0),(0,0,200) )
+    color = ((0,0,255),(255,0,0) )
 
     def __init__(self,world,name,startpos=(150,150),angle=0):
         super(Tank,self).__init__(self.groups)
