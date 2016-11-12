@@ -40,7 +40,6 @@ class Lifebar(pygame.sprite.Sprite):
         self.setPosition()
     def rotate(self):
         # --------- rotating -------------  angle etc from Tank (boss)
-        #print 'tankAngle: ',self.boss.tankAngle
         self.image  = pygame.transform.rotate(self.image0, self.boss.tankAngle) 
         # ---------- move with boss ---------
         self.rect = self.image.get_rect(center = self.rect.center)
