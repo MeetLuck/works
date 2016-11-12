@@ -82,7 +82,7 @@ def runNights():
             dnfile(f2)
         else:
             time.sleep(60)
-    if comname == 'PC-PC' and ( now.date() == Anextday or now.date() in extradays ):
+    elif comname == 'PC-PC' and ( now.date() == Anextday or now.date() in extradays ):
         #print 'anextday'
         if now.hour==2 and now.minute == 55 and now.second in [10,20]:
             setStartPage(filename=f2)
@@ -91,7 +91,7 @@ def runNights():
             dnfile(f2)
         else:
             time.sleep(60)
-    elif now.date() == Bnextday:
+    elif comname != 'PC-PC' and now.date() == Bnextday:
         #print 'bnextday',Bnextday
         if now.hour==1 and now.minute == 47 and now.second in [10,20]:
             openPortals(f2)

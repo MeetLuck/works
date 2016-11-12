@@ -143,7 +143,7 @@ class AIStateHunting(State):
         if distance > 1.5*self.ai.nestsize/2.0:
             self.ai.resetSpeed()
             self.ai.autorotateTank(player)
-            self.ai.fireCannon()
+            self.ai.autotarget(player)
         else:
             self.ai.speed = 0
             self.ai.autorotateTank(player)

@@ -9,11 +9,11 @@ import copy
 
 class Tank(pygame.sprite.Sprite):
     size = int(100 * 0.6)
-    recoiltime = 2*0.75 # how many seconds the cannon is busy after firing one time
     MGrecoiltime = 0.25 # how many seconds the bow(machine gun) is idel
+    recoiltime = 0.75 
     turretTurnSpeed = 1
     tankTurnSpeed = 1 # degrees
-    speed = 25.0 * 3
+    speed = 25.0 * 2.5 
     book = {} # a book of tanks to store all tanks
     number = 0
     color = ((200,200,0),(0,0,200) )
@@ -136,11 +136,9 @@ class Tank(pygame.sprite.Sprite):
 
     def checkHit(self):
         if self.getCannonhit:
-            print 'getCannonhit'
             self.world.cannonhitsound.play()
             self.health -= 5
         if self.getMGhit:
-            print 'getCannonhit'
             self.world.hitsound.play()
             self.health -= 1
         if self.health <= 0:
@@ -154,6 +152,7 @@ class Tank(pygame.sprite.Sprite):
             Explosion(self.Vp)
         del Tank.book[self.number]
         pygame.sprite.Sprite.kill(self)
+        self.world.removeEntity(self)
 
     def update(self,seconds):
         # reduce cooltime
@@ -180,3 +179,4 @@ class Tank(pygame.sprite.Sprite):
             self.move(seconds)
         # -- paint sprite at correct position
         #self.rect.center = tuple(self.Vp)
+

@@ -29,47 +29,52 @@ class AI(Tank):
         self.brain.setActiveState('exploring')
 
     def resetSpeed(self):
-        self.turretTurnSpeed = 2*Tank.turretTurnSpeed 
+        self.turretTurnSpeed = Tank.turretTurnSpeed 
         self.tankTurnSpeed   = Tank.tankTurnSpeed
         self.tankturndirection = 0
         self.turndirection = 0
-        self.speed = Tank.speed / 2.0
+        self.speed = 0.5*Tank.speed
 
     def getdiffAngle(self,player):
         if player is None: return
         delta = player.Vp - self.Vp
         targetAngle = atan2(-delta.y,delta.x)/pi * 180
-        diffAngle = targetAngle - self.turretAngle
+        diffAngle = targetAngle - self.tankAngle
         if diffAngle < 0: diffAngle += 360
         diffAngle %= 360
         return diffAngle
 
     def autorotateTank(self,player):
         diffAngle = self.getdiffAngle(player)
-        #self.tankAngle   += diffAngle # * 4/10.0
-        #self.turretAngle += diffAngle # * 4/10.0
-        if abs(diffAngle) <= 15:
+        if abs(diffAngle) <= 6:
             self.tankturndirection = 0
             #self.fireMG()
-        elif diffAngle < 180:   self.tankturndirection = +5
-        elif diffAngle > 180:   self.tankturndirection = -5
+        elif diffAngle < 180:   self.tankturndirection = +2
+        elif diffAngle > 180:   self.tankturndirection = -2
 
         deltaAngle = self.tankturndirection * self.tankTurnSpeed
         self.tankAngle += deltaAngle
         self.turretAngle += deltaAngle
         print diffAngle,deltaAngle
 
+    def fireCannon(self):
+        doFireCannon = self.cooltime <= 0 and self.ammo >0
+        if not doFireCannon: return
+        # fire Cannon: cooltime == 0
+        self.bullet = CannonBall(self)
+        self.world.cannonsound.play()
+        self.cooltime = Tank.recoiltime # seconds until tank can fire again
+        self.ammo -= 1
     def autotarget(self,player):
         diffAngle = self.getdiffAngle(player)
         # auto targeting
-        if abs(diffAngle) < 15:
+        if abs(diffAngle) <= 1:
             self.turndirection = 0
             self.fireCannon()
-        elif diffAngle < 180:   self.turndirection = +1
-        elif diffAngle > 180:   self.turndirection = -1
-        #self.tankturndirection = self.turndirection
-        self.tankAngle += self.turndirection * self.tankTurnSpeed
-        self.turretAngle += self.turndirection * self.turretTurnSpeed
+        elif diffAngle < 180:   self.turndirection = +1.0
+        elif diffAngle > 180:   self.turndirection = -1.0
+        self.tankAngle   += self.turndirection# * self.tankTurnSpeed
+        self.turretAngle += self.turndirection# * self.tankTurnSpeed
 
     def calculateDirection(self):
         self.Vd = Vector(0,0)
@@ -81,6 +86,10 @@ class AI(Tank):
         self.rect = self.image.get_rect(center = self.rect.center) #center = oldcenter = self.rect.center
         self.image = pygame.transform.rotate(self.image0, self.tankAngle)
         self.rect = self.image.get_rect(center = self.rect.center) #center = oldcenter = self.rect.center
+
+    def getDistanceToPlayer(self,player):
+        if player is None: return
+        return self.Vp.get_distance_to(player.Vp)
 
     def IsOutOfNest(self):
         distance = self.Vp.get_distance_to(self.nestposition)

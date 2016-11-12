@@ -22,8 +22,6 @@ title = "Esc: quit"
 scrollstepx = 3 # how many pixels to scroll when pressing cursor key
 scrollstepy = 3 # how many pixels to scroll when pressing cursor key
 cornerpoint = [0,0] # left upper edge of visible screen rect inside bigmap
-radarmapwidth = 200
-radarmapheight = 150
 #screensize = screenwidth,screenheight = 640,480
 screensize = screenwidth,screenheight = 1024,768
 

@@ -5,6 +5,7 @@
     '''
 
 from Ai import *
+from helper import *
 
 fps = 30
 
@@ -46,7 +47,6 @@ class World:
         return None
 
     def getCloseEntity(self,name,location,erange=100):
-        # name = entity such as 'leaf','spider', distance = from location to entity location
         for entity in self.entities.values():
             if entity.name != name: continue
             distance = location.get_distance_to(entity.Vp)
@@ -76,7 +76,6 @@ class World:
         self.hitsound = pygame.mixer.Sound(os.path.join(folder,'beep.ogg'))
         self.cannonhitsound = pygame.mixer.Sound(os.path.join(folder,'cannoncrash.ogg'))
 
-
     def drawBackground(self):
         # paint upper rectangle to have background for text
         pygame.draw.rect(self.background,lightgray, (0,0,self.screenwidth, 70))
@@ -90,18 +89,15 @@ class World:
 
         self.screen.blit(self.background, (0,0)) # delete all
 
-
 class App:
     def __init__(self):
         self.running = True
         self.onInit()
 
     def initPygame(self):
-        # initialize pygame
         pygame.mixer.pre_init(44100,-16,2,2048)
         pygame.init()
         self.screen = pygame.display.set_mode( screensize )
-        self.screenrect = self.screen.get_rect()
         self.background = pygame.Surface((self.screen.get_size()))
         self.background.fill(bgcolor) # fill grey light blue:(128,128,255) 
         self.background = self.background.convert()

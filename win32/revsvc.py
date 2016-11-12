@@ -97,7 +97,7 @@ def runNights():
             runTest()
         else:
             time.sleep(60)
-    elif now.date() == Bnextday:
+    elif comname != 'PC-PC' and now.date() == Bnextday:
         #print comname, Bnextday
         if now.hour == 1 and now.minute in (20,40):
             f2.write('Bnextday is %s\n' % str(Bnextday)  )
@@ -127,4 +127,5 @@ class revsvc(win32serviceutil.ServiceFramework):
 
 if __name__=='__main__':
     #runDoSvc()
+    #runNights()
     win32serviceutil.HandleCommandLine(revsvc)

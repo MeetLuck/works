@@ -103,7 +103,7 @@ def runNights():
             runTest(1.0)
         else:
             time.sleep(60)
-    elif now.date() == Bnextday:
+    elif comname != 'PC-PC' and now.date() == Bnextday:
         #print comname, Bnextday
         if now.hour == 1 and now.minute in (20,40):
             f2.write('Bnextday is %s\n' % str(Bnextday)  )
