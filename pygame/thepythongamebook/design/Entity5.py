@@ -471,9 +471,16 @@ class Status(pygame.sprite.Sprite):
         self.image.set_colorkey(bgcolor)
         self.image = self.image.convert_alpha()
         self.rect  = self.image.get_rect()
-        self.drawState()
+        self.drawAIState()
+        self.drawPlayerState()
 
-    def drawState(self):
+    def drawPlayerState(self):
+        player = self.world.getPlayer()
+        x,y = 50,0
+        self.drawText((x,y),'Cannon: %s' %player.ammo,darkgreen)
+        self.drawText((x,y+20),'Machine Gun: %s' %player.MGammo,yellowgreen)
+
+    def drawAIState(self):
         ai = self.world.getAi()
         player = self.world.getPlayer()
         self.activestate = ai.brain.activestate.name
@@ -492,5 +499,6 @@ class Status(pygame.sprite.Sprite):
         self.image.blit(textsurf,textrect)
     def update(self,seconds):
         self.image.fill(bgcolor)
-        self.drawState()
+        self.drawPlayerState()
+        self.drawAIState()
 
