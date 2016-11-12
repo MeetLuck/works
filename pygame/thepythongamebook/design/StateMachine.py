@@ -12,16 +12,16 @@ class State(object): # Exploring, Seeking, Hunting
     def exitActions(self):      pass
 
     def getPlayer(self):
-        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 0.2*self.ai.nestsize) #self.ai.nestsize)
+        player = self.ai.world.getCloseEntity('player', self.ai.Vp, 1.5*self.ai.nestsize) #self.ai.nestsize)
         return player
 
     def randomDirection(self):
         delta =  self.ai.Vp - self.ai.nestposition
-        if abs(delta.get_magnitude > self.ai.nestsize * 0.8: return
-        self.ai.tankturndirection = randint(-15,15) 
-        deltaAngle = self.ai.tankturndirection*self.ai.tankTurnSpeed
-        self.ai.tankAngle   += deltaAngle 
-        self.ai.turretAngle += deltaAngle
+        if abs(delta.get_magnitude()) < self.ai.nestsize * 0.8:
+            self.ai.tankturndirection = randint(-15,15) 
+            deltaAngle = self.ai.tankturndirection * self.ai.tankTurnSpeed
+            self.ai.tankAngle   += deltaAngle 
+            self.ai.turretAngle += deltaAngle
 
 class Brain(object): # brain
     def __init__(self):
@@ -99,14 +99,13 @@ class AIStateHome(State):
             #self.tankAngle += diffAngle
             if abs(diffAngle) <= 15*2:
                 self.ai.tankturndirection = 0
-                self.ai.speed  = self.ai.__class__.speed * 2
-            self.ai.tankturndirection = +15
+                self.ai.speed  = self.ai.__class__.speed * 1.5 
+            else:
+                self.ai.tankturndirection = +15
 
             deltaAngle = self.ai.tankturndirection * self.ai.tankTurnSpeed
-
             self.ai.tankAngle += deltaAngle
             self.ai.turretAngle += deltaAngle
-
             logging.debug('tankAngle: %s' %self.ai.tankAngle)
             logging.debug('diffAngle: %s' %diffAngle)
 
@@ -114,12 +113,12 @@ class AIStateHome(State):
         if self.ai.IsOutOfNest():
             return None # return to "home state"
         player = self.getPlayer()
-        print 'player',player
-        if player is None: return 'exploring'
-        # there is a player nearby
-        self.ai.playerID = player.ID
-        print 'go hunting',player
-        return 'hunting'
+        if player is None:
+            return 'exploring'
+        else: # there is a player nearby
+            self.ai.playerID = player.ID
+            print 'go hunting',player
+            return 'hunting'
 
     def entryActions(self):
         self.ai.turretAngle = self.ai.tankAngle
@@ -141,7 +140,14 @@ class AIStateHunting(State):
         distance = self.ai.Vp.get_distance_to(player.Vp) #< 2.0*self.ai.nestsize: #/2:
         print 'distance to player => ',distance
         print 'autotarget =>',player
-        self.ai.autorotateTank(player)
+        if distance > 1.5*self.ai.nestsize/2.0:
+            self.ai.resetSpeed()
+            self.ai.autorotateTank(player)
+            self.ai.fireCannon()
+        else:
+            self.ai.speed = 0
+            self.ai.autorotateTank(player)
+            self.ai.fireMG()
         #self.ai.autotarget(player)
         if player.health <= 0:
             self.ai.world.removeEntity(player)
@@ -151,7 +157,7 @@ class AIStateHunting(State):
 #       if self.ai.IsOutOfNest():
 #           return 'home'
         distance = self.ai.Vp.get_distance_to(self.ai.nestposition) #< 2.0*self.ai.nestsize: #/2:
-        if distance > self.ai.nestsize * 3.5:
+        if distance > self.ai.nestsize * 2.0:
             return 'home'
         if self.gotkill:
             return 'exploring'
@@ -166,3 +172,4 @@ class AIStateHunting(State):
 
     def exitActions(self):
         self.gotkill = False
+        self.ai.resetSpeed()

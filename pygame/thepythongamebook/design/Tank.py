@@ -8,7 +8,7 @@ from Entity5 import *
 import copy
 
 class Tank(pygame.sprite.Sprite):
-    size = 100
+    size = int(100 * 0.6)
     recoiltime = 2*0.75 # how many seconds the cannon is busy after firing one time
     MGrecoiltime = 0.25 # how many seconds the bow(machine gun) is idel
     turretTurnSpeed = 1
@@ -53,8 +53,8 @@ class Tank(pygame.sprite.Sprite):
         # tank constants
         self.tankTurnSpeed = Tank.tankTurnSpeed
         self.tankturndirection = 0
-        self.ammo = 100 # main gun
-        self.MGammo = 500 # machine gun
+        self.ammo = 20 # main gun
+        self.MGammo = self.ammo * 10 
         self.healthful = 100.0
         self.health    = 100.0
         # turret constants

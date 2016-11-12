@@ -10,8 +10,8 @@ class Player(Tank):
 class AI(Tank):
     def __init__(self,world,name,startpos=(150,150),angle=0):
         Tank.__init__(self,world,name,startpos,angle)
-        self.nestposition = Vector(self.world.ainestposition)
-        self.nestsize = self.world.ainestsize
+        self.nestposition = Vector(self.world.nestposition)
+        self.nestsize = self.world.nestsize
         self.resetSpeed()
         # logging
         logging.debug('nestposition %s' %self.nestposition)
@@ -50,14 +50,13 @@ class AI(Tank):
         #self.turretAngle += diffAngle # * 4/10.0
         if abs(diffAngle) <= 15:
             self.tankturndirection = 0
-            self.fireMG()
-        elif diffAngle < 180:   self.tankturndirection = +15
-        elif diffAngle > 180:   self.tankturndirection = -15
+            #self.fireMG()
+        elif diffAngle < 180:   self.tankturndirection = +5
+        elif diffAngle > 180:   self.tankturndirection = -5
 
-#       deltaAngle = self.tankturndirection * self.tankTurnSpeed
-
-#       self.tankAngle += deltaAngle
-#       self.turretAngle += deltaAngle
+        deltaAngle = self.tankturndirection * self.tankTurnSpeed
+        self.tankAngle += deltaAngle
+        self.turretAngle += deltaAngle
         print diffAngle,deltaAngle
 
     def autotarget(self,player):

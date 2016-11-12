@@ -10,11 +10,15 @@ fps = 30
 
 class World:
 
-    def __init__(self,screen,background):
+    def __init__(self,app):
         self.entities = {}
         self.entityID = 0
-        self.screen = screen
-        self.background = background
+        self.screen = app.screen
+        self.background = app.background
+        self.screensize = self.screenwidth,self.screenheight = self.screen.get_size()
+        self.nestposition = int(self.screenwidth*2.5/4.0), int(self.screenheight/2.0)
+        self.nestsize     = int(self.screenwidth/4.0)
+        self.create()
 
     def addEntity(self,entity):
         self.entities[self.entityID] = entity
@@ -42,34 +46,48 @@ class World:
         return None
 
     def getCloseEntity(self,name,location,erange=100):
-        # name = entity such as 'leaf','spider'
-        # distance = from location to entity location
+        # name = entity such as 'leaf','spider', distance = from location to entity location
         for entity in self.entities.values():
             if entity.name != name: continue
-            # if entity.name == name
-            #print 'get close entity=>',name
             distance = location.get_distance_to(entity.Vp)
-            #print 'distance',distance
-            #print 'location, entity',location,entity.Vp
             if distance < erange:
-                #print 'entity =>',entity.name
                 return entity # inside erange
         return None
 
     def create(self):
+        self.loadSound()
         # paint a grid of white lines
-        screenwidth,screenheight = self.screen.get_size()
-        self.screenwidth,self.screenheight = self.screen.get_size()
-        self.ainestposition = int(screenwidth*2.0/4.0), int(screenheight/2.0)
-        self.ainestsize =  int(screenwidth/4.0)
-        for x in range(0,screenwidth,screenwidth/xtiles): #start, stop, step
-            pygame.draw.line(self.background,gridcolor, (x,0), (x,screenheight))
-        for y in range(0,screenheight,screenheight/ytiles): #start, stop, step
-            pygame.draw.line(self.background,gridcolor, (0,y), (screenwidth,y))
+        self.drawBackground()
+        player = Player(self,'player',(150,250), 0) # create  first tank, looking north
+        ai     = AI(self,'ai',self.nestposition, 90) # create second tank, looking south
+        self.addEntity(player)
+        self.addEntity(ai)
+        self.minimap = Minimap(self)
+        self.instruction = Instruction(self,yellowgreen,32)
+        self.status = Status(self)
+
+    def loadSound(self):
+        # ---------- load sound -----------
+        folder = '../data'
+        self.cannonsound = pygame.mixer.Sound(os.path.join(folder,'cannon.ogg'))
+        self.mg1sound = pygame.mixer.Sound(os.path.join(folder,'mg1.ogg'))
+        self.mg2sound = pygame.mixer.Sound(os.path.join(folder,'mg2.ogg'))
+        self.mg3sound = pygame.mixer.Sound(os.path.join(folder,'mg3.ogg'))
+        self.hitsound = pygame.mixer.Sound(os.path.join(folder,'beep.ogg'))
+        self.cannonhitsound = pygame.mixer.Sound(os.path.join(folder,'cannoncrash.ogg'))
+
+
+    def drawBackground(self):
         # paint upper rectangle to have background for text
-        pygame.draw.rect(self.background,lightgray, (0,0,screenwidth, 70))
-        pygame.draw.circle(self.background, green,self.ainestposition, self.ainestsize)
-        pygame.draw.circle(self.background, red,self.ainestposition, 10)
+        pygame.draw.rect(self.background,lightgray, (0,0,self.screenwidth, 70))
+        pygame.draw.circle(self.background, lightgreen,self.nestposition, self.nestsize)
+        pygame.draw.circle(self.background, red,self.nestposition, 10)
+
+        for x in range(0,self.screenwidth,self.screenwidth/xtiles): #start, stop, step
+            pygame.draw.line(self.background,gridcolor, (x,0), (x,self.screenheight))
+        for y in range(0,self.screenheight,self.screenheight/ytiles): #start, stop, step
+            pygame.draw.line(self.background,gridcolor, (0,y), (self.screenwidth,y))
+
         self.screen.blit(self.background, (0,0)) # delete all
 
 
@@ -77,32 +95,6 @@ class App:
     def __init__(self):
         self.running = True
         self.onInit()
-
-    def setGroups(self):
-        # set sprites group
-        self.tankgroup = pygame.sprite.Group()
-        self.CannonBallgroup = pygame.sprite.Group()
-        self.MGBulletgroup = pygame.sprite.Group()
-        self.allgroup = pygame.sprite.LayeredUpdates()
-        # set _layer
-        Tank._layer = 4   # base layer
-        Turret._layer = 6 # above Tank & Tracer
-        CannonBall._layer = 7 # to prove that Bullet is in top-layer
-        MGBullet._layer = 7 # to prove that Bullet is in top-layer
-        Text._layer = 3   # below Tank
-        Instruction._layer = 9   # below Tank
-        Minimap._layer = 3  # below Tank # better 9 ?
-        Fragment._layer = 99
-        # assign default groups to each sprite class
-        Tank.groups = self.tankgroup, self.allgroup
-        Turret.groups = self.allgroup
-        CannonBall.groups = self.CannonBallgroup, self.allgroup
-        MGBullet.groups = self.MGBulletgroup, self.allgroup
-        Fragment.groups = self.allgroup
-        Lifebar.groups = self.allgroup
-        Text.groups = self.allgroup
-        Instruction.groups = self.allgroup
-        Minimap.groups = self.allgroup
 
     def initPygame(self):
         # initialize pygame
@@ -115,37 +107,54 @@ class App:
         self.background = self.background.convert()
         self.clock = pygame.time.Clock()    # create pygame clock object
 
-    def loadSound(self):
-        # ---------- load sound -----------
-        folder = '../data'
-        self.world.cannonsound = pygame.mixer.Sound(os.path.join(folder,'cannon.ogg'))
-        self.world.mg1sound = pygame.mixer.Sound(os.path.join(folder,'mg1.ogg'))
-        self.world.mg2sound = pygame.mixer.Sound(os.path.join(folder,'mg2.ogg'))
-        self.world.mg3sound = pygame.mixer.Sound(os.path.join(folder,'mg3.ogg'))
-        self.world.hitsound = pygame.mixer.Sound(os.path.join(folder,'beep.ogg'))
-        self.world.cannonhitsound = pygame.mixer.Sound(os.path.join(folder,'cannoncrash.ogg'))
-
     def onInit(self):
         self.initPygame()
-        self.world = World(self.screen,self.background)
-        self.world.create()
-        self.loadSound()
         self.setGroups()
-        self.player = Player(self.world,'player',(150,250), 0) # create  first tank, looking north
-        self.ai = AI(self.world,'ai',self.world.ainestposition, 90) # create second tank, looking south
-        self.world.addEntity(self.player)
-        self.world.addEntity(self.ai)
-        self.minimap = Minimap(self)
-        status3 = Text((screenwidth//2, 10), "Tank Demo. Press ESC to quit")
-        self.instruction = Instruction(self,yellowgreen,32)
+        self.world = World(self)
+
+    def setGroups(self):
+        # set sprites group
+        self.tankgroup = pygame.sprite.Group()
+        self.CannonBallgroup = pygame.sprite.Group()
+        self.MGBulletgroup = pygame.sprite.Group()
+        self.allgroup = pygame.sprite.LayeredUpdates()
+        # set _layer
+        Tank._layer = 4   # base layer
+        Turret._layer = 6 # above Tank & Tracer
+        CannonBall._layer = 7 # to prove that Bullet is in top-layer
+        MGBullet._layer = 7 # to prove that Bullet is in top-layer
+        Text._layer = 99   # below Tank
+        Status._layer = 99   # below Tank
+        Instruction._layer = 9   # below Tank
+        Minimap._layer = 3  # below Tank # better 9 ?
+        Fragment._layer = 99
+        # assign default groups to each sprite class
+        Tank.groups = self.tankgroup, self.allgroup
+        Turret.groups = self.allgroup
+        CannonBall.groups = self.CannonBallgroup, self.allgroup
+        MGBullet.groups = self.MGBulletgroup, self.allgroup
+        Fragment.groups = self.allgroup
+        Lifebar.groups = self.allgroup
+        Text.groups = self.allgroup
+        Status.groups = self.allgroup
+        Instruction.groups = self.allgroup
+        Minimap.groups = self.allgroup
 
     def onEvent(self,event):
         if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.running = False # exit game
                 return
         if event.type == pygame.KEYDOWN:
-            self.instruction.event(event)
-            self.minimap.event(event)
+            self.world.instruction.event(event)
+            self.world.minimap.event(event)
+
+    def render(self,seconds):
+        pygame.display.set_caption("FPS: %.2f keys: %s" % ( self.clock.get_fps(), pressedKeysString()))
+        self.allgroup.clear(self.screen, self.background) # funny effect if you outcomment this line
+        self.updateState()
+        self.allgroup.update(seconds)
+        self.allgroup.draw(self.screen)
+        pygame.display.flip() # flip the screen 30 times a second
 
     def collision(self):
         #pygame.sprite.spritecollide(sprite, group, dokill, collided = None): return Sprite_list
@@ -164,28 +173,15 @@ class App:
                     print 'gethit tank',mgbullet.boss.number, tank.number
                     tank.getMGhit = True # will get a blue border from Bird.update()
                     mgbullet.kill() # remove bullet from all the groups
+
     def render(self,seconds):
-        #pygame.display.set_caption("FPS: %.2f keys: %s" % ( self.clock.get_fps(), pressedKeysString()))
         self.allgroup.clear(self.screen, self.background) # funny effect if you outcomment this line
-        self.writeState()
         self.allgroup.update(seconds)
         self.allgroup.draw(self.screen)
         pygame.display.flip() # flip the screen 30 times a second
 
     def cleanUp(self):
         pygame.quit()
-
-    def writeState(self):
-        ai = self.world.getAi()
-        player = self.world.getPlayer()
-        activestate = ai.brain.activestate
-        pos = 200,self.world.screenheight-60
-        self.showstate = Text(pos,'enter %s' %activestate)
-        diffAngle = ai.getdiffAngle(player)
-        pos1 = pos[0]+500,pos[1]
-        self.showdiffAngle = Text(pos1,' diffAngle %s' %diffAngle) 
-        self.allgroup.add(self.showstate)
-        self.allgroup.add(self.showdiffAngle)
 
     def mainloop(self):
         while self.running:
@@ -194,8 +190,6 @@ class App:
                 self.onEvent(event)
             self.collision()
             self.render(seconds)
-            self.allgroup.remove(self.showstate)
-            self.allgroup.remove(self.showdiffAngle)
         self.cleanUp()
 
 if __name__ == '__main__':

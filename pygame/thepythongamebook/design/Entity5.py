@@ -3,7 +3,7 @@
     and shooting tracers at the end of it's bow Machine Gun
     and from the turret-machine gun (co-axial with main gun)
     '''
-from constants022A import *
+from constants import *
 import copy
 
 class Lifebar(pygame.sprite.Sprite):
@@ -357,7 +357,7 @@ class Instruction(pygame.sprite.Sprite):
         Instruction.book[self.number] = self
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.width,self.height = screenwidth-100, screenheight-100
-        self.draw()
+        self.drawImage()
         self.setPosition()
         self.F1 = False
         self.kill()
@@ -386,7 +386,7 @@ class Instruction(pygame.sprite.Sprite):
         textrect.topleft = topleft
         self.image.blit(textsurf,textrect)
 
-    def draw(self):
+    def drawImage(self):
         w,h = self.width,self.height
         #w,h = screenwidth/2,screenheight/2
         self.image = pygame.Surface( (w,h) )
@@ -451,3 +451,46 @@ class Instruction(pygame.sprite.Sprite):
         self.drawText((20,200),'rotate Cannon Right: F',black)
         self.drawText((20,220),'fire Cannon: SPACE',black)
         self.drawText((20,240),'fire Machine Gun: L',black)
+
+class Status(pygame.sprite.Sprite):
+
+    def __init__(self,world):
+        self.world = world
+        pygame.sprite.Sprite.__init__(self,self.groups)
+        self.width,self.height = world.screenwidth, world.screenheight/10
+        self.drawImage()
+        self.setPosition()
+
+    def setPosition(self):
+        self.rect.topleft = 0, self.world.screenheight - self.height
+
+    def drawImage(self):
+        w,h = self.width, self.height
+        self.image = pygame.Surface((w,h))
+        self.image.fill(bgcolor)
+        self.image.set_colorkey(bgcolor)
+        self.image = self.image.convert_alpha()
+        self.rect  = self.image.get_rect()
+        self.drawState()
+
+    def drawState(self):
+        ai = self.world.getAi()
+        player = self.world.getPlayer()
+        self.activestate = ai.brain.activestate.name
+        self.diffAngle = int( ai.getdiffAngle(player) )
+        x,y = self.width/2,0
+        self.drawText((x,y),'activestate: %s' %self.activestate,blue)
+        self.drawText((x,y+20),'diffAngle: %s' %self.diffAngle,red)
+        self.drawText((x+200,y),'Cannon: %s' %ai.ammo,pink)
+        self.drawText((x+200,y+20),'Machine Gun: %s' %ai.MGammo,purple)
+
+    def drawText(self,topleft,msg,color=black,fontsize=18):
+        # draw text
+        textsurf = write(msg,color,fontsize)
+        textrect = textsurf.get_rect()
+        textrect.topleft = topleft
+        self.image.blit(textsurf,textrect)
+    def update(self,seconds):
+        self.image.fill(bgcolor)
+        self.drawState()
+

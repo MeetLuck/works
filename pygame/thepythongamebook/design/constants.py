@@ -106,6 +106,7 @@ def write(msg='pygame is cool',color=black,fontsize=20):
     textsurf = font.render(msg,True,color)
     textsurf = textsurf.convert_alpha()
     return textsurf
+
 def getClassName(classinstance):
     # this function extract the class name of a instance of the class
     text = str(classinstance.__class__) # like <class '__main__.XWing'>
@@ -120,7 +121,7 @@ class Text(pygame.sprite.Sprite):
         self.number = Text.number
         Text.number += 1
         Text.book[self.number] = self
-        pygame.sprite.Sprite.__init__(self)
+        pygame.sprite.Sprite.__init__(self,self.groups)
         self.pos = Vector(pos)
         self.newMsg(msg)
     def update(self,seconds):

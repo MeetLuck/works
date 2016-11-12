@@ -13,6 +13,7 @@ purple  = Color('purple')
 # light color
 lightyellow  = Color('lightyellow')
 lightgray    = Color('lightgray')
+lightgreen   = Color('lightgreen')
 lightblue    = 0,100,255
 # dark color
 darkgreen  = Color('darkgreen')
