@@ -10,7 +10,7 @@ import copy
 class Tank(pygame.sprite.Sprite):
     size = int(100 * 0.6)
     MGrecoiltime = 0.25 # how many seconds the bow(machine gun) is idel
-    recoiltime = 0.75 
+    recoiltime = 0.75 * 2 
     turretTurnSpeed = 1
     tankTurnSpeed = 1 # degrees
     speed = 25.0 * 2.5 

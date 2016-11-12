@@ -70,8 +70,8 @@ class Turret(pygame.sprite.Sprite):
     def update(self, seconds):        
         # painting the correct image of cannon
         if self.boss.cooltime > 0:
-            recoiltime = 1.0
-            index = 10.0 * self.boss.cooltime/recoiltime #Tank.recoiltime
+            recoiltime = self.boss.__class__.recoiltime
+            index = 10.0 * self.boss.cooltime/recoiltime
             if int(index) in range(0,11):
                 self.image = self.images[int(index)]
             #print 'cooltime: %.2f   images[%.2f]' %(self.boss.cooltime , index )
