@@ -63,8 +63,8 @@ class Turret(pygame.sprite.Sprite):
         self.height = 2 * self.boss.height
         self.images = {} # how much recoil after shooting, reverse order of apperance
         for i in range(10):
-            self.images[i]= drawCannon(self.width,self.height,i)
-        self.images[10] = drawCannon(self.width,self.height,0) # idle position
+            self.images[i]= drawCannon(self.boss.color, self.width,self.height,i)
+        self.images[10] = drawCannon(self.boss.color,self.width,self.height,0) # idle position
 
     def update(self, seconds):        
         # painting the correct image of cannon

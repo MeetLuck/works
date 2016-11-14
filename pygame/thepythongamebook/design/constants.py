@@ -10,20 +10,12 @@ LOG_FILENAME = 'ai.log'
 logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG,)
 
 # game constants
-fps = 60
-xtiles,ytiles = 15,15
-folder = 'data'
 GRAD = 2*pi/360
 bgcolor = lightgray
 gridcolor = gray
-bigmapwidth = 1024
-bigmapheight = 800
-title = "Esc: quit"
-scrollstepx = 3 # how many pixels to scroll when pressing cursor key
-scrollstepy = 3 # how many pixels to scroll when pressing cursor key
-cornerpoint = [0,0] # left upper edge of visible screen rect inside bigmap
-#screensize = screenwidth,screenheight = 640,480
-screensize = screenwidth,screenheight = 1024,768
+#scrollstepx = 3 # how many pixels to scroll when pressing cursor key
+#scrollstepy = 3 # how many pixels to scroll when pressing cursor key
+#cornerpoint = [0,0] # left upper edge of visible screen rect inside bigmap
 
 # game constants
 FRAGMENTMAXSPEED = 200
@@ -35,72 +27,84 @@ def drawTank(width,height,color):
     image = pygame.Surface( (w,h) )
     image.fill(bgcolor)
     # Tank color: blue for player, red for Ai
-    r,g,b,a = color
-    darkness = 0.8
+    if len(color)==4:
+        r,g,b,a = color
+    elif len(color)==3:
+        r,g,b = color
+    darkness = 0.6
+    bodycolor = color
     if b>0: # player
         b = int(b*darkness)
-        basecolor = r,g,b
-        color1 = 0,64,b
-        turretcolor = red
+        topcolor = 0,0,b
+        bottomcolor = topcolor
+        MGoutercolor = 255*0.8,32*2,0
         MGcolor = red
-        MGoutercolor = 32*6,32,0
         MGinnercolor = MGcolor
+        turretcolor = red
     else:  # ai
         r = int(r*darkness)
-        basecolor = r,g,b
-        color1 = r,64,0 
-        turretcolor = blue
+        topcolor = r,0,0
+        bottomcolor = topcolor
+        MGoutercolor = 0,32*2,255*0.8
         MGcolor = blue
-        MGoutercolor = 0,32,32*6
         MGinnercolor = MGcolor
+        turretcolor = blue
     # tank decoration
     rect = image.get_rect()
     bodyrect  = (rect.left+5,rect.top+5),(w-10,h-10)
     toprect   = rect.topleft,(w,h/6)
     bottomrect = (rect.left,rect.bottom-h/6), (w,h/6)
     # draw body
-    pygame.draw.rect(image,basecolor,bodyrect) # tank body, margin 5
+    pygame.draw.rect(image,bodycolor,bodyrect) # tank body, margin 5
     # draw topside
-    pygame.draw.rect(image,color1,toprect) # tank left
+    pygame.draw.rect(image,topcolor,toprect) # tank left
     # draw bottomside
-    pygame.draw.rect(image,color1,bottomrect) # right track
+    pygame.draw.rect(image,bottomcolor,bottomrect) # right track
     # draw Machine Gun
     r = 8
-    ir = 5
+    ir = 4
     MGcenter = rect.right - w/6, rect.top + h/6 + r
-    MGrect = (MGcenter[0],MGcenter[1]-ir/2), (3*ir,ir)
+    MGrect = (MGcenter[0],MGcenter[1]-ir/2), (12*ir,ir)
     MGrect = pygame.Rect(MGrect)
-    pygame.draw.circle(image,MGoutercolor,MGcenter,r,2)    # outer circle for MG
+    pygame.draw.circle(image,MGoutercolor,MGcenter,r,4)    # outer circle for MG
     pygame.draw.circle(image,MGinnercolor,MGcenter,ir) # inner circle for MG
     pygame.draw.rect(image,MGcolor,MGrect)        # blue rect for MG
     # draw rec Circle for turret
     center = (w/2,h/2)
     cr = w/3
-    pygame.draw.circle(image,turretcolor,center,cr,4) # red circle for turret
+    pygame.draw.circle(image,turretcolor,center,cr,2) # red circle for turret
     #image = pygame.transform.rotate(image,-90) # rotate so as to look EAST
     Vc = Vector(MGcenter) - Vector(rect.center)
     print 'MGcenter:',MGcenter, rect.center
     return image,MGcenter,Vc
 
-def drawCannon(width,height, offset=0):
-     # painting facing right, offset is the recoil
-     image = pygame.Surface((width,height)) # created on the fly
-     rect = image.get_rect()
-     image.fill(gray) # fill grey
-     image.set_colorkey(gray)
-     #pygame.draw.rect(image, green,  (1,1,width-2,height-2),1)
-     pygame.draw.circle(image, red,   rect.center, 22) # red circle
-     pygame.draw.circle(image, green, rect.center, 18) # green circle
-     # turrect MG rectangle
-     pygame.draw.rect(image, blue, (rect.centerx-10,rect.centery+10,25,4) ) # (width/2-10,height/2+10, 15,2))
-     # green cannon
-     h = 12
-     cannonrect = rect.centerx-20-offset,rect.centery-h/2, width/2-offset,h
-     pygame.draw.rect(image,green,cannonrect)
-     # red rect
-     pygame.draw.rect(image,red,cannonrect,2)
-     #(width-20-offset,height-5, width-offset,10),1)
-     return image
+def drawCannon(color,width,height,offset=0):
+
+    # painting facing right, offset is the recoil
+    image = pygame.Surface((width,height)) # created on the fly
+    rect = image.get_rect()
+    image.fill(bgcolor) # fill grey
+    image.set_colorkey(bgcolor)
+    #pygame.draw.rect(image, green,  (1,1,width-2,height-2),1)
+    print color
+    r,g,b,a = color
+    if r>0:
+        innercolor = int(r*0.7), 0, 32*2
+    else:
+        innercolor = 32*2, 0, int(b*0.7)
+
+    pygame.draw.circle(image, green,   rect.center, 18) # red circle
+    pygame.draw.circle(image, innercolor, rect.center, 16) # green circle
+    # turrect MG rectangle
+    pygame.draw.rect(image, color, (rect.centerx-10,rect.centery+10,25,4) ) # (width/2-10,height/2+10, 15,2))
+    # green cannon
+    h = 12
+    cannonrect = rect.centerx-20-offset,rect.centery-h/2, width/2-offset,h
+    pygame.draw.rect(image,color,cannonrect)
+    # red rect
+    pygame.draw.rect(image,innercolor,cannonrect,2)
+    #(width-20-offset,height-5, width-offset,10),1)
+    return image
 
 def toRadian(degree):
     return degree * 2*pi/360
@@ -149,7 +153,7 @@ class Text(pygame.sprite.Sprite):
         self.rect.center = tuple(self.pos)
 
 if __name__ == '__main__':
-
+    screensize = screenwidth,screenheight = 1024,768
     mainloop = True
     pygame.init()
     screen = pygame.display.set_mode( screensize )
@@ -173,6 +177,7 @@ if __name__ == '__main__':
     #instrect.center = screenrect.center
     #cannonsurf = drawCannon(None
     needhelp = False
+    fps = 60
     while mainloop:
         background.fill(bgcolor)
         for e in pygame.event.get():

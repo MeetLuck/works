@@ -1,13 +1,8 @@
 ''' 020 shooting from tank.py
-    demo of 2 tanks shooting bullets at the end of it's cannon
-    and shooting tracers at the end of it's bow Machine Gun
-    and from the turret-machine gun (co-axial with main gun)
     '''
-
 from Ai import *
 from helper import *
 
-fps = 30
 
 class World:
 
@@ -63,7 +58,6 @@ class World:
         self.addEntity(player)
         self.addEntity(ai)
         self.minimap = Minimap(self)
-        self.instruction = Instruction(self,yellowgreen,32)
         self.status = Status(self)
 
     def loadSound(self):
@@ -81,7 +75,7 @@ class World:
         pygame.draw.rect(self.background,lightgray, (0,0,self.screenwidth, 70))
         pygame.draw.circle(self.background, lightgreen,self.nestposition, self.nestsize)
         pygame.draw.circle(self.background, red,self.nestposition, 10)
-
+        xtiles,ytiles = 50,50
         for x in range(0,self.screenwidth,self.screenwidth/xtiles): #start, stop, step
             pygame.draw.line(self.background,gridcolor, (x,0), (x,self.screenheight))
         for y in range(0,self.screenheight,self.screenheight/ytiles): #start, stop, step
@@ -97,7 +91,8 @@ class App:
     def initPygame(self):
         pygame.mixer.pre_init(44100,-16,2,2048)
         pygame.init()
-        self.screen = pygame.display.set_mode( screensize )
+        self.screensize = 1024,768
+        self.screen = pygame.display.set_mode( self.screensize )
         self.background = pygame.Surface((self.screen.get_size()))
         self.background.fill(bgcolor) # fill grey light blue:(128,128,255) 
         self.background = self.background.convert()
@@ -121,7 +116,6 @@ class App:
         MGBullet._layer = 7 # to prove that Bullet is in top-layer
         Text._layer = 99   # below Tank
         Status._layer = 99   # below Tank
-        Instruction._layer = 9   # below Tank
         Minimap._layer = 3  # below Tank # better 9 ?
         Fragment._layer = 99
         # assign default groups to each sprite class
@@ -133,7 +127,6 @@ class App:
         Lifebar.groups = self.allgroup
         Text.groups = self.allgroup
         Status.groups = self.allgroup
-        Instruction.groups = self.allgroup
         Minimap.groups = self.allgroup
 
     def onEvent(self,event):
@@ -141,7 +134,6 @@ class App:
                 self.running = False # exit game
                 return
         if event.type == pygame.KEYDOWN:
-            self.world.instruction.event(event)
             self.world.minimap.event(event)
 
     def render(self,seconds):
@@ -180,6 +172,7 @@ class App:
         pygame.quit()
 
     def mainloop(self):
+        fps = 60
         while self.running:
             seconds = self.clock.tick(fps)/1000.0 # seconds passed since last frame (float)
             for event in pygame.event.get():

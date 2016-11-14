@@ -8,7 +8,7 @@ from Entity5 import *
 import copy
 
 class Tank(pygame.sprite.Sprite):
-    size = int(100 * 0.6)
+    size = int(100 * 0.64)
     MGrecoiltime = 0.25 # how many seconds the bow(machine gun) is idel
     recoiltime = 0.75 * 2 
     turretTurnSpeed = 1
@@ -16,7 +16,7 @@ class Tank(pygame.sprite.Sprite):
     speed = 25.0 * 2.5 
     book = {} # a book of tanks to store all tanks
     number = 0
-    color = ((0,0,255),(255,0,0) )
+    color = blue,red
 
     def __init__(self,world,name,startpos=(150,150),angle=0):
         super(Tank,self).__init__(self.groups)
