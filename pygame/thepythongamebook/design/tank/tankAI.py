@@ -136,13 +136,6 @@ class App:
         if event.type == pygame.KEYDOWN:
             self.world.minimap.event(event)
 
-    def render(self,seconds):
-        pygame.display.set_caption("FPS: %.2f keys: %s" % ( self.clock.get_fps(), pressedKeysString()))
-        self.allgroup.clear(self.screen, self.background) # funny effect if you outcomment this line
-        self.updateState()
-        self.allgroup.update(seconds)
-        self.allgroup.draw(self.screen)
-        pygame.display.flip() # flip the screen 30 times a second
 
     def collision(self):
         #pygame.sprite.spritecollide(sprite, group, dokill, collided = None): return Sprite_list
