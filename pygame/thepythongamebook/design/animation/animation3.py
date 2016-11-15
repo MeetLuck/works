@@ -1,18 +1,21 @@
 import pygame,os
 from colors import *
+from vector import Vector
 
 class Lion(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self,self.groups)
+        self.speed = 25 * 4
         self.makeImages()
         self.index = 0
         self.image = self.lions[self.index] 
         self.rect = self.image.get_rect()
+        self.Vp = Vector(300,500)
         self.setPosition()
 
     def setPosition(self):
-        self.rect.center = 300,500
+        self.rect.center = tuple(self.Vp)
 
     def makeImages(self):
         folder = '../../data'
@@ -31,8 +34,34 @@ class Lion(pygame.sprite.Sprite):
             self.lions1.append(lion1)
         self.lions = self.lions1[:]
 
-    def update(self,seconds):
+
+    def getdiffAngle(self,player):
+        if player is None: return
+        delta = player.Vp - self.Vp
+        targetAngle = atan2(-delta.y,delta.x)/pi * 180
+        diffAngle = targetAngle - self.tankAngle
+        if diffAngle < 0: diffAngle += 360
+        diffAngle %= 360
+        return diffAngle
+
+    def calculateDirection(self):
+        mousepos = pygame.mouse.get_pos()
+        self.Vd = Vector(mousepos) - self.Vp
+        self.Vd.normalize()
+
+    def move(self,seconds):
+        self.calculateDirection()
+        self.Vp += self.Vd * self.speed * seconds
         self.index += 1
         self.index %= 6
         self.image = self.lions[self.index]
         self.setPosition()
+    def stop(self):
+        self.index = 0
+        self.image = self.lions[self.index]
+        self.setPosition()
+
+    def update(self,seconds):
+        left_mouse_pressed = pygame.mouse.get_pressed()[0]
+        if left_mouse_pressed:
+            self.move(seconds)

@@ -48,7 +48,7 @@ class App:
         pygame.quit()
 
     def mainloop(self):
-        fps = 10
+        fps = 30
         clock = pygame.time.Clock()
         self.picNo = 0
         while self.running:

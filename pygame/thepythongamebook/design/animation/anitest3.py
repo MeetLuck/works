@@ -1,4 +1,4 @@
-from animation2 import *
+from animation3 import *
 
 class App:
     def __init__(self):
@@ -9,12 +9,13 @@ class App:
 
     def initPygame(self):
         pygame.init()
+        pygame.mouse.set_visible(True)
         screensize = 800,600
         self.screen = pygame.display.set_mode(screensize)
         self.background = pygame.Surface(self.screen.get_size())
         self.background.fill(white)
         self.background = self.background.convert()
-        self.drawSpriteSheet()
+        # self.drawSpriteSheet()
         self.screen.blit(self.background,(0,0))
 
     def drawSpriteSheet(self):
@@ -49,7 +50,7 @@ class App:
         pygame.quit()
 
     def mainloop(self):
-        fps = 30
+        fps = 60
         clock = pygame.time.Clock()
         self.picNo = 0
         while self.running:
