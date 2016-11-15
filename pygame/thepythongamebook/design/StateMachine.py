@@ -57,8 +57,8 @@ class AIStateExploring(State):
         self.ai = ai
 
     def doActions(self):
-        # change direction in the 5% change
-        if randint(1,10) == 1:
+        print '----------------- Exploring %s ----------------------' %self.ai
+        if randint(1,10) == 1: # change direction in the 10% change
             self.randomDirection()
 
     def checkCondition(self):
@@ -93,6 +93,7 @@ class AIStateHome(State):
 
     def doActions(self):
         if not self.ai.IsOutOfNest(): return
+        print '----------------- Home %s ----------------------' %self.ai
         # ai out of its nest
         diffAngle = self.getdiffAnglefromNest()
         #self.tankAngle += diffAngle
@@ -114,8 +115,7 @@ class AIStateHome(State):
             return None # return to "home state"
         else:
             player = self.getClosePlayer()
-            if player:
-                self.ai.playerID = player.ID
+            if player: #self.ai.playerID = player.ID
                 return 'hunting'
             else:
                 return 'exploring'
@@ -135,7 +135,7 @@ class AIStateHunting(State):
     def doActions(self):
         player = self.getClosePlayer()
         if player is None: return
-        print '----------------- HUNTING %s ----------------------',player
+        print '----------------- HUNTING %s ----------------------' %player
         distance = self.ai.Vp.get_distance_to(player.Vp) #< 2.0*self.ai.nestsize: #/2:
         print 'distance to player => ',distance
         if distance > 1.5*self.ai.nestsize/2.0:
@@ -161,9 +161,9 @@ class AIStateHunting(State):
             return 'exploring'
         # --- player alive ---
         player = self.getClosePlayer()
-        if player is None:
+        if player is None: # player is out of sight
             return 'exploring'
-        else: # player is out of sight
+        else: 
             return None
 
     def entryActions(self):

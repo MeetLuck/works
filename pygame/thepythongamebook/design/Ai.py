@@ -13,19 +13,23 @@ class AI(Tank):
         self.nestposition = Vector(self.world.nestposition)
         self.nestsize = self.world.nestsize
         self.resetSpeed()
+        self.makeBrain()
         # logging
         logging.debug('nestposition %s' %self.nestposition)
         logging.debug('nestsize %d' %self.nestsize)
-        # define states
-        exploringstate = AIStateExploring(self)
-        homestate = AIStateHome(self)
-        huntingstate   = AIStateHunting(self)
-        # add State to brain
+
+    def makeBrain(self):
+        # make brain
         self.brain = Brain()
-        self.brain.addState(exploringstate)
-        self.brain.addState(homestate)
-        self.brain.addState(huntingstate)
-        # set ant's State as Exploring
+        # define states
+        exploring   = AIStateExploring(self)
+        home        = AIStateHome(self)
+        hunting     = AIStateHunting(self)
+        # add State to brain
+        self.brain.addState(exploring)
+        self.brain.addState(home)
+        self.brain.addState(hunting)
+        # set activeState as Exploring
         self.brain.setActiveState('exploring')
 
     def resetSpeed(self):

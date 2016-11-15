@@ -153,12 +153,12 @@ class App:
             MGhitgroup = pygame.sprite.spritecollide(tank, self.MGBulletgroup, False)
             for cannonball in cannonhitgroup:
                 if cannonball.boss.number != tank.number:
-                    print 'gethit tank',cannonball.boss.number, tank.number
+                    #print 'gethit tank',cannonball.boss.number, tank.number
                     tank.getCannonhit = True # will get a blue border from Bird.update()
                     cannonball.kill() # remove bullet from all the groups
             for mgbullet in MGhitgroup:
                 if mgbullet.boss.number != tank.number:
-                    print 'gethit tank',mgbullet.boss.number, tank.number
+                    #print 'gethit tank',mgbullet.boss.number, tank.number
                     tank.getMGhit = True # will get a blue border from Bird.update()
                     mgbullet.kill() # remove bullet from all the groups
 
