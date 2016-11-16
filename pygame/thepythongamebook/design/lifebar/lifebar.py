@@ -1,3 +1,10 @@
+import pygame,random
+import sys
+# add the 'design' folder path to the sys.path list
+sys.path.append('../../design')
+from ..vector import Vector
+from .. colors import *
+
 class BirdCatcher(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self,self.groups)
@@ -83,6 +90,55 @@ class Lifebar(pygame.sprite.Sprite):
             pygame.draw.rect(self.image,black,(1,1,self.width-2,5))
             # filled green rect
             w = int(self.width*self.percent)
-            pygame.draw.rect(self.image,green,(1,1,w,5)) )
+            pygame.draw.rect(self.image,green,(1,1,w,5) )
         self.oldpercent = self.percent
         self.setPosition()
+
+
+class Bird(pygame.sprite.Sprite):
+    image = []
+    birds = {}
+    number = 0
+    def __init__(self, startpos):
+        pygame.sprite.Sprite.__init__(self,self.groups)
+        self.Vp = Vector(startpos)
+        self.healthful = 100.0
+        self.health    = 100.0
+        self.image = Bird.image[0]
+        self.rect = self.image.get_rect()
+        self.radius = max(self.rect.width,self.rect.height)/2.0
+        self.resetStatus()
+        self.number = Bird.number
+        Bird.number += 1
+        Bird.birds[self.number] = self
+        Lifebar(self)
+    def setPosition(self):
+        self.rect.center = tuple(self.Vp)
+    def move(self,seconds):
+        randomdirection = random.choice([-1,1])
+        self.delta = Vector()
+        self.delta.x = random.random() * speedmax * randomdirection + randomdirection
+        self.delta.y = random.random() * speedmax * randomdirection + randomdirection
+        self.Vp += self.delta * seconds
+        self.setPosition()
+    def resetStatus(self):
+        self.catched = self.crashing = False
+    def kill(self):
+        crysound.play()
+        for t in range(random.randint(3,15)):
+            Fragment(self.Vp)
+        Bird.birds[self.number] = None
+        pygame.sprite.Sprite.kill(self)
+    def checkHealth(self):
+        if self.health <= 0:
+            self.kill()
+            return None
+        if self.crashing:
+            self.health -= 1
+
+    def update(self,seconds):
+        if not self.checkHealth(): return
+        self.image = Bird.image[self.crashing + 2*self.catched]
+        self.move(seconds)
+
+
