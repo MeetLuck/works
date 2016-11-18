@@ -196,12 +196,17 @@ class Bird(pygame.sprite.Sprite):
         self.newSpeed()
         self.Vp += self.delta * seconds
         self.rect.center = tuple(self.Vp)
+    def check(self):
+        screenrect = self.app.screen.get_rect()
+        if not screenrect.contains(self.rect):
+            self.kill()
+        elif self.health <= 0:
+            self.kill()
 
     def update(self,seconds):
         if self.crashing:
             self.health -= 1
-        if self.health <= 0:
-            self.kill()
+        self.check()
         self.lifetime += seconds
         if abs(self.delta.x) > self.speedmax:
             self.delta.x = self.speedmax 

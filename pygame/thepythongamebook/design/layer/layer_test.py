@@ -45,7 +45,7 @@ class App:
         self.allgroup.clear(self.screen, self.background)
         self.allgroup.update(seconds)
         self.allgroup.draw(self.screen)
-        pygame.display.set_caption('layers')
+        #pygame.display.set_caption('layers')
         pygame.display.flip()
     def quit(self):
         pygame.quit()
@@ -54,7 +54,7 @@ class App:
         for x in range(self.screen.get_width()//100):
             Block(self,x)
         self.birdlayer = 4
-        birdtext = Text(self,'current Bird layer = %i' % self.birdlayer)
+        self.birdtext = Text(self,'current Bird layer = %i' % self.birdlayer)
         for x in range(15):
             Bird(self,self.birdlayer)
         Mountain(self,1)
@@ -82,6 +82,9 @@ class App:
                         self.allgroup.change_layer(bird,self.birdlayer)
                     for lifebar in self.bargroup:
                         self.allgroup.change_layer(lifebar,self.birdlayer)
+        pygame.display.set_caption('birds: %i  current layer: %i' %( len(self.birdgroup), self.birdlayer) )
+        self.birdtext.newMsg('current bird layer: %i' %self.birdlayer)
+
     def collision(self):
         for bird in self.birdgroup:
             bird.resetStatus()
