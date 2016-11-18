@@ -18,8 +18,8 @@ class App:
     def loadImage(self):
         Bird.image.append(pygame.image.load('../babytux.png'))
         Bird.image.append(pygame.image.load('../babytux_neg.png'))
-        Bird.image.append(Bird.image[0].copy)
-        Bird.image.append(Bird.image[1].copy)
+        Bird.image.append(Bird.image[0].copy() )
+        Bird.image.append(Bird.image[1].copy() )
         pygame.draw.rect(Bird.image[2], blue,(0,0,32,36),1)
         pygame.draw.rect(Bird.image[3], red,(0,0,32,36),1)
         for bird in Bird.image:
@@ -30,11 +30,14 @@ class App:
         self.blockgroup = pygame.sprite.LayeredUpdates()
         self.birdgroup = pygame.sprite.Group()
         self.textgroup = pygame.sprite.Group()
+        self.catchergroup = pygame.sprite.Group()
         self.bargroup = pygame.sprite.Group()
-        self.fraggroup = pygame.sprite.Group()
+        self.fragmentgroup = pygame.sprite.Group()
         self.mountaingroup = pygame.sprite.Group()
         Bird.groups = self.birdgroup, self.allgroup
-        BirdCatcher.groups = self.allgroup
+        Lifebar.groups = self.bargroup, self.allgroup
+        Fragment.groups = self.fragmentgroup, self.allgroup
+        BirdCatcher.groups = self.catchergroup, self.allgroup
     def onEvent(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.running = False
@@ -47,16 +50,16 @@ class App:
     def quit(self):
         pygame.quit()
     def makeCharacters(self):
-        self.hunter = BirdCatcher()
+        self.hunter = BirdCatcher(self)
         for x in range(self.screen.get_width()//100):
-            Block(x)
+            Block(self,x)
         self.birdlayer = 4
-        birdtext = Text('current Bird layer = %i' % self.birdlayer)
+        birdtext = Text(self,'current Bird layer = %i' % self.birdlayer)
         for x in range(15):
             Bird(self,self.birdlayer)
-        Mountain(1)
-        Mountain(2)
-        Mountain(3)
+        Mountain(self,1)
+        Mountain(self,2)
+        Mountain(self,3)
     def onMouse(self,seconds):
         if self.cooldowntime > 0:
             self.cooldowntime -= seconds
@@ -66,26 +69,26 @@ class App:
                     self.birdlayer += 1
                     self.cooldowntime = 0.5
                     self.crysound.play()
-                    for bird in birdgroup:
+                    for bird in self.birdgroup:
                         self.allgroup.change_layer(bird,self.birdlayer)
-                    for lifebar in bargroup:
-                        self.allgroup.change_layer(bar,self.birdlayer)
+                    for lifebar in self.bargroup:
+                        self.allgroup.change_layer(lifebar,self.birdlayer)
             if pygame.mouse.get_pressed()[2]:
                 if self.birdlayer > -4 :
                     self.birdlayer -= 1
                     self.cooldowntime = 0.5
                     self.crysound.play()
-                    for bird in birdgroup:
+                    for bird in self.birdgroup:
                         self.allgroup.change_layer(bird,self.birdlayer)
-                    for lifebar in bargroup:
-                        self.allgroup.change_layer(bar,self.birdlayer)
+                    for lifebar in self.bargroup:
+                        self.allgroup.change_layer(lifebar,self.birdlayer)
     def collision(self):
-        for bird in birdgroup:
+        for bird in self.birdgroup:
             bird.resetStatus()
         crashgroup = pygame.sprite.spritecollide(self.hunter, self.birdgroup, False, pygame.sprite.collide_circle)
         for crashbird in crashgroup:
             crashbird.catched = True
-        for bird in birdgroup:
+        for bird in self.birdgroup:
             crashgroup = pygame.sprite.spritecollide(bird,self.birdgroup,False)
             for crashbird in crashgroup:
                 if crashbird.number != bird.number:
@@ -98,13 +101,13 @@ class App:
         self.cooldowntime = 0
         clock = pygame.time.Clock()
         self.makeCharacters()
-        while running:
-            self.seconds = clock.tick(fps)/1000.0
+        while self.running:
+            seconds = clock.tick(fps)/1000.0
             for event in pygame.event.get():
                 self.onEvent(event)
-            self.onMouse()
+            self.onMouse(seconds)
             self.collision()
-            self.render(self.seconds)
+            self.render(seconds)
         self.quit()
 
 if __name__ == '__main__':

@@ -1,14 +1,12 @@
 import pygame,random
-import sys
-# add the 'design' folder path to the sys.path list
-sys.path.append('../../design')
-from ..vector import Vector
-from .. colors import *
+import sys,os
+from vector import Vector
+from colors import *
 
 class BirdCatcher(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self,self.groups)
-        self.makeImage()
+        self.setupImage()
 
     def setupImage(self):
         r = 50
@@ -25,11 +23,11 @@ class BirdCatcher(pygame.sprite.Sprite):
 class Fragment(pygame.sprite.Sprite):
     def __init__(self,pos):
         pygame.sprite.Sprite.__init__(self,self.groups)
-        self.Vp = Vector(pos)
+        self.Vp = pos
         self.setupImage()
         self.lifetime = 1 + 5*random.random() 
         self.time = 0
-        self.maxspeed = birdspeedmax
+        self.maxspeed = 50
 
     def setupImage(self):
         self.image = pygame.Surface((10,10))
@@ -64,6 +62,7 @@ class Lifebar(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self,self.groups)
         self.master = master
         self.width,self.height = self.master.rect.width,7
+        self.setupImage()
 
     def setupImage(self):
         self.image = pygame.Surface( (self.width,self.height) )
@@ -99,11 +98,13 @@ class Bird(pygame.sprite.Sprite):
     image = []
     birds = {}
     number = 0
-    def __init__(self, startpos):
+    def __init__(self, app,startpos=(300,300) ):
         pygame.sprite.Sprite.__init__(self,self.groups)
+        self.app = app
         self.Vp = Vector(startpos)
         self.healthful = 100.0
         self.health    = 100.0
+        self.speedmax = 100.0
         self.image = Bird.image[0]
         self.rect = self.image.get_rect()
         self.radius = max(self.rect.width,self.rect.height)/2.0
@@ -112,33 +113,41 @@ class Bird(pygame.sprite.Sprite):
         Bird.number += 1
         Bird.birds[self.number] = self
         Lifebar(self)
+
     def setPosition(self):
         self.rect.center = tuple(self.Vp)
+
     def move(self,seconds):
         randomdirection = random.choice([-1,1])
         self.delta = Vector()
-        self.delta.x = random.random() * speedmax * randomdirection + randomdirection
-        self.delta.y = random.random() * speedmax * randomdirection + randomdirection
+        self.delta.x = random.random() * self.speedmax * randomdirection + randomdirection
+        self.delta.y = random.random() * self.speedmax * randomdirection + randomdirection
+        if abs(self.delta.x) > self.speedmax:
+            self.delta.x = self.speedmax
+        if abs(self.delta.y) > self.speedmax:
+            self.delta.y = self.speedmax
         self.Vp += self.delta * seconds
         self.setPosition()
+
     def resetStatus(self):
         self.catched = self.crashing = False
+
     def kill(self):
-        crysound.play()
+        self.app.crysound.play()
         for t in range(random.randint(3,15)):
             Fragment(self.Vp)
         Bird.birds[self.number] = None
         pygame.sprite.Sprite.kill(self)
-    def checkHealth(self):
+
+    def isAlive(self):
         if self.health <= 0:
             self.kill()
-            return None
+            return False
         if self.crashing:
             self.health -= 1
+        return True
 
     def update(self,seconds):
-        if not self.checkHealth(): return
+        if not self.isAlive(): return
         self.image = Bird.image[self.crashing + 2*self.catched]
         self.move(seconds)
-
-

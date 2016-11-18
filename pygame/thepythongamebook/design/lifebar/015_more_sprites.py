@@ -191,9 +191,9 @@ def game():
 
         def update(self, seconds):
             # friction make birds slower
-            if abs(self.dx) > BIRDSPEEDMIN and abs(self.dy) > BIRDSPEEDMIN:
-                self.dx *= FRICTION
-                self.dy *= FRICTION
+#           if abs(self.dx) > BIRDSPEEDMIN and abs(self.dy) > BIRDSPEEDMIN:
+#               self.dx *= FRICTION
+#               self.dy *= FRICTION
             # spped limit
             if abs(self.dx) > BIRDSPEEDMAX:
                 self.dx = BIRDSPEEDMAX * self.dx / self.dx
@@ -264,8 +264,8 @@ def game():
 
     # load images into classes (class variable !)
     try:
-        Bird.image.append(pygame.image.load(os.path.join("data","babytux.png")))
-        Bird.image.append(pygame.image.load(os.path.join("data","babytux_neg.png")))
+        Bird.image.append(pygame.image.load(os.path.join("..","babytux.png")))
+        Bird.image.append(pygame.image.load(os.path.join("..","babytux_neg.png")))
     except:
         raise(UserWarning, "no image files 'babytux.png' and 'babytux_neg.png' in subfolder 'data'")
     Bird.image.append(Bird.image[0].copy()) # copy of first image
@@ -278,7 +278,7 @@ def game():
     Bird.image[3] = Bird.image[3].convert_alpha()
 
     try:
-        cry = pygame.mixer.Sound(os.path.join('data','claws.ogg'))  #load sound
+        cry = pygame.mixer.Sound(os.path.join('..','claws.ogg'))  #load sound
     except:
         raise(UserWarning, "could not load sound claws.ogg from 'data'")
 
