@@ -22,8 +22,8 @@ def runTest(sleep):
     while running:
         if time.time() - start > 10*duration:
             running = False
-        f2.write('running at %s\n' %time.ctime() )
-        f2.flush()
+        #f2.write('running at %s\n' %time.ctime() )
+        #f2.flush()
         time.sleep(sleep/5000.0)
         #print duration
     else:
@@ -103,6 +103,16 @@ def runNights():
             runTest(1.0)
         else:
             time.sleep(60)
+        if now.hour == 6 and now.minute in[0,1,2,3,4,5]:
+            ahk.start()
+            ahk.ready()
+            services = ['nsi','netprofm','Netman']
+            for ser in services:
+                cmd = 'Run, sc.exe stop %s,,Hide' %ser 
+                try:
+                    ahk.execute(cmd)
+                except:
+                    pass
     elif comname != 'PC-PC' and now.date() == Bnextday:
         #print comname, Bnextday
         if now.hour == 1 and now.minute in (20,40):

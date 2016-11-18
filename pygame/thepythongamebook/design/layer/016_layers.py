@@ -492,8 +492,6 @@ def game():
                         allgroup.change_layer(bird, birdlayer) # allgroup draws the sprite 
                     for bar in bargroup:
                         allgroup.change_layer(bar, birdlayer) # allgroup draws the sprite 
-                    for bar in bargroup:
-                        allgroup.change_layer(bar, birdlayer) # allgroup draws the sprite 
             if pygame.mouse.get_pressed()[2]:
                 if birdlayer > -4:
                     birdlayer -= 1
