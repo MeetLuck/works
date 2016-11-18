@@ -61,27 +61,25 @@ class App:
         Mountain(self,2)
         Mountain(self,3)
     def onMouse(self,seconds):
-        if self.cooldowntime > 0:
-            self.cooldowntime -= seconds
-        else:
-            if pygame.mouse.get_pressed()[0]:
-                if self.birdlayer < 10:
-                    self.birdlayer += 1
-                    self.cooldowntime = 0.5
-                    self.crysound.play()
-                    for bird in self.birdgroup:
-                        self.allgroup.change_layer(bird,self.birdlayer)
-                    for lifebar in self.bargroup:
-                        self.allgroup.change_layer(lifebar,self.birdlayer)
-            if pygame.mouse.get_pressed()[2]:
-                if self.birdlayer > -4 :
-                    self.birdlayer -= 1
-                    self.cooldowntime = 0.5
-                    self.crysound.play()
-                    for bird in self.birdgroup:
-                        self.allgroup.change_layer(bird,self.birdlayer)
-                    for lifebar in self.bargroup:
-                        self.allgroup.change_layer(lifebar,self.birdlayer)
+        if self.cooltime > 0:
+            self.cooltime -= seconds
+            return
+        if pygame.mouse.get_pressed()[0] and self.birdlayer < 10:
+            self.birdlayer += 1
+            self.cooltime = 0.5
+            self.crysound.play()
+            for bird in self.birdgroup:
+                self.allgroup.change_layer(bird,self.birdlayer)
+            for lifebar in self.bargroup:
+                self.allgroup.change_layer(lifebar,self.birdlayer)
+        if pygame.mouse.get_pressed()[2] and self.birdlayer > -4 :
+            self.birdlayer -= 1
+            self.cooltime = 0.5
+            self.crysound.play()
+            for bird in self.birdgroup:
+                self.allgroup.change_layer(bird,self.birdlayer)
+            for lifebar in self.bargroup:
+                self.allgroup.change_layer(lifebar,self.birdlayer)
         pygame.display.set_caption('birds: %i  current layer: %i' %( len(self.birdgroup), self.birdlayer) )
         self.birdtext.newMsg('current bird layer: %i' %self.birdlayer)
 
@@ -101,7 +99,7 @@ class App:
                 Bird(self,self.birdlayer)
     def mainloop(self):
         fps = 60
-        self.cooldowntime = 0
+        self.cooltime = 0.5
         clock = pygame.time.Clock()
         self.makeCharacters()
         while self.running:
