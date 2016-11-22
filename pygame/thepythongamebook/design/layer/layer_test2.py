@@ -1,4 +1,4 @@
-from layer import *
+from layer2 import *
 
 class App:
     def __init__(self):
@@ -84,18 +84,6 @@ class App:
         self.birdtext.newMsg('current bird layer: %i' %self.birdlayer)
 
     def collision(self):
-#       for bird in self.birdgroup:
-#           bird.resetStatus()
-#       crashgroup = pygame.sprite.spritecollide(self.hunter, self.birdgroup, False, pygame.sprite.collide_circle)
-#       for crashbird in crashgroup:
-#           crashbird.catched = True
-        #self.hunter.collide()
-        #self.bird.collide()
-#       for bird in self.birdgroup:
-#           crashgroup = pygame.sprite.spritecollide(bird,self.birdgroup,False)
-#           for crashbird in crashgroup:
-#               if crashbird.number != bird.number:
-#                   bird.crashing = True
         if len(self.birdgroup) < 10:
             for x in range(random.randint(1,5)):
                 Bird(self,self.birdlayer)

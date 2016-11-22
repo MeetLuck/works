@@ -32,5 +32,6 @@ clock = pygame.time.Clock()
 # creates N Creeps random creeps
 creeps = []
 for i in range(ncreeps):
-    c = Creep(screen, choice(CREEP_FILENAMES), ( randint(0, screenwidth), randint(0, screenheight)), (choice([-1, 1]), choice([-1, 1])), 0.1))
+    c = Creep(screen, choice(CREEP_FILENAMES), 
+            ( randint(0, screenwidth), randint(0, screenheight)), (choice([-1, 1]), choice([-1, 1])), 0.1))
     creeps.append(c)

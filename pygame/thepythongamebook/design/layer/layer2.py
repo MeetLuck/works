@@ -214,6 +214,8 @@ class Bird(pygame.sprite.Sprite):
             self.kill()
 
     def collide(self):
+#       for bird in self.app.birdgroup:
+#           bird.resetStatus()
         for bird in self.app.birdgroup:
             crashgroup = pygame.sprite.spritecollide(bird,self.app.birdgroup,False)
             for crashbird in crashgroup:

@@ -1,4 +1,6 @@
 import pygame,random,os
+import sys
+sys.path.insert(0,'..')
 from vector import Vector
 from colors import *
 
