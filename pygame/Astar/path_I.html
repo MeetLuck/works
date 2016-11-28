@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Gabriel Gambetta - Pathfinding Demystified (Part I): Introduction</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="Gabriel%20Gambetta%20-%20Pathfinding%20Demystified%20%28Part%20I%29%20%20Introduction_files/style.css">
+  </head>
+<body>
+<div class="main">
+<div class="nav">
+<a href="http://gabrielgambetta.com/path1.html">&lt;&lt; Series Start</a>	<a class="homelink" href="http://gabrielgambetta.com/index.html">Gabriel Gambetta</a>
+</div>
+<header>
+<h1 class="title">Pathfinding Demystified (Part I): Introduction</h1>
+</header>
+<p><a href="http://gabrielgambetta.com/path1.html">Part I</a> - <a href="http://gabrielgambetta.com/path2.html">Part II</a> - <a href="http://gabrielgambetta.com/path3.html">Part III</a> - <a href="http://gabrielgambetta.com/path4.html">Part IV</a></p>
+<script src="Gabriel%20Gambetta%20-%20Pathfinding%20Demystified%20%28Part%20I%29%20%20Introduction_files/path_helpers.js"></script>
+
+<h2 id="live-demo">Live Demo</h2>
+<p>Here¡¯s a live demo and a sample implementation of the algorithm above. <code>choose_node</code> just picks a node at random. You can run it step by step and see the list of <code>reachable</code> and <code>explored</code> nodes, and what the <code>previous</code> links point to.</p>
+<table><tbody><tr>
+<td><canvas width="201" height="201" id="demo"></canvas></td>
+<td>
+<p id="reachable" style="color:green; font-family:courier;">reachable = [A]</p>
+<p id="explored" style="color:red; font-family:courier;">explored = []</p>
+<p id="path" style="font-family:courier;"></p>
+<p>
+    
+<input value="Restart" onclick="stopRunSearch(); search.reset();" type="button"> <input value="Step" onclick="stopRunSearch(); search.step();" type="button"> <input value="Run" onclick="runSearch();" type="button">
+</p>
+</td>
+</tr>
+</tbody></table>
+
+<script>
+
+// Choose a random node from the reachable list.
+Search.prototype.chooseNode = function() {
+    return this.reachable[Math.floor(Math.random() * this.reachable.length)];
+}
+
+Search.prototype.addAdjacent = function(node, adjacent) {
+    if (findNode(adjacent, this.explored) || findNode(adjacent, this.reachable)) {
+        return;
+    }
+
+    adjacent.previous = node;
+    this.reachable.push(adjacent);
+}
+
+// Build the grid used in the example.
+// "*" represent a blocked square, " " an open one.
+var graph = new Graph(["   * ",
+                       " *** ",
+                       "     ",
+                       "* ** ",
+                       "*    "]);
+
+var stepDelay = 200;
+
+var search = new Search(graph, "A", "T");
+search.reset();
+
+render(search);
+
+</script>
+
+<iframe name="oauth2relay1624142169" id="oauth2relay1624142169" src="Gabriel%20Gambetta%20-%20Pathfinding%20Demystified%20%28Part%20I%29%20%20Introduction_files/postmessageRelay.htm" style="width: 1px; height: 1px; position: absolute; top: -100px;" tabindex="-1" aria-hidden="true"></iframe><iframe id="rufous-sandbox" scrolling="no" allowtransparency="true" allowfullscreen="true" style="position: absolute; visibility: hidden; display: none; width: 0px; height: 0px; padding: 0px; border: medium none;" title="Twitter analytics iframe" frameborder="0"></iframe>
+</body>
+</html>
