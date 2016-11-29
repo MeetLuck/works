@@ -18,6 +18,7 @@ class Node:
         self.fontcolor = black
         self.bgcolor = bgcolor
         self.previous = None
+        self.direction = ""
         self.cost = 'Infinity'
         self.Goal = False
         self.Start = False
@@ -39,6 +40,16 @@ class Node:
         rect.topleft = 5,5
         #rect.center = self.rect.center
         self.image.blit(text,rect)
+        # ========= draw came from(N,E,W,S) ===========
+        dir_char = ""
+        if self.direction == 'N': dir_char = '^'
+        if self.direction == 'S': dir_char = 'V'
+        if self.direction == 'E': dir_char = '>'
+        if self.direction == 'W': dir_char = '<'
+        text = font.render(dir_char,True,blue)
+        rect = text.get_rect()
+        rect.center = self.rect.center
+        self.image.blit(text,rect)
         return self.image
 
 class Graph:
@@ -58,7 +69,7 @@ class Graph:
                 self.nodes.append(node)
     def getAdjacents(self,node):
         # add edges to adjacent nodes
-        adjacent = list()
+        adjacent = dict()
         for r in range(self.rows):
             for c in range(self.cols):
                 if node != self.nodes[self.cols * r + c]: continue
@@ -66,13 +77,13 @@ class Graph:
                 if grid[r][c] == '*': continue
                 # figure out the adjacent nodes
                 if r > 0 and grid[r-1][c] == ' ': # UP 
-                    adjacent.append(self.nodes[self.cols*(r-1) + c])
+                    adjacent['N'] = self.nodes[self.cols*(r-1) + c]
                 if r < self.rows-1 and grid[r+1][c] == ' ': # DOWN
-                    adjacent.append(self.nodes[self.cols*(r+1) + c])
+                    adjacent['S'] = self.nodes[self.cols*(r+1) + c]
                 if c > 0 and grid[r][c-1] == ' ': # LEFT
-                    adjacent.append(self.nodes[self.cols*r + c-1])
+                    adjacent['W'] = self.nodes[self.cols*r + c-1]
                 if c < self.cols-1 and grid[r][c+1] == ' ': # RIGHT 
-                    adjacent.append(self.nodes[self.cols*r + c+1])
+                    adjacent['E'] = self.nodes[self.cols*r + c+1]
         return adjacent
 
     def printNodes(self):
@@ -152,9 +163,13 @@ class Search:
         self.explored.append(node)
         # where can we get from here?
         new_reachable = self.graph.getAdjacents(node)
-        for adjacent in new_reachable:
+        for direction,adjacent in new_reachable.items():
             if adjacent in self.reachable or adjacent in self.explored: continue
             adjacent.previous = node
+            if direction == 'N': adjacent.direction = 'S'
+            if direction == 'S': adjacent.direction = 'N'
+            if direction == 'E': adjacent.direction = 'W'
+            if direction == 'W': adjacent.direction = 'E'
             self.reachable.append(adjacent)
 
     def chooseNode(self):
@@ -190,7 +205,7 @@ class Search:
         print '  :  ',
         for node in self.explored:
             #if node in [self.start,self.goal]: continue
-            print node.label,
+            print '%s(%s)' %(node.label,node.direction),
         print
 
 
