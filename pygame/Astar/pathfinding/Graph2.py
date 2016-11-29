@@ -1,4 +1,4 @@
-from random import random
+from random import random,choice
 from colors import *
 import pygame
 bgcolor = lightgray
@@ -54,10 +54,11 @@ class Graph:
                 if col == '*':
                     node.wall = True
                 self.nodes.append(node)
+    def getAdjacents(self,node):
         # add edges to adjacent nodes
         for r in range(self.rows):
             for c in range(self.cols):
-                node = self.nodes[self.cols * r + c]
+                if node != self.nodes[self.cols * r + c]: continue
                 # ignore blocked squares
                 if grid[r][c] == '*': continue
                 # figure out the adjacent nodes
@@ -69,6 +70,8 @@ class Graph:
                     node.adjacent.append(self.nodes[self.cols*r + c-1])
                 if c < self.cols-1 and grid[r][c+1] == ' ': # RIGHT 
                     node.adjacent.append(self.nodes[self.cols*r + c+1])
+        return node.adjacent
+
     def printNodes(self):
         print '================= self.nodes ==============='
         for r,row in enumerate(self.grid):
@@ -110,6 +113,7 @@ class Search:
         self.goal.bgcolor = red
         self.reachable.append(self.start)
         self.iteration = 0
+
     def foundPath(self,node):
         if node == self.goal:
             node.Goal = True
@@ -124,7 +128,11 @@ class Search:
     def step(self):
 #       self.iteration += 1
         # choose a node to examine next
-        if self.found: return
+        if not self.reachable:
+            print '============ No Path Found ============='
+            return
+        elif self.found :
+            return
         node = self.chooseNode()
         # are we done yet?
         if self.foundPath(node): return
@@ -132,8 +140,11 @@ class Search:
         self.reachable.remove(node)
         self.explored.append(node)
         # where can we get from here?
-        for adjnode in node.adjacent:
-            self.addAdjacent(node,adjnode)
+        new_reachable = self.graph.getAdjacents(node)
+        for adjacent in new_reachable:
+            if adjacent in self.reachable or adjacent in self.explored: continue
+            adjacent.previous = node
+            self.reachable.append(adjacent)
         self.printNodesList()
         for rnode in self.reachable:
             if rnode not in [self.start,self.goal]:
@@ -143,13 +154,8 @@ class Search:
                 enode.bgcolor = orange
 
     def chooseNode(self):
-        return self.reachable[ int(random() * len(self.reachable)) ]
-
-    def addAdjacent(self,node,adjacent):
-        if adjacent in self.explored or adjacent in self.reachable:
-            return
-        adjacent.previous = node
-        self.reachable.append(adjacent)
+        return choice(self.reachable)
+        #return self.reachable[ int(random() * len(self.reachable)) ]
 
     def render(self):
         print '================== render =============='

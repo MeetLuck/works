@@ -9,6 +9,7 @@ blue    = Color('blue')
 yellow  = Color('yellow')
 orange  = Color('orange')
 purple  = Color('purple')
+gray    = Color('gray')
 # light color
 lightyellow  = Color('lightyellow')
 lightgray    = Color('lightgray')

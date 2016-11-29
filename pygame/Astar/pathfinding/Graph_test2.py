@@ -1,4 +1,4 @@
-from Graph import *
+from Graph2 import *
 
 class App:
     def __init__(self,grid):
