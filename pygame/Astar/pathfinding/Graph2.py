@@ -56,6 +56,7 @@ class Graph:
                 self.nodes.append(node)
     def getAdjacents(self,node):
         # add edges to adjacent nodes
+        ajacent = list()
         for r in range(self.rows):
             for c in range(self.cols):
                 if node != self.nodes[self.cols * r + c]: continue
@@ -63,7 +64,7 @@ class Graph:
                 if grid[r][c] == '*': continue
                 # figure out the adjacent nodes
                 if r > 0 and grid[r-1][c] == ' ': # UP 
-                    node.adjacent.append(self.nodes[self.cols*(r-1) + c])
+                    adjacent.append(self.nodes[self.cols*(r-1) + c])
                 if r < self.rows-1 and grid[r+1][c] == ' ': # DOWN
                     node.adjacent.append(self.nodes[self.cols*(r+1) + c])
                 if c > 0 and grid[r][c-1] == ' ': # LEFT
