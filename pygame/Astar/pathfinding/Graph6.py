@@ -1,4 +1,4 @@
-from constants2 import *
+from constants3 import *
 bgcolor = lightgray
 
 class Node:
@@ -109,13 +109,14 @@ class BreadFirstSearch:
         for node in self.graph.nodes:
             node.reset() #self.graph.nodes[i].reset()
         self.reachable = Queue()
-        self.explored = list()
+        self.camefrom = {}
         self.path = list()
         self.start = self.graph.findNodeByLabel(self.start_label)
         self.goal =  self.graph.findNodeByLabel(self.goal_label)
         self.start.Start = True
         self.goal.Goal = True
         self.reachable.put(self.start)
+        self.camefrom[self.start] = None
         self.currentNode = self.start
         self.iteration = 0
 
@@ -136,8 +137,7 @@ class BreadFirstSearch:
         # choose current Node from 'reachable'
         self.chooseCurrentNode()
         # do not repeat
-        #self.reachable.remove(self.currentNode)
-        self.explored.append(self.currentNode)
+        #self.explored.append(self.currentNode)
         # get new reachable
         self.getNewReachable(self.currentNode)
         printNodesList(self)
@@ -152,17 +152,18 @@ class BreadFirstSearch:
 
     def markNodes(self):
         for node in self.reachable.elements: node.bgcolor = green
-        for node in self.explored:  node.bgcolor = orange
+        for node in self.camefrom.values():
+            if node is not None:node.bgcolor = orange
 
     def getNewReachable(self,current):
         changedirection = {'N':'S','S':'N','E':'W','W':'E'}
         # where can we get from here?
         new_reachable = self.graph.getAdjacents(current)
         for direction,adjacent in new_reachable.items():
-            if adjacent in self.reachable.elements or adjacent in self.explored: continue
-            adjacent.previous = current
+            if adjacent in self.reachable.elements or adjacent in self.camefrom.values(): continue
             adjacent.camefrom = changedirection[direction]
             self.reachable.put(adjacent)
+            self.camefrom[adjacent] = current
 
     def draw(self,surface):
         self.graph.draw(surface)
