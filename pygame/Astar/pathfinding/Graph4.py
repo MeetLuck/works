@@ -8,22 +8,20 @@ class Node:
         self.reset()
     def reset(self):
         self.bgcolor = bgcolor
-        self.previous = None
         self.camefrom = ""
-        self.cost = 'Infinity'
+        self.previous = None
         self.Goal = False
         self.Start = False
         self.Current = False
-    def __str__(self):
-        return self.label
     def draw(self):
         if self.wall: self.bgcolor = darkgray
         self.image = pygame.Surface((50,50))
         self.image.fill(self.bgcolor)
         self.rect = self.image.get_rect()
-        pygame.draw.rect(self.image,gray,self.rect,1)
         if self.Current:
             pygame.draw.rect(self.image,red,self.rect,2)
+        else:
+            pygame.draw.rect(self.image,gray,self.rect,1)
         if self.Goal:
             fontName,fontcolor = 'Impact',red
         elif self.Start:
@@ -179,7 +177,6 @@ class Search:
 
     def chooseNode(self):
         return choice(self.reachable)
-        #return self.reachable[ int(random() * len(self.reachable)) ]
 
     def render(self):
         print '================== render =============='
