@@ -1,4 +1,4 @@
-from constants import *
+from constants2 import *
 bgcolor = lightgray
 
 class Node:
@@ -92,7 +92,7 @@ class Graph:
         return surface
 
 # Search
-class Search:
+class BreadFirstSearch:
     def __init__(self, graph,start,goal):
         self.graph = graph
         self.start_label = start
@@ -101,14 +101,14 @@ class Search:
         self.found = False
         for node in self.graph.nodes:
             node.reset() #self.graph.nodes[i].reset()
-        self.reachable = list()
+        self.reachable = Queue()
         self.explored = list()
         self.path = list()
         self.start = self.graph.findNodeByLabel(self.start_label)
         self.goal =  self.graph.findNodeByLabel(self.goal_label)
         self.start.Start = True
         self.goal.Goal = True
-        self.reachable.append(self.start)
+        self.reachable.put(self.start)
         self.currentNode = self.start
         self.iteration = 0
 
@@ -129,7 +129,7 @@ class Search:
         # choose current Node from 'reachable'
         self.chooseCurrentNode()
         # do not repeat
-        self.reachable.remove(self.currentNode)
+        #self.reachable.remove(self.currentNode)
         self.explored.append(self.currentNode)
         # get new reachable
         self.getNewReachable(self.currentNode)
@@ -139,25 +139,26 @@ class Search:
 
     def chooseCurrentNode(self):
         self.currentNode.Current = False
-        self.currentNode = choice(self.reachable)
+        self.currentNode = self.reachable.get()
         self.currentNode.Current = True
         #return choice(self.reachable)
 
     def markNodes(self):
-        for node in self.reachable: node.bgcolor = green
+        for node in self.reachable.elements: node.bgcolor = green
         for node in self.explored:  node.bgcolor = orange
 
     def getNewReachable(self,current):
         # where can we get from here?
         new_reachable = self.graph.getAdjacents(current)
         for direction,adjacent in new_reachable.items():
-            if adjacent in self.reachable or adjacent in self.explored: continue
+            if adjacent in self.reachable.elements or adjacent in self.explored: continue
+            #if adjacent in self.explored: continue
             adjacent.previous = current
             if direction == 'N': adjacent.camefrom = 'S'
             if direction == 'S': adjacent.camefrom = 'N'
             if direction == 'E': adjacent.camefrom = 'W'
             if direction == 'W': adjacent.camefrom = 'E'
-            self.reachable.append(adjacent)
+            self.reachable.put(adjacent)
 
     def draw(self,surface):
         self.graph.draw(surface)

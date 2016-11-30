@@ -41,7 +41,7 @@ class Queue:
 
 def printNodesList(search):
     print '============== self.reachable, self.explored  =============='
-    for node in search.reachable:
+    for node in search.reachable.elements:
         #if node in [self.start,self.goal]: continue
         print node.label,
     print '  :  ',

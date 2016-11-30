@@ -3,7 +3,7 @@
 #
 # Feel free to use this code in your own projects, including commercial projects
 # License: Apache v2.0 <http://www.apache.org/licenses/LICENSE-2.0.html>
-
+from __future__ import print_function
 class SimpleGraph:
     def __init__(self):
         self.edges = {}
@@ -87,7 +87,7 @@ class SquareGrid:
 
 class GridWithWeights(SquareGrid):
     def __init__(self, width, height):
-        super().__init__(width, height)
+        SquareGrid.__init__(self,width, height)
         self.weights = {}
     
     def cost(self, from_node, to_node):
