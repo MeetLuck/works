@@ -1,5 +1,7 @@
 from constants2 import *
+from math import sqrt
 bgcolor = lightgray
+inf = 1.0E09
 
 class Node:
     def __init__(self):
@@ -7,11 +9,48 @@ class Node:
         self.wall = False
         self.reset()
     def reset(self):
-        self.cost = 1000 #float('inf')
+        self.G = inf
+        self.F = inf
+        self.H = inf
         self.camefrom = ""
         self.previous = None
         self.Goal, self.Start, self.Current = False,False,False
         self.bgcolor = bgcolor
+
+    def drawLabel(self):
+        if self.Goal:
+            fontName,fontcolor = 'Impact',red
+        elif self.Start:
+            fontName,fontcolor = 'Impact',blue
+        else:
+            fontName,fontcolor = 'Courier',black
+        self.drawText(self.label,fontName,fontcolor,(5,5) )
+
+    def drawText(self,text,fontName,fontcolor,topleft):
+        font = pygame.font.SysFont(fontName, 16) # 'Fixedsys' #'Terminal' #'Impact','Arial'
+        text = font.render(text, True, fontcolor)
+        rect = text.get_rect()
+        rect.topleft = topleft
+        self.image.blit(text,rect)
+
+    # ========= draw came from(N,E,W,S) ===========
+    def drawNEWS(self):
+        if not self.camefrom: return None
+        img = imgNEWS[self.camefrom]
+        img.set_colorkey(white)
+        img = img.convert_alpha()
+        imgrect = img.get_rect()
+        imgrect.center = self.rect.center
+        self.image.blit(img,imgrect)
+
+    def drawCost(self):
+        fontName,fontcolor = 'Terminal', blue
+        if self.F != inf:
+            self.drawText( str(self.F),fontName,fontcolor, (self.rect.width//2,10))
+        if self.G != inf:
+            self.drawText( str(self.G),fontName,fontcolor, (self.rect.left+20,self.rect.bottom-20))
+        if self.H != inf:
+            self.drawText( str(self.H),fontName,fontcolor, (self.rect.right-20,self.rect.bottom-20))
     def draw(self,size):
         if self.wall: self.bgcolor = darkgray
         self.image = pygame.Surface((size,size))
@@ -22,28 +61,9 @@ class Node:
             pygame.draw.rect(self.image,red,self.rect,2)
         else:
             pygame.draw.rect(self.image,gray,self.rect,1)
-        if self.Goal:
-            fontName,fontcolor = 'Impact',red
-        elif self.Start:
-            fontName,fontcolor = 'Impact',blue
-        else:
-            fontName,fontcolor = 'Courier',black
-        font = pygame.font.SysFont(fontName, 16) # 'Fixedsys' #'Terminal' #'Impact','Arial'
-        text = font.render(self.label, True, fontcolor)
-        rect = text.get_rect()
-        rect.topleft = 5,5
-        #rect.center = self.rect.center
-        self.image.blit(text,rect)
-        # ========= draw came from(N,E,W,S) ===========
-        def imageCamefrom():
-            if not self.camefrom: return None
-            img = imgNEWS[self.camefrom]
-            img.set_colorkey(white)
-            img = img.convert_alpha()
-            imgrect = img.get_rect()
-            imgrect.center = self.rect.center
-            self.image.blit(img,imgrect)
-        imageCamefrom()
+        self.drawLabel()
+        self.drawCost()
+        self.drawNEWS()
         return self.image
 
 class Graph:
@@ -80,14 +100,30 @@ class Graph:
         # add edges to adjacent nodes
         adjacent = dict()
         r,c = self.findRC(node) # y=r,x=c
+        #      c-1  c   c+1
+        # r-1  NW   N   NE
+        #           
+        # r    W  (r,c) E
+        #           
+        # r+1  SW   S   SE
+        #
         N,E,W,S = (r-1,c),(r,c+1),(r,c-1),(r+1,c)
-        NEWS = [N,E,W,S]
+        NE,SE,SW,NW = (r-1,c+1),(r+1,c+1),(r+1,c-1),(r-1,c-1)
+        NEWS = [N,E,W,S] + [NE,SE,SW,NW]
         NEWS = filter(self.inBounds,NEWS)
         NEWS = filter(self.notWalls,NEWS)
         if N in NEWS: adjacent['N'] = self.grid[N[0]][N[1]]
         if E in NEWS: adjacent['E'] = self.grid[E[0]][E[1]]
         if W in NEWS: adjacent['W'] = self.grid[W[0]][W[1]]
         if S in NEWS: adjacent['S'] = self.grid[S[0]][S[1]]
+        if NE in NEWS and self.notWalls(N) and self.notWalls(E):
+            adjacent['NE'] = self.grid[NE[0]][NE[1]]
+        if SE in NEWS and self.notWalls(S) and self.notWalls(E):
+            adjacent['SE'] = self.grid[SE[0]][SE[1]]
+        if SW in NEWS and self.notWalls(S) and self.notWalls(W):
+            adjacent['SW'] = self.grid[SW[0]][SW[1]]
+        if NW in NEWS and self.notWalls(N) and self.notWalls(W):
+            adjacent['NW'] = self.grid[NW[0]][NW[1]]
         return adjacent
 
     def findNodeByLabel(self,label):
@@ -95,6 +131,7 @@ class Graph:
             for c,col in enumerate(row):
                 if self.grid[r][c].label == label:
                     return col
+
     def draw(self,surface):
         w,h = surface.get_size()
         size = min(w//self.Ncols,h//self.Nrows)
@@ -122,6 +159,9 @@ class Astar:
         self.path = list()
         self.start = self.graph.findNodeByLabel(self.start_label)
         self.goal =  self.graph.findNodeByLabel(self.goal_label)
+        self.start.G = 0
+        self.findHeuristic(self.start)
+        self.start.F = self.start.G + self.start.H
         self.start.Start = True
         self.goal.Goal = True
         self.reachable.append(self.start)
@@ -159,40 +199,49 @@ class Astar:
         self.markNodes()
 
     def chooseBestNode(self):
-        mincost = float('inf')
+        mincost = inf #float('inf')
         bestnode = None
+        print '========== choose Best Node ================='
         for node in self.reachable:
-            cost_fromStart = node.cost          # G cost
-            cost_ToGoal = self.heuristic(node)  # H cost
-            cost_total = cost_fromStart + cost_ToGoal
-            print node.label, cost_fromStart, cost_ToGoal
-            if mincost > cost_total:
-                mincost = cost_total
+            print '{} : {}+{}={}'.format(node.label,node.G,node.H,node.F)
+            if node.F < mincost:
+                mincost = node.F
                 bestnode = node
+            elif node.F == mincost:
+                bestnode = choice([node,bestnode])
         return bestnode
-        #return choice(self.reachable)
-    def heuristic(self,node): # cost from node to Goal
+
+    def findHeuristic(self,node): # G : cost from node to Goal
         r1,c1 = self.graph.findRC(node)
         r2,c2 = self.graph.findRC(self.goal)
-        return abs(r2-r1)+abs(c2-c1)
+        node.H = 10*( abs(r2-r1) + (c2-c1) )
+        node.H = int(node.H)
+
 
     def markNodes(self):
         for node in self.reachable: node.bgcolor = green
         for node in self.explored:  node.bgcolor = orange
 
     def getNewReachable(self, current):
-        changedirection = {'N':'S','S':'N','E':'W','W':'E'}
+        NEWS  = {'N':'S','S':'N','E':'W','W':'E'}
+        changedirection  = {'NE':'SW','SW':'NE','SE':'NW','NW':'SE'}
+        changedirection.update(NEWS)
         # where can we get from here?
         new_reachable = self.graph.getAdjacents(current)
         for direction,adjacent in new_reachable.items():
             if adjacent in self.explored: continue
+            # If this is a new path, or a shorter path than what we have, keep it.
+            if adjacent.G > current.G + 10:
+                self.findHeuristic(adjacent)  # H cost
+                adjacent.previous = current
+                if direction in NEWS.keys():
+                    adjacent.G = current.G + 10
+                else:
+                    adjacent.G = current.G + 14
+                adjacent.F = adjacent.G + adjacent.H
+                adjacent.camefrom = changedirection[direction]
             if adjacent not in self.reachable:
                 self.reachable.append(adjacent)
-            # If this is a new path, or a shorter path than what we have, keep it.
-            if adjacent.cost > current.cost + 1:
-                adjacent.previous = current
-                adjacent.cost = current.cost + 1
-                adjacent.camefrom = changedirection[direction]
 
     def draw(self,surface):
         self.graph.draw(surface)

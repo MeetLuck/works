@@ -9,11 +9,12 @@ maps = [
          list("* ** "),
          list("*    ") ],
 
-        [list("     "),
-         list("  *  "),
-         list("  *  "),
-         list("  *  "),
-         list("     ")],
+        [list("        "),
+         list("    *   "),
+         list("    *   "),
+         list("    *   "),
+         list("        "),
+         list("        ")],
         ]
 
 amap = maps[1]
@@ -28,6 +29,11 @@ imgNEWS = {'N':imgN, 'S':imgS, 'E':imgE, 'W':imgW }
 for direction,img in imgNEWS.items():
     img0 = pygame.transform.rotozoom(img,angle,scale)
     imgNEWS[direction] = img0
+imgNE = pygame.transform.rotozoom(imgE,+45,scale)
+imgSE = pygame.transform.rotozoom(imgE,-45,scale)
+imgNW = pygame.transform.rotozoom(imgW,-45,scale)
+imgSW = pygame.transform.rotozoom(imgW,+45,scale)
+imgNEWS.update( {'NE':imgNE,'SE':imgSE,'NW':imgNW,'SW':imgSW } )
 
 import collections
 class Queue:

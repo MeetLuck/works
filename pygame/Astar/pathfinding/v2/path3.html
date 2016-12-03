@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Gabriel Gambetta - Pathfinding Demystified (Part III): A* Demystified</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-17633478-1']);
+    _gaq.push(['_trackPageview']);
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  <!-- End Google Analytics -->
+</head>
+<body>
+<div class="main">
+<div class="nav">
+<a href="path1.html"><< Series Start</a>	<a class="homelink" href="index.html">Gabriel Gambetta</a>
+</div>
+<header>
+<h1 class="title">Pathfinding Demystified (Part III): A* Demystified</h1>
+</header>
+<p><a href="path1.html">Part I</a> - <a href="path2.html">Part II</a> - <a href="path3.html">Part III</a> - <a href="path4.html">Part IV</a></p>
+<script src="path_helper.js"></script>
+
+<h2 id="introduction">Introduction</h2>
+<p>The <a href="path1.html">first article</a> in this series presented the generic pathfinding algorithm; every pathfinding algorithm is a slight variation of it.</p>
+<p>The <a href="path2.html">second article</a> revealed the secret behind the different search algorithms: it all comes down to the <code>choose_node</code> function. It also presented a reasonably simple <code>choose_node</code> that yields an algorithm called <strong>Uniform Cost Search</strong>.</p>
+<p>This algorithm is pretty good: it will find the shortest path from the start node to the goal node. However, it¡¯s somewhat wasteful: it considers paths that a human clearly sees as ¡°wrong¡± - they tend to move <em>away</em> from the goal. Can we avoid this?</p>
+<h2 id="the-magical-algorithm">The Magical Algorithm</h2>
+<p>Imagine we¡¯re running a search algorithm in a special computer which has a chip that can do <em>magic</em> (bear with me). With this awesome chip, we can express <code>choose_node</code> in a very simple way which is guaranteed to produce the shortest path without losing any time exploring partial paths that won¡¯t lead anywhere:</p>
+<pre><code>function choose_node (reachable):
+    return magic(reachable, &quot;whatever node is next in the shortest path&quot;)</code></pre>
+<p>Tempting, but magic chips still require somewhat lower level code. This would be a good approximation:</p>
+<pre><code>function choose_node (reachable):
+    min_cost = infinity
+    best_node = None
+
+    for node in reachable:
+        cost_start_to_node = node.cost
+        cost_node_to_goal = magic(node, &quot;shortest path to the goal&quot;)
+        total_cost = cost_start_to_node + cost_node_to_goal
+
+        if min_cost &gt; total_cost:
+            min_cost = total_cost
+            best_node = node
+
+    return best_node
+    </code></pre>
+<p>This is a great way to choose the next node: we choose the node that yields the shortest path from the start node to the goal node, which is exactly what we¡¯re looking for.</p>
+<p>We have also minimized the use of magic: we know exactly what¡¯s the cost from the start node to each node (that¡¯s <code>node.cost</code>), and we use magic only to divine the cost from the node to the goal node.</p>
+<h2 id="the-non-magical-but-pretty-awesome-a">The Non-Magical but Pretty Awesome A*</h2>
+<p>Unfortunately, magic chips are quite new, and we want to support legacy hardware. Most of the code is fine, except for this line:</p>
+<pre><code># Throws MuggleProcessorException
+cost_node_to_goal = magic(node, &quot;shortest path to the goal&quot;)</code></pre>
+<p>So we can¡¯t use magic to know the cost of the path we haven¡¯t explored yet. Fine. Let¡¯s make a guess, then. We¡¯re optimistic, so we¡¯ll assume there¡¯s nothing between the current node and the goal node, and we can just go straight:</p>
+<pre><code>cost_node_to_goal = distance(node, goal_node)</code></pre>
+<p>Note that the <em>shortest path</em> and the <em>minimum distance</em> are different: the minimum distance assumes there are absolutely no obstacles between the current node and the goal node.</p>
+<p>This estimate can be quite simple. In our grid-based examples, it¡¯s the <em>Manhattan distance</em> between the two nodes (that is, <code>abs(Ax - Bx) + abs(Ay - By)</code>). If you could move in diagonals, it would be <code>sqrt( (Ax - Bx)^2 + (Ay - By)^2 )</code>, and so on. The really important thing is to never <em>over</em>estimate the cost.</p>
+<p>So here¡¯s a non-magical version of <code>choose_node</code>:</p>
+<pre><code>function choose_node (reachable):
+    min_cost = infinity
+    best_node = None
+
+    for node in reachable:
+        cost_start_to_node = node.cost
+        cost_node_to_goal = estimate_distance(node, goal_node)
+        total_cost = cost_start_to_node + cost_node_to_goal
+
+        if min_cost &gt; total_cost:
+            min_cost = total_cost
+            best_node = node
+
+    return best_node</code></pre>
+<p>The function that estimates the distance from a node to the goal is called an <em>heuristic</em>, and this search algorithm, ladies and gentlemen, is called¡¦ <strong>A*</strong>.</p>
+<h2 id="live-demo">Live Demo</h2>
+<p>While you recover from the shock of realizing that the mysterious <strong>A*</strong> is actually <em>that simple</em>, here¡¯s a demo you can play with. Unlike the previous example, you¡¯ll notice the search wastes very little time going in the wrong direction.</p>
+<table><tr>
+<td><canvas width="401" height="401" id="demo"></canvas></td>
+<td>
+<p id="reachable" style="color:green; font-family:courier;">
+reachable = []
+</p>
+<p id="explored" style="color:red; font-family:courier;">
+explored = []
+</p>
+<p id="path" style="font-family:courier;"></p>
+<p>
+    
+<input type="button" value="Restart" onclick="stopRunSearch(); search.reset();"></input> <input type="button" value="Step" onclick="stopRunSearch(); search.step();"></input> <input type="button" value="Run" onclick="runSearch();"></input>
+</p>
+</td>
+</tr>
+</table>
+    
+<script>
+
+
+// Build the grid used in the example.
+// "*" represent a blocked square, " " an open one.
+var graph = new Graph(["          ",
+                       "          ",
+                       "          ",
+                       "          ",
+                       "          ",
+                       "          ",
+                       "        * ",
+                       "       ** ",
+                       "      **  ",
+                       "          "]);
+
+var stepDelay = 100;
+
+var search = new Search(graph, "BN", "CK");
+search.reset();
+
+render(search);
+
+</script>
+            
+<h2 id="conclusion">Conclusion</h2>
+<p>We have finally arrived at the <strong>A*</strong> algorithm, which is nothing more than the generic search algorithm described in the first article, with some improvements described in the second article, and using a <code>choose_node</code> function that chooses the node we estimate will get us closer to the goal. That¡¯s it.</p>
+<p>For reference, here¡¯s the full pseudocode of the main method:</p>
+<pre><code>function find_path (start_node, end_node):
+    reachable = [start_node]
+    explored = []
+
+    while reachable is not empty:
+        # Choose some node we know how to reach.
+        node = choose_node(reachable)
+
+        # If we just got to the goal node, build and return the path.
+        if node == goal_node:
+            return build_path(goal_node)
+
+        # Don&#39;t repeat ourselves.
+        reachable.remove(node)
+        explored.add(node)
+
+        # Where can we get from here that we haven&#39;t explored before?
+        new_reachable = get_adjacent_nodes(node) - explored
+        for adjacent in new_reachable:
+            # First time we see this node?
+            if adjacent not in reachable:
+                reachable.add(adjacent)
+        
+            # If this is a new path, or a shorter path than what we have, keep it.
+            if node.cost + 1 &lt; adjacent.cost:
+                adjacent.previous = node
+                adjacent.cost = node.cost + 1
+
+    # If we get here, no path was found :(
+    return None</code></pre>
+<p>The <code>build_path</code> method:</p>
+<pre><code>function build_path (to_node):
+    path = []
+    while to_node != None:
+        path.add(to_node)
+        to_node = to_node.previous
+    return path</code></pre>
+<p>And the <code>choose_node</code> method that makes it <strong>A*</strong>:</p>
+<pre><code>function choose_node (reachable):
+    min_cost = infinity
+    best_node = None
+
+    for node in reachable:
+        cost_start_to_node = node.cost
+        cost_node_to_goal = estimate_distance(node, goal_node)
+        total_cost = cost_start_to_node + cost_node_to_goal
+
+        if min_cost &gt; total_cost:
+            min_cost = total_cost
+            best_node = node
+
+    return best_node</code></pre>
+<p>That¡¯s it.</p>
+<p>So why is there a <strong>Part IV</strong>?</p>
+<p>Now that you understand how <strong>A*</strong> works, I want to explore some of the incredible applications it can have, way beyond searching for paths in a square grid.</p>
+<div class="centered">
+<a href="path2.html">&lt;&lt; Part II</a> ¡¤ <a href="path4.html">Part IV &gt;&gt;</a>
+</div>
+<div class="social">
+
+<!-- Facebook -->
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<div class="fb-like" data-send="false" data-layout="button_count" data-width="450" data-show-faces="false" style="width: 150px;"></div>
+
+
+<!-- Google+ -->
+<div class="g-plusone"></div>
+<script type="text/javascript">
+  (function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = 'https://apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+  })();
+</script>
+
+
+<!-- Twitter -->
+<a href="https://twitter.com/share" class="twitter-share-button" data-via="gabrielgambetta">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+</div>
+</div>
+<div class="copyright">&copy; Gabriel Gambetta 2016</div>
+</script>
+</body>
+</html>
