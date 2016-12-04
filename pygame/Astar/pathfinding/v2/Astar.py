@@ -214,12 +214,12 @@ class Astar:
     def findHeuristic(self,node): # G : cost from node to Goal
         r1,c1 = self.graph.findRC(node)
         r2,c2 = self.graph.findRC(self.goal)
-        node.H = 10*( abs(r2-r1) + (c2-c1) )
+        node.H = 10*( abs(r2-r1) + abs(c2-c1) )
         node.H = int(node.H)
 
 
     def markNodes(self):
-        for node in self.reachable: node.bgcolor = green
+        for node in self.reachable: node.bgcolor = lightgreen
         for node in self.explored:  node.bgcolor = orange
 
     def getNewReachable(self, current):
@@ -231,16 +231,16 @@ class Astar:
         for direction,adjacent in new_reachable.items():
             if adjacent in self.explored: continue
             # If this is a new path, or a shorter path than what we have, keep it.
-            if adjacent.G > current.G + 10:
-                self.findHeuristic(adjacent)  # H cost
-                adjacent.previous = current
-                if direction in NEWS.keys():
-                    adjacent.G = current.G + 10
-                else:
-                    adjacent.G = current.G + 14
-                adjacent.F = adjacent.G + adjacent.H
-                adjacent.camefrom = changedirection[direction]
             if adjacent not in self.reachable:
+                if adjacent.G > current.G + 10:
+                    self.findHeuristic(adjacent)  # H cost
+                    adjacent.previous = current
+                    if direction in NEWS.keys():
+                        adjacent.G = current.G + 10
+                    else:
+                        adjacent.G = current.G + 14
+                    adjacent.F = adjacent.G + adjacent.H
+                    adjacent.camefrom = changedirection[direction]
                 self.reachable.append(adjacent)
 
     def draw(self,surface):
