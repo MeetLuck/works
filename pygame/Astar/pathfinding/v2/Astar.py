@@ -1,6 +1,6 @@
 from constants2 import *
 from math import sqrt
-bgcolor = lightgray
+bgcolor = white #lightgray
 inf = 1.0E09
 
 class Node:
@@ -9,9 +9,7 @@ class Node:
         self.wall = False
         self.reset()
     def reset(self):
-        self.G = inf
-        self.F = inf
-        self.H = inf
+        self.G = self.F = self.H = ""
         self.camefrom = ""
         self.previous = None
         self.Goal, self.Start, self.Current = False,False,False
@@ -45,16 +43,13 @@ class Node:
 
     def drawCost(self):
         fontName,fontcolor = 'Terminal', blue
-        if self.F != inf:
-            self.drawText( str(self.F),fontName,fontcolor, (self.rect.width//2,10))
-        if self.G != inf:
-            self.drawText( str(self.G),fontName,fontcolor, (self.rect.left+20,self.rect.bottom-20))
-        if self.H != inf:
-            self.drawText( str(self.H),fontName,fontcolor, (self.rect.right-20,self.rect.bottom-20))
+        self.drawText( str(self.F),fontName,fontcolor, (self.rect.width//2,10))
+        self.drawText( str(self.G),fontName,fontcolor, (self.rect.left+20,self.rect.bottom-20))
+        self.drawText( str(self.H),fontName,fontcolor, (self.rect.right-20,self.rect.bottom-20))
+
     def draw(self,size):
         if self.wall: self.bgcolor = darkgray
-        self.image = pygame.Surface((size,size))
-        #self.image = pygame.Surface((50,50))
+        self.image = pygame.Surface((size,size)) #self.image = pygame.Surface((50,50))
         self.image.fill(self.bgcolor)
         self.rect = self.image.get_rect()
         if self.Current:
@@ -160,7 +155,7 @@ class Astar:
         self.start = self.graph.findNodeByLabel(self.start_label)
         self.goal =  self.graph.findNodeByLabel(self.goal_label)
         self.start.G = 0
-        self.findHeuristic(self.start)
+        self.computeHeuristic(self.start)
         self.start.F = self.start.G + self.start.H
         self.start.Start = True
         self.goal.Goal = True
@@ -175,6 +170,7 @@ class Astar:
         #node.bgcolor = yellow
         self.buildPath(node)
         return True
+
     def buildPath(self,node):
         while node != None:
             node.bgcolor = lightpurple
@@ -192,18 +188,18 @@ class Astar:
         # do not repeat
         self.reachable.remove(self.currentNode)
         self.explored.append(self.currentNode)
+        # set bgcolor of nodes
+        self.markNodes()
         # get new reachable
         self.getNewReachable(self.currentNode)
         printNodesList(self)
-        # set bgcolor of nodes
-        self.markNodes()
 
     def chooseBestNode(self):
         mincost = inf #float('inf')
         bestnode = None
-        print '========== choose Best Node ================='
+#       print '========== choose Best Node ================='
         for node in self.reachable:
-            print '{} : {}+{}={}'.format(node.label,node.G,node.H,node.F)
+#           print '{} : {}+{}={}'.format(node.label,node.G,node.H,node.F)
             if node.F < mincost:
                 mincost = node.F
                 bestnode = node
@@ -211,16 +207,24 @@ class Astar:
                 bestnode = choice([node,bestnode])
         return bestnode
 
-    def findHeuristic(self,node): # G : cost from node to Goal
+    def computeHeuristic(self,node): # G : cost from node to Goal
         r1,c1 = self.graph.findRC(node)
         r2,c2 = self.graph.findRC(self.goal)
         node.H = 10*( abs(r2-r1) + abs(c2-c1) )
-        node.H = int(node.H)
-
+        return node.H
 
     def markNodes(self):
-        for node in self.reachable: node.bgcolor = lightgreen
+        for node in self.reachable: node.bgcolor = green
         for node in self.explored:  node.bgcolor = orange
+
+    def computeCost(self,current,adjacent,direction):
+        if direction in ['N','E','W','S']:
+            adjacent.G = current.G + 10
+        elif direction in ['NE','NW','SE','SW']:
+            adjacent.G = current.G + 14
+        else:
+            raise Exception('no such direction, direction error')
+        adjacent.F = adjacent.G + self.computeHeuristic(adjacent)
 
     def getNewReachable(self, current):
         NEWS  = {'N':'S','S':'N','E':'W','W':'E'}
@@ -230,18 +234,20 @@ class Astar:
         new_reachable = self.graph.getAdjacents(current)
         for direction,adjacent in new_reachable.items():
             if adjacent in self.explored: continue
-            # If this is a new path, or a shorter path than what we have, keep it.
-            if adjacent not in self.reachable:
-                if adjacent.G > current.G + 10:
-                    self.findHeuristic(adjacent)  # H cost
-                    adjacent.previous = current
-                    if direction in NEWS.keys():
-                        adjacent.G = current.G + 10
-                    else:
-                        adjacent.G = current.G + 14
-                    adjacent.F = adjacent.G + adjacent.H
-                    adjacent.camefrom = changedirection[direction]
+            if adjacent not in self.reachable: # new path
+                self.computeCost(current,adjacent,direction)
+                adjacent.bgcolor = darkgreen
+                adjacent.previous = current
+                adjacent.camefrom = changedirection[direction]
                 self.reachable.append(adjacent)
+            else: # existing path => check whether it is Short Path or not
+                if   direction in ['N','E','W','S']:        newG = current.G + 10
+                elif direction in ['NE','NW','SE','SW']:    newG = current.G + 14
+                if newG < adjacent.G: # short path
+                    adjacent.G = newG
+                    adjacent.previous = current
+                    adjacent.camefrom = changedirection[direction]
+                    adjacent.F = adjacent.G + self.computeHeuristic(adjacent)
 
     def draw(self,surface):
         self.graph.draw(surface)

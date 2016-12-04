@@ -18,7 +18,7 @@ maps = [
         ]
 
 amap = maps[1]
-angle,scale = 0,0.5
+angle,scale = 0,1.0
 imgN = pygame.image.load('images/arrow-N.png')
 imgS = pygame.image.load('images/arrow-S.png')
 imgE = pygame.image.load('images/arrow-E.png')

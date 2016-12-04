@@ -6,7 +6,7 @@ class App:
         self.OnInit()
         g = Graph(amap)
         #self.search = Search(g,'A','T')
-        self.search = Astar(g,'S','W')
+        self.search = Astar(g,'R','W')
         self.search.reset()
     def OnInit(self):
         pygame.init()
