@@ -18,12 +18,11 @@ maps = [
         ]
 
 amap = maps[1]
-
 angle,scale = 0,0.5
-imgN = pygame.image.load('../arrow-N.png')
-imgS = pygame.image.load('../arrow-S.png')
-imgE = pygame.image.load('../arrow-E.png')
-imgW = pygame.image.load('../arrow-W.png')
+imgN = pygame.image.load('images/arrow-N.png')
+imgS = pygame.image.load('images/arrow-S.png')
+imgE = pygame.image.load('images/arrow-E.png')
+imgW = pygame.image.load('images/arrow-W.png')
 
 imgNEWS = {'N':imgN, 'S':imgS, 'E':imgE, 'W':imgW }
 for direction,img in imgNEWS.items():
