@@ -65,9 +65,9 @@ class Visualizer(object):
         if not self.field.collidepoint(event.pos):
             return
         
-        ncol = (event.pos[0] - self.field.left) / self.grid_size
-        nrow = (event.pos[1] - self.field.top) / self.grid_size
-        coord = (nrow, ncol)
+        col = (event.pos[0] - self.field.left) / self.grid_size
+        row = (event.pos[1] - self.field.top) / self.grid_size
+        coord = (row, col)
 
         if event.button == 1:
             self.map.set_blocked(coord, not self.map.blocked[coord])
@@ -215,7 +215,6 @@ def run_game():
         draw_title(screen, TITLE_RECT)
     
         visualizer.draw()
-        visualizer.map.printme()
        
         pygame.display.flip()
 
