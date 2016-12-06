@@ -1,0 +1,96 @@
+import pygame
+from gridmap import GridMap
+from colors import *
+bgcolor = lightgray
+
+class App:
+    def __init__(self,gridsize=20):
+        self.running = True
+        self.initPygame()
+        self.initGridMap(gridsize)
+    def initPygame(self):
+        pygame.init()
+        resolution = 640,480
+        self.screen = pygame.display.set_mode(resolution)
+        self.screen.fill(bgcolor)
+        self.rect = self.screen.get_rect()
+        self.clock = pygame.time.Clock()
+    def initGridMap(self,gridsize):
+        self.gridsize = gridsize
+        self.Nrows = self.rect.height/gridsize
+        self.Ncols = self.rect.width/gridsize
+        self.gridmap = GridMap(self.Nrows,self.Ncols)
+    def onEvent(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_F5:
+                pass
+            elif event.key == pygame.K_ESCAPE:
+                self.running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            self.onMouseClick(event)
+    def onMouseClick(self,event):
+        if not self.rect.collidepoint(event.pos): return
+        row = (event.pos[1] - self.rect.top) /self.gridsize
+        col = (event.pos[0] - self.rect.left)/self.gridsize
+        coord = (row,col)
+        if event.button == 2:
+            self.gridmap.setStart(coord)
+        elif event.button == 1:
+            self.gridmap.setWall(coord)
+        elif event.button == 3:
+            self.gridmap.setGoal(coord)
+    def drawtile(self,topleft):
+        rect = topleft,(self.gridsize,self.gridsize)
+        pygame.draw.rect(self.screen,black,rect,1)
+    def drawCircle(self,coord,color=black):
+        row,col = coord
+        topleft = col*self.gridsize,row*self.gridsize
+        rect = topleft,(self.gridsize,self.gridsize)
+        rect = pygame.Rect(rect)
+        pygame.draw.circle(self.screen,color,rect.center,self.gridsize/4)
+    def drawStart(self,coord):
+        self.drawCircle(coord,blue)
+    def drawGoal(self,coord):
+        self.drawCircle(coord,red)
+    def drawWall(self,coord):
+        row,col = coord
+        topleft = col*self.gridsize,row*self.gridsize
+        rect = topleft,(self.gridsize,self.gridsize)
+        pygame.draw.rect(self.screen,gray,rect)
+
+    def drawGrid(self):
+        for row in range(self.Nrows):
+            for col in range(self.Ncols):
+                topleft = col*self.gridsize,row*self.gridsize
+                self.drawtile(topleft)
+    def drawMap(self):
+        for row in range(self.Nrows):
+            for col in range(self.Ncols):
+                val = self.gridmap.get([row,col])
+                if val == 'S':
+                    self.drawStart([row,col])
+                elif val == 'G':
+                    self.drawGoal([row,col])
+                elif val in [1,True]:
+                    self.drawWall( [row,col])
+
+    def render(self,seconds):
+        self.screen.fill(bgcolor)
+        self.drawGrid()
+        self.drawMap()
+        pygame.display.flip()
+        self.gridmap.printme()
+    def exit(self):
+        pygame.quit()
+    def mainloop(self):
+        fps = 60
+        while self.running:
+            seconds = self.clock.tick(fps)/1000.0
+            for event in pygame.event.get():
+                self.onEvent(event)
+            self.render(seconds)
+        self.exit()
+
+if __name__ == '__main__':
+    App(40).mainloop()
+

@@ -80,20 +80,16 @@ class GridMap:
     def setGoal(self,coord):
         self.goal_pos = coord
         self.set(coord,'G')
-
     def getStart(self):
         return self.start_pos
     def getGoal(self):
         return self.goal_pos
-
     def set(self,coord,val):
         r,c = coord
         self.map[r][c] = val
-
     def get(self,coord):
         r,c = coord
         return self.map[r][c]
-
     def setWall(self,coord): # toggle wall
         self.set( coord,not self.get(coord) )
 
@@ -107,14 +103,14 @@ class GridMap:
         for v in vectors:
             reachable = coord[0] + v[0], coord[1] + v[1]
             reachables.append(reachable)
-        reachables = filter(inBounds, reachables)
-        reachables = filter(notWalls, reachables)
+        reachables = filter(inBound, reachables)
+        reachables = filter(notWall, reachables)
         return reachables
 
-    def inBounds(self,coord):
+    def inBound(self,coord):
         return 0 <= coord[0] < self.Nrows and 0 <= coord[1] < self.Ncols
 
-    def notWalls(self,coord):
+    def notWall(self,coord):
         return not self.get(coord) # wall -> True
 
     def printme(self):
