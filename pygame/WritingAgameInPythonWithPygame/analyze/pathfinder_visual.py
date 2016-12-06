@@ -15,7 +15,7 @@ class Visualizer(object):
         self.field = field # FIELD_RECT = Rect(25, 130, 300, 300)
         self.message_func = message_func
         
-        self.grid_size = 15
+        self.grid_size = 40
         
         self.field_color = Color('black')
         self.grid_color = Color('gray')
@@ -51,10 +51,11 @@ class Visualizer(object):
         self.start_pos = 0, 0
         self.goal_pos = 3, 8
         
-        nrows = self.field.height / self.grid_size
-        ncols = self.field.width / self.grid_size
+        #assert self.field.height % self.grid_size == 0
+        self.nrows = self.field.height // self.grid_size
+        self.ncols = self.field.width // self.grid_size
         
-        self.map = GridMap(nrows, ncols)
+        self.map = GridMap(self.nrows, self.ncols)
         for b in [  (1, 1), (1, 2), (0, 3), (1, 3), (2, 3), 
                     (2, 4), (2, 5), (2, 6)]:
             self.map.set_blocked(b)
@@ -99,8 +100,8 @@ class Visualizer(object):
         """
         self.screen.fill(self.field_color, field)
         
-        nrows = field.height / self.grid_size
-        ncols = field.width / self.grid_size
+        nrows = self.nrows
+        ncols = self.ncols
         
         for y in range(nrows + 1):
             pygame.draw.line(
@@ -171,7 +172,7 @@ def draw_rimmed_box(screen, box_rect, box_color,
 
 
 def draw_title(screen, rect):
-    draw_rimmed_box(screen, rect, (40, 10, 60), 4, Color('gray'))
+    draw_rimmed_box(screen, rect, (40, 10, 60), 4, Color('white'))
     
     msgs = [
         'Left click to toggle wall',
@@ -185,17 +186,18 @@ def draw_title(screen, rect):
     for i, msg in enumerate(msgs):
         rendered = my_font.render(msg, True, Color('white'))
         screen.blit(rendered, rect.move(10, i * rendered.get_height()))
-    
+        # rect.move(x,y) => Returns a new rectangle that is moved by the given offset
 
 def run_game():
-    SCREEN_WIDTH, SCREEN_HEIGHT = 350, 550
-    FIELD_RECT = Rect(25, 130, 300, 300)
-    MESSAGES_RECT = Rect(25, 450, 300, 50)
+    SCREEN_WIDTH, SCREEN_HEIGHT = 600,800
+    FIELD_RECT = Rect(25, 130, 400, 400)
+    MESSAGES_RECT = Rect(25, 550, 300, 50)
     TITLE_RECT = Rect(25, 10, 300, 90)
     
     pygame.init()
     screen = pygame.display.set_mode(
                 (SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
+    screen.fill( (40,40,40))
     clock = pygame.time.Clock()
     
     def message_func(msg1, msg2):
@@ -207,7 +209,7 @@ def run_game():
         time_passed = clock.tick(30)
         
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 exit_game()
             else:
                 visualizer.user_event(event)

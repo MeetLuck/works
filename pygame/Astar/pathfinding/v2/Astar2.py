@@ -4,14 +4,12 @@ bgcolor = white #lightgray
 inf = 1.0E09
 
 class Node:
-    def __init__(self):
-        self.label = ""
-        self.wall = False
+    def __init__(self,coord):
+        self.coord = coord
         self.reset()
     def reset(self):
         self.G = self.F = self.H = ""
         self.camefrom = ""
-        self.previous = None
         self.Goal, self.Start, self.Current = False,False,False
         self.bgcolor = bgcolor
 
@@ -61,75 +59,71 @@ class Node:
         self.drawNEWS()
         return self.image
 
-class Graph:
-    def __init__(self,amap):
-        self.amap = amap
-        self.Nrows, self.Ncols = len(amap),  len(amap[0])
-        self.createGraph()
+class GridMap:
+    def __init__(self,Nrows,Ncols):
+        self.Nrows = Nrows
+        self.Ncols = Ncols
+        self.reset()
 
-    def createGraph(self): # create one node per square in the grid
-        self.grid = self.amap[:]
-        for r,row in enumerate(self.amap):
-            for c,col in enumerate(row):
-                node = Node()
-                index = r * self.Ncols + c
-                node.label = chr(65 + index) # i = r*self.cols + c
-                if col == '*': node.wall = True
-                self.grid[r][c] = node
+    def reset(self): # create one node per square in the grid
+        self.map = [ [0]*self.Ncols for i in range(self.Nrows) ]
+        self.setStart( (0,0) )
+        self.setGoal( (3,8) )
+        self.nodes = list() 
+        for row in range(self.Nrows)
+            for col in range(self.Ncols):
+                node = Node( (row,col) )
+                self.nodes.append(node)
+    def setStart(self,coord):
+        self.start_pos = coord
+        self.set(coord,'S')
+    def setGoal(self,coord):
+        self.goal_pos = coord
+        self.set(coord,'G')
 
-    def findRC(self,node):
-        for r,row in enumerate(self.grid):
-            for c,col in enumerate(row):
-                if node == self.grid[r][c]:
-                    return [r,c]
-        return None
+    def getStart(self):
+        return self.start_pos
+    def getGoal(self):
+        return self.goal_pos
 
-    def inBounds(self,rc):
-        return 0 <= rc[0] < self.Nrows and 0 <= rc[1] < self.Ncols
+    def set(self,coord,val):
+        r,c = coord
+        self.map[r][c] = val
 
-    def notWalls(self,rc):
-        r,c = rc
-        return not self.grid[r][c].wall
+    def get(self,coord):
+        r,c = coord
+        return self.map[r][c]
 
-    def getAdjacents(self,node):
-        # add edges to adjacent nodes
-        adjacent = dict()
-        r,c = self.findRC(node) # y=r,x=c
+    def setWall(self,coord): # toggle wall
+        self.set( coord,not self.get(coord) )
+
+    def getReachables(self,coord):
         #      c-1  c   c+1
         # r-1  NW   N   NE
-        #           
         # r    W  (r,c) E
-        #           
         # r+1  SW   S   SE
-        #
-        N,E,W,S = (r-1,c),(r,c+1),(r,c-1),(r+1,c)
-        NE,SE,SW,NW = (r-1,c+1),(r+1,c+1),(r+1,c-1),(r-1,c-1)
-        NEWS = [N,E,W,S]
-        Corners = [NE,SE,SW,NW]
-        NEWS = NEWS + Corners
-        NEWS = filter(self.inBounds,NEWS)
-        NEWS = filter(self.notWalls,NEWS)
+        vectors = [1,0], [1,1], [0,1], [-1,1], [-1,0], [-1,-1], [0,-1], [1,-1] 
+        reachables = list()
+        for v in vectors:
+            reachable = coord[0] + v[0], coord[1] + v[1]
+            reachables.append(reachable)
+        reachables = filter(inBounds, reachables)
+        reachables = filter(notWalls, reachables)
+        return reachables
 
-        if N in NEWS: adjacent['N'] = self.grid[N[0]][N[1]]
-        if E in NEWS: adjacent['E'] = self.grid[E[0]][E[1]]
-        if W in NEWS: adjacent['W'] = self.grid[W[0]][W[1]]
-        if S in NEWS: adjacent['S'] = self.grid[S[0]][S[1]]
+    def inBounds(self,coord):
+        return 0 <= coord[0] < self.Nrows and 0 <= coord[1] < self.Ncols
 
-        if NE in NEWS and self.notWalls(N) and self.notWalls(E):
-            adjacent['NE'] = self.grid[NE[0]][NE[1]]
-        if SE in NEWS and self.notWalls(S) and self.notWalls(E):
-            adjacent['SE'] = self.grid[SE[0]][SE[1]]
-        if SW in NEWS and self.notWalls(S) and self.notWalls(W):
-            adjacent['SW'] = self.grid[SW[0]][SW[1]]
-        if NW in NEWS and self.notWalls(N) and self.notWalls(W):
-            adjacent['NW'] = self.grid[NW[0]][NW[1]]
-        return adjacent
+    def notWalls(self,coord):
+        return not self.get(coord) # wall -> True
 
-    def findNodeByLabel(self,label):
-        for r,row in enumerate(self.grid):
-            for c,col in enumerate(row):
-                if self.grid[r][c].label == label:
-                    return col
+    def printme(self):
+        """ Print the map to stdout in ASCII
+        """
+        for row in range(self.nrows):
+            for col in range(self.ncols):
+                print "%s" % ('O' if self.map[row][col] else '.'),
+            print ''
 
     def draw(self,surface):
         w,h = surface.get_size()
@@ -144,22 +138,22 @@ class Graph:
 
 # Search
 class Astar:
-    def __init__(self, graph,start,goal):
-        self.graph = graph
-        self.start_label = start
-        self.goal_label = goal
+    def __init__(self, gridmap,startcoord,goalcoord):
+        self.gridmap = gridmap
+        self.startcoord = startcoord  # start coord
+        self.goalcoord  = goalcoord   # goal coord
+
     def reset(self):
         self.found = False
-        for row in self.graph.grid:
-            for node in row:
-                node.reset() #self.graph.nodes[i].reset()
+        for node in self.gridmap.nodes:
+            node.reset()
         self.reachable = list()
         self.explored = list()
         self.path = list()
-        self.start = self.graph.findNodeByLabel(self.start_label)
-        self.goal =  self.graph.findNodeByLabel(self.goal_label)
+        self.start = Node(self.startcoord)
+        self.goal  = Node(self.goalcoord)
         self.start.G = 0
-        self.computeHeuristic(self.start)
+        self.computeHeuristic(self.start, self.goal)
         self.start.F = self.start.G + self.start.H
         self.start.Start = True
         self.goal.Goal = True
@@ -211,9 +205,9 @@ class Astar:
                 bestnode = choice([node,bestnode])
         return bestnode
 
-    def computeHeuristic(self,node): # G : cost from node to Goal
-        r1,c1 = self.graph.findRC(node)
-        r2,c2 = self.graph.findRC(self.goal)
+    def computeHeuristic(self, node, goal_node): # G : cost from node to Goal
+        r1,c1 = coord
+        r2,c2 = goal_node
         node.H = 10*( abs(r2-r1) + abs(c2-c1) )
         return node.H
 
