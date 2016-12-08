@@ -1,7 +1,3 @@
-#from constants2 import *
-#from math import sqrt
-#bgcolor = white #lightgray
-#inf = 1.0E09
 
 class GridMap:
     def __init__(self,Nrows,Ncols):
@@ -15,11 +11,6 @@ class GridMap:
         self.map = [ [0]*self.Ncols for i in range(self.Nrows) ]
         self.start_pos = None
         self.goal_pos = None
-#       self.nodes = list() 
-#       for row in range(self.Nrows):
-#           for col in range(self.Ncols):
-#               node = Node( (row,col) )
-#               self.nodes.append(node)
     def setStart(self,coord):
         if self.start_pos:
             self.set(self.start_pos,False)
@@ -30,6 +21,8 @@ class GridMap:
             self.set(self.goal_pos,False)
         self.goal_pos = coord
         self.set(coord,'G')
+    def setWall(self,coord): # toggle wall
+        self.set( coord,not self.get(coord) )
     def getStart(self):
         return self.start_pos
     def getGoal(self):
@@ -40,9 +33,6 @@ class GridMap:
     def get(self,coord):
         r,c = coord
         return self.map[r][c]
-    def setWall(self,coord): # toggle wall
-        self.set( coord,not self.get(coord) )
-
     def getReachables(self,coord):
         #      c-1  c   c+1
         # r-1  NW   N   NE
