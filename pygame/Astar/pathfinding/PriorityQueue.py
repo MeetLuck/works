@@ -12,6 +12,8 @@ class PriorityQueue:
 #       self.pq.put(item)
     def get(self):
         return self.pq.get()
+    def __contains__(self, node):
+        return [node.cost,node] in self.pq.queue
 
 if __name__ == '__main__':
     class Node:
@@ -32,5 +34,7 @@ if __name__ == '__main__':
     pq.put(n1)
     pq.put(n2)
     pq.put(n3)
+    print n1 in pq
+    print n2 in pq
     while not pq.empty():
         print pq.get()
