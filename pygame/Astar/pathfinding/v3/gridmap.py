@@ -6,7 +6,6 @@ class GridMap:
         self.reset()
         self.setStart( (0,0) )
         self.setGoal( (3,8) )
-
     def reset(self): # create one node per square in the grid
         self.map = [ [0]*self.Ncols for i in range(self.Nrows) ]
         self.start_pos = None

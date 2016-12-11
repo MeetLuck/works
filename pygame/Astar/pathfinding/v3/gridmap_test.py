@@ -1,6 +1,7 @@
 import pygame
 from gridmap import GridMap
 from colors import *
+from Astar2 import *
 bgcolor = lightgray
 
 class App:
@@ -20,10 +21,13 @@ class App:
         self.Nrows = self.rect.height/gridsize
         self.Ncols = self.rect.width/gridsize
         self.gridmap = GridMap(self.Nrows,self.Ncols)
+        self.Astar = Astar(self.gridmap.getReachables)
+        self.path = None
     def onEvent(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_F5:
-                pass
+                start_pos,goal_pos = self.gridmap.start_pos, self.gridmap.goal_pos
+                self.path = self.Astar.findPath(start_pos,goal_pos)
             elif event.key == pygame.K_ESCAPE:
                 self.running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -63,11 +67,17 @@ class App:
                 if   val == 'S': self.drawStart(coord)
                 elif val == 'G': self.drawGoal(coord)
                 elif val in [1,True]: self.drawWall(coord)
+    def drawPath(self):
+        if not self.path: return
+        for node in self.path: 
+            coord = node.coord
+            self.drawCircle(coord,pink)
     def render(self,seconds):
         self.screen.fill(bgcolor)
         self.drawMap()
+        self.drawPath()
         pygame.display.flip()
-        self.gridmap.printme()
+        #self.gridmap.printme()
 
     def exit(self):
         pygame.quit()
