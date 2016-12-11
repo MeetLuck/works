@@ -2,11 +2,12 @@ import sys
 sys.path.append('..')
 from PriorityQueue import *
 from math import sqrt
+import pygame
 
 class Node:
     def __init__(self,coord):
         self.coord = coord
-        self.G = self.F = self.H = ""
+        self.G = self.F = self.H = 1000#""
         self.camefrom = None
     def __eq__(self,other):
 #       print '... __eq__',self.coord,other.coord
@@ -18,13 +19,17 @@ class Node:
 #       print '... __hash__'
         return hash(self.coord)
     def __str__(self):
-        return "N(%s) -> G:%s, H:%s, F:%s" %(self.coord,self.G,self.H,self.F)
+        return "Node(%s)" % str(self.coord) # -> G:%s, H:%s, F:%s" %(self.coord,self.G,self.H,self.F)
     def __repr__(self):
         return self.__str__()
 
 class Astar:
-    def __init__(self,getReachables):
-        self.getReachables = getReachables
+    #def __init__(self,getReachables):
+    def __init__(self,app): #,getReachables):
+        self.app = app
+        self.getReachables = app.gridmap.getReachables
+        self.explored = list()
+        self.reachables = PriorityQueue()
 
     def getHeuristic(self,node,goal):
         r1,c1 = node.coord
@@ -51,27 +56,39 @@ class Astar:
         goal  = Node(goal_coord)
         start.G = 0
         start.F = start.G + self.getHeuristic(start,goal) 
-        reachables = PriorityQueue()
-        reachables.put(start)
-        explored = list()
-        while not reachables.empty():
-            current = reachables.get()
-            if current == goal: 
+        #self.reachables = PriorityQueue()
+        self.reachables.put(start)
+        #self.explored = list()
+        print start.coord, goal.coord
+        while not self.reachables.empty():
+            current = self.reachables.get()
+            self.explored.append(current)
+            if current.coord == goal.coord: 
                 return self.buildPath(current)
-            explored.append(current)
+            self.app.drawExplored(self.explored)
+            pygame.display.flip()
+            #print 'current,reachable',current,self.reachables
+            #print 'explored', self.explored
 
             for reachable_coord in self.getReachables(current.coord):
                 reachable = Node(reachable_coord)
-                print 'current,reachable',current,reachable
-                if reachable in explored: continue 
+                if reachable_coord == goal.coord:
+                    print 'reachable is goal'
+                #print 'current,reachable',current,reachable
+                if reachable in self.explored: #continue 
+                    #print reachable.coord, explored
+                    continue
                 # not explored node
-                if reachable in reachables: # old reachable
+                if reachable in self.reachables: # old reachable
+                    #print 'old reachable',reachable.coord
                     pass
                 else: # new reachable
                     reachable.G = current.G + self.moveCost(current,reachable)
                     reachable.F = reachable.G + self.getHeuristic(start,goal)
-                    reachables.put(reachable)
-        return None
+                    #print 'new reachable',reachable.coord
+                    self.reachables.put(reachable)
+        raise Exception('not found path')
+#       return None
 
 if __name__ == '__main__':
     c1 = 1,1

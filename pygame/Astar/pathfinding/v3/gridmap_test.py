@@ -21,7 +21,7 @@ class App:
         self.Nrows = self.rect.height/gridsize
         self.Ncols = self.rect.width/gridsize
         self.gridmap = GridMap(self.Nrows,self.Ncols)
-        self.Astar = Astar(self.gridmap.getReachables)
+        self.Astar = Astar(self) #self.gridmap.getReachables)
         self.path = None
     def onEvent(self, event):
         if event.type == pygame.KEYDOWN:
@@ -58,6 +58,14 @@ class App:
     def drawWall(self,coord):
         rect = self.getRect(coord)
         pygame.draw.rect(self.screen,gray,rect)
+    def drawExplored(self,explored):
+        #if not self.Astar.
+        #for node in self.Astar.explored:
+        for node in explored:
+            #print 'drawExplored',node.coord
+            coord = node.coord
+            rect = self.getRect(coord)
+            pygame.draw.rect(self.screen,darkgreen,rect,2)
     def drawMap(self):
         for row in range(self.Nrows):
             for col in range(self.Ncols):
@@ -76,6 +84,7 @@ class App:
         self.screen.fill(bgcolor)
         self.drawMap()
         self.drawPath()
+        #self.drawExplored()
         pygame.display.flip()
         #self.gridmap.printme()
 
@@ -83,7 +92,7 @@ class App:
         pygame.quit()
 
     def mainloop(self):
-        fps = 60
+        fps = 10 #60
         while self.running:
             seconds = self.clock.tick(fps)/1000.0
             for event in pygame.event.get():
