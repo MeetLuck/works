@@ -48,18 +48,15 @@ class GridMap:
             reachables.append(reachable)
         reachables = filter(self.inBound, reachables)
         reachables = filter(self.notWall, reachables)
-        #print reachables
         return reachables
 
     def inBound(self,coord):
         return 0 <= coord[0] < self.Nrows and 0 <= coord[1] < self.Ncols
 
-    def notWall(self,coord): # Wall -> True, Start ->'S', goal -> 'G'
-        if self.get(coord) == False: return True
-        if self.get(coord) == True:
+    def notWall(self,coord):
+        if self.get(coord) == True:  # Wall -> True
             return False
-        else:
-            return True
+        return True # Start ->'S', goal -> 'G', False
 
     def printme(self):
         print '=============== GridMap ================='

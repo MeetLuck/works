@@ -25,9 +25,21 @@ class Node:
 
 class Astar:
     #def __init__(self,getReachables):
-    def __init__(self,app): #,getReachables):
+    def __init__(self,app):
         self.app = app
-        self.getReachables = app.gridmap.getReachables
+        self.reset()
+    def reset(self):
+        self.found = False
+        self.current = self.camefrom = None 
+        self.getReachables = self.app.gridmap.getReachables
+        start_pos,goal_pos = self.app.gridmap.start_pos, self.app.gridmap.goal_pos
+        self.start = Node(start_pos)
+        self.goal  = Node(goal_pos)
+        self.start.G = 0
+        self.start.F = self.start.G + self.getHeuristic(self.start,self.goal) 
+        self.reachables = PriorityQueue()
+        self.reachables.put(self.start)
+        self.explored = list()
 
     def getHeuristic(self,node,goal):
         r1,c1 = node.coord
@@ -47,37 +59,32 @@ class Astar:
             path.append(node)
             node = node.camefrom
         return path
+
     def step(self):
-        current = self.reachables.get()
-        self.explored.append(current)
-        if current == self.goal:
-            return current
-            #return self.buildPath(current)
-        for reachable_coord in self.getReachables(current.coord):
+        if self.found: return
+        self.current = self.reachables.get()
+        self.explored.append(self.current)
+#       self.app.drawExplored(self.explored)
+#       pygame.display.flip()
+        if self.current == self.goal:
+            self.found = True
+            return self.current #return self.buildPath(current)
+        for reachable_coord in self.getReachables(self.current.coord):
             reachable = Node(reachable_coord)
             if reachable in self.explored: continue
             if reachable in self.reachables:
                 pass
             else:
-                reachable.G = current.G + self.moveCost(current, reachable)
+                reachable.G = self.current.G + self.moveCost(self.current, reachable)
                 reachable.F = reachable.G + self.getHeuristic(reachable, self.goal)
-                reachable.camefrom = current
+                reachable.camefrom = self.current
                 self.reachables.put(reachable)
-        self.app.drawExplored(self.explored)
-        pygame.display.flip()
 
-    def findPath(self,start_coord,goal_coord):
-        self.start = Node(start_coord)
-        self.goal  = Node(goal_coord)
-        self.start.G = 0
-        self.start.F = self.start.G + self.getHeuristic(self.start,self.goal) 
-        self.reachables = PriorityQueue()
-        self.reachables.put(self.start)
-        self.explored = list()
-        self.found = False
+    def findPath(self): #,start_coord,goal_coord):
+        self.reset() #start_coord,goal_coord)
         while not self.reachables.empty():
             current = self.step()
-            if current:
+            if self.found:
                 return self.buildPath(current)
         raise Exception('not found path')
 
