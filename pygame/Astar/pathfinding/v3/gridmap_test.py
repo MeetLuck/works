@@ -1,7 +1,7 @@
 import pygame
 from gridmap import GridMap
 from colors import *
-from Astar2 import *
+from Astar3 import *
 bgcolor = lightgray
 
 class App:
@@ -44,9 +44,9 @@ class App:
         row,col = coord
         topleft = col*self.gridsize,row*self.gridsize
         return  topleft,(self.gridsize,self.gridsize)
-    def drawtile(self,coord):
+    def drawTile(self,coord,color=darkgray,thinkness=1):
         rect = self.getRect(coord)
-        pygame.draw.rect(self.screen,black,rect,1)
+        pygame.draw.rect(self.screen,color,rect,thinkness)
     def drawCircle(self,coord,color=black):
         rect = self.getRect(coord)
         rect = pygame.Rect(rect)
@@ -59,10 +59,7 @@ class App:
         rect = self.getRect(coord)
         pygame.draw.rect(self.screen,gray,rect)
     def drawExplored(self,explored):
-        #if not self.Astar.
-        #for node in self.Astar.explored:
         for node in explored:
-            #print 'drawExplored',node.coord
             coord = node.coord
             rect = self.getRect(coord)
             pygame.draw.rect(self.screen,darkgreen,rect,2)
@@ -70,16 +67,16 @@ class App:
         for row in range(self.Nrows):
             for col in range(self.Ncols):
                 coord = row,col
-                self.drawtile(coord)
+                self.drawTile(coord)
                 val = self.gridmap.get(coord)
                 if   val == 'S': self.drawStart(coord)
                 elif val == 'G': self.drawGoal(coord)
                 elif val in [1,True]: self.drawWall(coord)
     def drawPath(self):
         if not self.path: return
+        #print "============> found path <============="
         for node in self.path: 
-            coord = node.coord
-            self.drawCircle(coord,pink)
+            self.drawTile(node.coord,red,2)
     def render(self,seconds):
         self.screen.fill(bgcolor)
         self.drawMap()
@@ -92,7 +89,7 @@ class App:
         pygame.quit()
 
     def mainloop(self):
-        fps = 10 #60
+        fps = 60
         while self.running:
             seconds = self.clock.tick(fps)/1000.0
             for event in pygame.event.get():

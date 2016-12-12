@@ -79,26 +79,7 @@ class Astar:
             current = self.step()
             if current:
                 return self.buildPath(current)
-#           current = self.reachables.get()
-#           if current == goal: 
-#               return self.buildPath(current)
-#           self.explored.append(current)
-#           self.app.drawExplored(self.explored)
-#           pygame.display.flip()
-
-#           for reachable_coord in self.getReachables(current.coord):
-#               reachable = Node(reachable_coord)
-#               if reachable in self.explored: continue 
-#               if reachable in self.reachables: # old reachable
-#                   pass
-#               else: # new reachable
-#                   reachable.G = current.G + self.moveCost(current,reachable)
-#                   reachable.F = reachable.G + self.getHeuristic(reachable,goal)
-#                   #print 'new reachable',reachable.coord
-#                   reachable.camefrom = current
-#                   self.reachables.put(reachable)
         raise Exception('not found path')
-#       return None
 
 if __name__ == '__main__':
     c1 = 1,1

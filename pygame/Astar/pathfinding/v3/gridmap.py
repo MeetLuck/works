@@ -6,12 +6,14 @@ class GridMap:
         self.reset()
         self.setStart( (0,0) )
         self.setGoal( (2,3) )
-        self.setWall( (1,2))
-        self.setWall( (2,2))
+        for i in range(1,4):
+            self.setWall( (i,2))
+
     def reset(self): # create one node per square in the grid
         self.map = [ [0]*self.Ncols for i in range(self.Nrows) ]
         self.start_pos = None
         self.goal_pos = None
+
     def setStart(self,coord):
         if self.start_pos:
             self.set(self.start_pos,False)
@@ -46,7 +48,7 @@ class GridMap:
             reachables.append(reachable)
         reachables = filter(self.inBound, reachables)
         reachables = filter(self.notWall, reachables)
-        print reachables
+        #print reachables
         return reachables
 
     def inBound(self,coord):
