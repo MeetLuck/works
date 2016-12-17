@@ -1,15 +1,4 @@
-import pygame,os,sys
-from random import randint,choice
-from math import sin,cos,radians
-from gridmap import GridMap
-from pathfinder import PathFinder
-from simpleanimation import SimpleAnimation
-from utils import Timer
-from vec2d import vec2d
-from widgets import Box, MessageBoard
-
-red = pygame.Color('red')
-green = pygame.Color('green')
+from constants import *
 
 class Creep(pygame.sprite.Sprite):
 
@@ -58,10 +47,12 @@ class Creep(pygame.sprite.Sprite):
 
     def draw(self):
         if self.state == Creep.ALIVE:
-            self.draw_rect = self.image.get_rect().move( self.pos.x - self.image_w/2, self.pos.y - self.image_h/2)
+            self.draw_rect = self.image.get_rect()
+            self.draw_rect.center = self.pos
             self.screen.blit(self.image,self.draw_rect)
             health_bar_x = self.pos.x - 7
             health_bar_y = self.pos.y - self.image_h/2 - 6
+            # draw life bar
             self.screen.fill(red, [health_bar_x,health_bar_y,15,4]) 
             self.screen.fill(green,[health_bar_x, health_bar_y,self.health,4])
         elif self.state == Creep.EXPLODING:
@@ -85,11 +76,11 @@ class Creep(pygame.sprite.Sprite):
 
     def computeDirection(self,time_passed):
         ' check whether creep is passed center of coord '
-        coord = self.game.xy2coord(self.pos)
+        coord = self.game.screenToCoord(self.pos)
         if self.game.isGoalCoord(coord):
             self.die()
         else:
-            center_of_coord = self.game.coord2xy_mid(coord)
+            center_of_coord = self.game.coordToScreenPos(coord)
             if self.isPassedCenterCoord(self.pos,self.prev_pos,center_of_coord):
                next_coord = self.game.nextOnPath(coord)
                self.direction = vec2d( next_coord[1] - coord[1], next_coord[0] - coord[0] ).normalized()
@@ -120,12 +111,12 @@ class GridPath(object):
         self.path_cache = {}
 
     def getNext(self,coord):
-        if not (coord in self.path_cache):
+        if coord not in self.path_cache:
             self.computePath(coord)
         if coord in self.path_cache:
             return self.path_cache[coord]
         else:
-            return None
+            raise Exception('not found next coord')
 
     def set_blocked(self,coord,blocked=True):
         self.map.set_blocked(coord,blocked)
@@ -134,65 +125,39 @@ class GridPath(object):
     def computePath(self,coord):
         pf = PathFinder(self.map.successors, self.map.move_cost,
                 self.map.move_cost)
+        # find path
         path_list = list(pf.compute_path(coord, self.goal) )
+        # add path to cache
         for i, path_coord in enumerate(path_list):
             next_i = i if i==len(path_list)-1 else i+1
             self.path_cache[path_coord] = path_list[next_i]
 
 class Game(object):
-    BG_TITLE_IMG = 'images/brick_tile.png'
-    SCREEN_WIDTH, SCREEN_HEIGHT = 580, 500
-    GRID_SIZE = 20
-    FIELD_SIZE = 400,400
-    CREEP_FILENAMES = [
-            ('images/bluecreep_0.png', 'images/bluecreep_45.png'),
-            ('images/greencreep_0.png', 'images/greencreep_45.png'),
-            ('images/yellowcreep_0.png', 'images/yellowcreep_45.png'),
-            ('images/pinkcreep_0.png', 'images/pinkcreep_45.png'),
-            ]
-    MAX_N_CREEPS = 50
+
+    spawned_creep_count = 0
 
     def getFieldBox(self):
-        self.field_border_width = 4
-        self.field_outer_width = self.FIELD_SIZE[0] + 2 * self.field_border_width
-        self.field_outer_height = self.FIELD_SIZE[1] + 2 * self.field_border_width
+        self.field_border_width = 4 
+        self.field_outer_width  = FIELD_SIZE[0] + 2 * self.field_border_width
+        self.field_outer_height = FIELD_SIZE[1] + 2 * self.field_border_width
         self.field_rect_outer = pygame.Rect(20,60, self.field_outer_width, self.field_outer_height)
         self.field_bgcolor = pygame.Color(109,41,1,100)
-        self.field_border_color = pygame.Color(0,0,0)
+        self.field_border_color = black
         return Box(self.screen, rect=self.field_rect_outer, bgcolor= self.field_border_width,
                 border_color = self.field_border_color)
 
-    def getTboard(self):
-        self.tboard_text = ['The amazing Creeps!']
-        self.tboard_rect = pygame.Rect(20,20,self.field_outer_width,30)
-        self.tboard_bgcolor = pygame.Color(50,20,0)
-        return MessageBoard(self.screen, rect=self.tboard_rect, bgcolor=self.tboard_bgcolor,
-                border_width=4, border_color=pygame.Color('black'), text=self.tboard_text,
-                font=('tahoma',18), font_color=pygame.Color('yellow') )
-
-    def getMBoard(self):
-        self.mboard_text = []
-        self.mboard_rect = pygame.Rect(440,60,120,60)
-        self.mboard_bgcolor = pygame.Color(50,20,0)
-        return MessageBoard(self.screen, rect = self.mboard_rect, bgcolor=self.mboard_bgcolor,
-                border_width = 4, border_color = pygame.Color('black'), text=self.mboard_text,
-                font = ('verdana',16), font_color = pygame.Color('white') )
-
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode( [self.SCREEN_WIDTH,self.SCREEN_HEIGHT],0,32 )
-        self.tile_img = pygame.image.load(self.BG_TITLE_IMG).convert_alpha()
-        self.tile_img_rect = self.tile_img.get_rect()
+        self.screen = pygame.display.set_mode( [SCREEN_WIDTH,SCREEN_HEIGHT],0,32 )
         self.field_box = self.getFieldBox()
-        self.tboard = self.getTboard()
-        self.mboard = self.getMBoard()
+        #self.tboard = self.getTboard()
         self.clock = pygame.time.Clock()
         self.creep_images = list()
         self.paused = False
         self.creep_images = [
                 ( pygame.image.load(f1).convert_alpha(), pygame.image.load(f2).convert_alpha() )
-                  for f1,f2 in self.CREEP_FILENAMES ]
-        explosion_img = pygame.image.load('images/explosion1.png').convert_alpha()
+                  for f1,f2 in CREEP_FILENAMES ]
+        explosion_img = pygame.image.load('../images/explosion1.png').convert_alpha()
         self.explosion_images = [ explosion_img, pygame.transform.rotate(explosion_img,90) ]
         self.field_rect = self.getFieldRect()
         self.creeps = pygame.sprite.Group()
@@ -200,8 +165,8 @@ class Game(object):
         self.creep_spawn_timer = Timer(500, self.spawnNewCreep)
         self.createWalls()
         # create the grid path representation of the grid
-        self.grid_nrows = self.FIELD_SIZE[1]/self.GRID_SIZE
-        self.grid_ncols = self.FIELD_SIZE[0]/self.GRID_SIZE
+        self.grid_nrows = FIELD_SIZE[1]/GRID_SIZE
+        self.grid_ncols = FIELD_SIZE[0]/GRID_SIZE
         self.goal_coord = self.grid_nrows - 1, self.grid_ncols - 1
         self.gridpath = GridPath(self.grid_nrows,self.grid_ncols,self.goal_coord)
         for wall in self.walls:
@@ -224,23 +189,22 @@ class Game(object):
     def nextOnPath(self,coord):
         return self.gridpath.getNext(coord)
 
-    def xy2coord(self,pos):
-        # covnert mouse position (x,y) to (row,col) coordinate
+    def screenToCoord(self,pos):
+        # covnert screen position pos to (row,col) coordinate
         x,y = pos[0] - self.field_rect.left, pos[1] - self.field_rect.top
-        return int(y)/self.GRID_SIZE, int(x)/self.GRID_SIZE
+        row,col = int(y)/GRID_SIZE, int(x)/GRID_SIZE
+        return (row,col)
 
-    def coord2xy_mid(self,coord):
+    def coordToScreenPos(self,coord):
         row,col = coord
-        return self.field_rect.left + col * self.GRID_SIZE + self.GRID_SIZE/2,\
-               self.field_rect.top  + row * self.GRID_SIZE + self.GRID_SIZE/2
+        return self.field_rect.left + col * GRID_SIZE + GRID_SIZE/2,\
+               self.field_rect.top  + row * GRID_SIZE + GRID_SIZE/2
 
     def isGoalCoord(self,coord):
         return coord == self.goal_coord
 
-    spawned_creep_count = 0
-
     def spawnNewCreep(self):
-        if self.spawned_creep_count >= self.MAX_N_CREEPS:
+        if self.spawned_creep_count >= MAX_N_CREEPS:
             return
         self.creeps.add(
                 Creep( screen = self.screen,
@@ -248,8 +212,8 @@ class Game(object):
                        creep_images = choice(self.creep_images),
                        explosion_images = self.explosion_images,
                        field = self.field_rect,
-                       init_position = (self.field_rect.left+self.GRID_SIZE/2,
-                                       self.field_rect.top +self.GRID_SIZE/2),
+                       init_position = (self.field_rect.left+GRID_SIZE/2,
+                                       self.field_rect.top +GRID_SIZE/2),
                        init_direction = (1,1),
                        speed = 0.05 ) )
         self.spawned_creep_count += 1
@@ -258,20 +222,15 @@ class Game(object):
         return self.field_box.get_internal_rect()
 
     def drawBackground(self):
-        img_rect = self.tile_img.get_rect()
-        nrows = int(self.screen.get_height()/img_rect.height) + 1
-        ncols = int(self.screen.get_width() /img_rect.width) + 1
-        for y in range(nrows):
-            for x in range(ncols):
-                img_rect.topleft = x*img_rect.width, y*img_rect.height
-                self.screen.blit(self.tile_img, img_rect)
+        bgcolor = darkgray
+        self.screen.fill(bgcolor)
 
     def drawPostals(self):
         self.entrance_rect = pygame.Rect(self.field_rect.left, self.field_rect.top,
-                                         2*self.GRID_SIZE,2*self.GRID_SIZE)
-        self.exit_rect = pygame.Rect(self.field_rect.right - 2*self.GRID_SIZE,
-                                     self.field_rect.bottom - 2*self.GRID_SIZE,
-                                     2*self.GRID_SIZE, 2*self.GRID_SIZE)
+                                         2*GRID_SIZE,2*GRID_SIZE)
+        self.exit_rect = pygame.Rect(self.field_rect.right - 2*GRID_SIZE,
+                                     self.field_rect.bottom - 2*GRID_SIZE,
+                                     2*GRID_SIZE, 2*GRID_SIZE)
         entrance = pygame.Surface( (self.entrance_rect.w, self.entrance_rect.h) )
         entrance.fill(pygame.Color(80,200,80) )
         entrance.set_alpha(150)
@@ -284,35 +243,32 @@ class Game(object):
     def drawGrid(self):
         for y in range(self.grid_nrows+1):
             pygame.draw.line(self.screen, pygame.Color(50,50,50),
-                    (self.field_rect.left, self.field_rect.top+y*self.GRID_SIZE-1),
-                    (self.field_rect.right, self.field_rect.top + y*self.GRID_SIZE-1) )
+                    (self.field_rect.left, self.field_rect.top+y*GRID_SIZE-1),
+                    (self.field_rect.right, self.field_rect.top + y*GRID_SIZE-1) )
         for x in range(self.grid_ncols+1):
             pygame.draw.line(self.screen,pygame.Color(50,50,50),
-                    (self.field_rect.left + x*self.GRID_SIZE-1,self.field_rect.top),
-                    (self.field_rect.left + x*self.GRID_SIZE-1,self.field_rect.bottom-1) )
+                    (self.field_rect.left + x*GRID_SIZE-1,self.field_rect.top),
+                    (self.field_rect.left + x*GRID_SIZE-1,self.field_rect.bottom-1) )
     def drawWalls(self):
         wallcolor = pygame.Color(140,140,140)
         for wall in self.walls:
             row, col = wall
-            pos_x = self.field_rect.left + col*self.GRID_SIZE + self.GRID_SIZE/2
-            pos_y = self.field_rect.top +  row*self.GRID_SIZE + self.GRID_SIZE/2
+            pos_x = self.field_rect.left + col*GRID_SIZE + GRID_SIZE/2
+            pos_y = self.field_rect.top +  row*GRID_SIZE + GRID_SIZE/2
             radius = 3
             pygame.draw.polygon(self.screen, wallcolor,
                     [ (pos_x - radius, pos_y),(pos_x,pos_y + radius),
                       (pos_x + radius, pos_y), (pos_x,pos_y-radius) ] )
             if (row+1,col) in self.walls:
-                pygame.draw.line(self.screen, wallcolor, (pos_x,pos_y),(pos_x,pos_y+self.GRID_SIZE),3 )
+                pygame.draw.line(self.screen, wallcolor, (pos_x,pos_y),(pos_x,pos_y+GRID_SIZE),3 )
             if (row, col+1) in self.walls:
-                pygame.draw.line(self.screen, wallcolor, (pos_x,pos_y),(pos_x+self.GRID_SIZE,pos_y),3)
+                pygame.draw.line(self.screen, wallcolor, (pos_x,pos_y),(pos_x+GRID_SIZE,pos_y),3)
 
     def draw(self):
         self.drawBackground()
         self.field_box.draw()
         if self.options['draw_grid']: self.drawGrid()
         self.drawWalls()
-        self.tboard.draw()
-        self.mboard.text = self.mboard_text
-        self.mboard.draw()
         for creep in self.creeps:
             creep.draw()
         self.drawPostals()
@@ -326,21 +282,19 @@ class Game(object):
             elif event.key == pygame.K_g:
                 if pygame.key.get_mods() & pygame.KMOD_CTRL:
                     self.options['draw_grid'] = not self.options['draw_grid']
+            elif event.key == pygame.K_ESCAPE:
+                self.quit()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for creep in self.creeps:
                 creep.mouseClickEvent(event.pos)
 
     def run(self):
-
         while True:
             time_passed = self.clock.tick(30)
             if time_passed > 100: continue
             for event in pygame.event.get():
                 self.onEvent(event)
             if not self.paused:
-                msg1 = 'Creeps:%d' %len(self.creeps)
-                msg2 = ''
-                self.mboard_text = [msg1,msg2]
                 self.creep_spawn_timer.update(time_passed)
                 # update and all creeps
                 for creep in self.creeps:
