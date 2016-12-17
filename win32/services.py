@@ -69,7 +69,7 @@ def openPortals(filename):
     except:
         filename.write('url dntofile failed at %s\n' %time.ctime() )
 
-    urls =['www.naver.com','https://www.youtube.com','www.daum.net','www.auction.co.kr','https://www.youtube.com/watch?v=xTQ8u0wxOCQ' ]
+    urls =['www.naver.com','https://www.youtube.com','www.daum.net','www.auction.co.kr','https://www.youtube.com']
 
     for url in urls:
         cmd = 'Run,iexplore.exe %s,,Hide' %url
