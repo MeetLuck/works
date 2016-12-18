@@ -3,23 +3,31 @@ from constants import *
 class Creep(pygame.sprite.Sprite):
 
     ALIVE, EXPLODING, DEAD = range(3)
+    explosion_img = pygame.image.load('../images/explosion1.png')#.convert_alpha()
 
-    def __init__(self,screen,game,creep_images,explosion_images,field,init_position,init_direction,speed):
+    def __init__(self,screen,game,init_position,init_direction,speed):
         pygame.sprite.Sprite.__init__(self)
         self.screen = screen
         self.game = game
         self.speed = speed
-        self.field = field
-        self.baseimage0 = creep_images[0]
-        self.baseimage45 = creep_images[1]
-        self.image = self.baseimage0
-        # list of image objects
-        self.explosion_images = explosion_images
+        self.initImages()
         self.pos = vec2d(init_position)
         self.prev_pos = vec2d(self.pos)
         self.direction = vec2d(init_direction).normalized()
         self.state = Creep.ALIVE
         self.health = 15
+    def initImages(self):
+        creep_images = list()
+        creep_images = [
+                ( pygame.image.load(f1).convert_alpha(), pygame.image.load(f2).convert_alpha() )
+                  for f1,f2 in CREEP_FILENAMES ]
+        creep_images = choice(creep_images)
+        self.baseimage0 = creep_images[0]
+        self.baseimage45 = creep_images[1]
+        self.image = self.baseimage0
+        # list of image objects
+        self.explosion_img = self.explosion_img.convert_alpha()
+        self.explosion_images = [ self.explosion_img, pygame.transform.rotate(self.explosion_img,90) ]
 
     def isAlive(self):
         return self.state in (Creep.ALIVE, Creep.EXPLODING)
@@ -81,7 +89,7 @@ class Creep(pygame.sprite.Sprite):
         else:
             screenpos_of_coord = self.game.coordToScreenPos(coord)
             if self.isPassedCenterCoord(self.pos,self.prev_pos,screenpos_of_coord):
-               next_coord = self.game.gridpath.getNext(coord)
+               next_coord = self.game.nextOnPath(coord)
                self.direction = vec2d( next_coord[1] - coord[1], next_coord[0] - coord[0] ).normalized()
 
     def pointIsInside(self,point):
@@ -103,6 +111,7 @@ class Creep(pygame.sprite.Sprite):
         pos = self.pos.x - self.explosion_images[0].get_width()/2, self.pos.y - self.explosion_images[1].get_height()/2
         self.explode_animation = SimpleAnimation( self.screen, pos, self.explosion_images, 100, 300 )
                     
+
 class GridPath(object):
 
     def __init__(self,nrows,ncols,goal):
@@ -115,12 +124,11 @@ class GridPath(object):
             self.computePath(coord)
         if coord in self.path_cache:
             return self.path_cache[coord]
-        else:
-            raise Exception('not found next coord')
+        raise Exception('not found next coord')
 
     def set_blocked(self,coord,blocked=True):
         self.map.set_blocked(coord,blocked)
-        self.path_cache = {}
+#       self.path_cache = {}
 
     def computePath(self,coord):
         pf = PathFinder(self.map.successors, self.map.move_cost,
@@ -129,9 +137,7 @@ class GridPath(object):
         path_list = list(pf.compute_path(coord, self.goal) )
         # add path to cache
         # self.path_cache[coord] = next coord
-        for i, path_coord in enumerate(path_list):
-            next_i = i if i==len(path_list)-1 else i+1
-            self.path_cache[path_coord] = path_list[next_i]
+        self.path_cache[coord] = path_list[ path_list.index(coord)+1 ]
 
 class Game(object):
 
@@ -151,15 +157,8 @@ class Game(object):
         pygame.init()
         self.screen = pygame.display.set_mode( [SCREEN_WIDTH,SCREEN_HEIGHT],0,32 )
         self.field_box = self.getFieldBox()
-        #self.tboard = self.getTboard()
         self.clock = pygame.time.Clock()
-        self.creep_images = list()
         self.paused = False
-        self.creep_images = [
-                ( pygame.image.load(f1).convert_alpha(), pygame.image.load(f2).convert_alpha() )
-                  for f1,f2 in CREEP_FILENAMES ]
-        explosion_img = pygame.image.load('../images/explosion1.png').convert_alpha()
-        self.explosion_images = [ explosion_img, pygame.transform.rotate(explosion_img,90) ]
         self.field_rect = self.getFieldRect()
         self.creeps = pygame.sprite.Group()
         self.spawnNewCreep()
@@ -187,6 +186,9 @@ class Game(object):
             walls_list.append( (r,10) )
         self.walls = dict().fromkeys(walls_list,True)
 
+    def nextOnPath(self,coord):
+        return self.gridpath.getNext(coord)
+
     def screenToCoord(self,pos):
         # covnert screen position pos to (row,col) coordinate
         x,y = pos[0] - self.field_rect.left, pos[1] - self.field_rect.top
@@ -205,15 +207,9 @@ class Game(object):
         if self.spawned_creep_count >= MAX_N_CREEPS:
             return
         self.creeps.add(
-                Creep( screen = self.screen,
-                       game = self,
-                       creep_images = choice(self.creep_images),
-                       explosion_images = self.explosion_images,
-                       field = self.field_rect,
-                       init_position = (self.field_rect.left+GRID_SIZE/2,
-                                       self.field_rect.top +GRID_SIZE/2),
-                       init_direction = (1,1),
-                       speed = 0.05 ) )
+                Creep( screen = self.screen, game = self,
+                       init_position = (self.field_rect.left+GRID_SIZE/2, self.field_rect.top +GRID_SIZE/2),
+                       init_direction = (1,1), speed = 0.05 ) )
         self.spawned_creep_count += 1
 
     def getFieldRect(self):
@@ -234,7 +230,7 @@ class Game(object):
         entrance.set_alpha(150)
         self.screen.blit(entrance,self.entrance_rect)
         exit = pygame.Surface( (self.exit_rect.w,self.exit_rect.h) )
-        exit.fill( pygame.Color(80,200,80) )
+        exit.fill( pygame.Color(200,80,80) )
         exit.set_alpha(150)
         self.screen.blit(exit,self.exit_rect)
 
@@ -248,19 +244,11 @@ class Game(object):
                     (self.field_rect.left + x*GRID_SIZE-1,self.field_rect.top),
                     (self.field_rect.left + x*GRID_SIZE-1,self.field_rect.bottom-1) )
     def drawWalls(self):
-        wallcolor = pygame.Color(140,140,140)
+        wallcolor = pygame.Color(40,40,40)
         for wall in self.walls:
-            row, col = wall
-            pos_x = self.field_rect.left + col*GRID_SIZE + GRID_SIZE/2
-            pos_y = self.field_rect.top +  row*GRID_SIZE + GRID_SIZE/2
-            radius = 3
-            pygame.draw.polygon(self.screen, wallcolor,
-                    [ (pos_x - radius, pos_y),(pos_x,pos_y + radius),
-                      (pos_x + radius, pos_y), (pos_x,pos_y-radius) ] )
-            if (row+1,col) in self.walls:
-                pygame.draw.line(self.screen, wallcolor, (pos_x,pos_y),(pos_x,pos_y+GRID_SIZE),3 )
-            if (row, col+1) in self.walls:
-                pygame.draw.line(self.screen, wallcolor, (pos_x,pos_y),(pos_x+GRID_SIZE,pos_y),3)
+            rect = pygame.Rect(0,0,GRID_SIZE,GRID_SIZE)
+            rect.center = self.coordToScreenPos(wall)
+            pygame.draw.rect(self.screen,wallcolor,rect)
 
     def draw(self):
         self.drawBackground()
