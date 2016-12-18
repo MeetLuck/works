@@ -36,7 +36,6 @@ class Creep(pygame.sprite.Sprite):
             displacement = vec2d( self.direction.x * self.speed * time_passed, self.direction.y * self.speed * time_passed)
             self.prev_pos = vec2d(self.pos)
             self.pos += displacement
-            self.image_w, self.image_h = self.image.get_size()
         elif self.state == Creep.EXPLODING:
             if self.explode_animation.active:
                 self.explode_animation.update(time_passed)
@@ -51,7 +50,7 @@ class Creep(pygame.sprite.Sprite):
             self.draw_rect.center = self.pos
             self.screen.blit(self.image,self.draw_rect)
             health_bar_x = self.pos.x - 7
-            health_bar_y = self.pos.y - self.image_h/2 - 6
+            health_bar_y = self.pos.y - self.image.get_height()/2 - 6
             # draw life bar
             self.screen.fill(red, [health_bar_x,health_bar_y,15,4]) 
             self.screen.fill(green,[health_bar_x, health_bar_y,self.health,4])
@@ -66,8 +65,8 @@ class Creep(pygame.sprite.Sprite):
         self.state = Creep.DEAD
         self.kill()
 
-    def isPassedCenterCoord(self,current,previous,center_of_coord):
-        xo,yo = center_of_coord
+    def isPassedCenterCoord(self,current,previous,screenpos_of_coord):
+        xo,yo = screenpos_of_coord
         # x,y : screen position of coord(destination)
         # return left_to_right or right_to_left or top_to_bottom or bottom_to_top
         # ----xp---o---xc------ xo-xc<0, xo-xp>0  ==> (xo-xc)*(xo-xp)<0
@@ -80,13 +79,14 @@ class Creep(pygame.sprite.Sprite):
         if self.game.isGoalCoord(coord):
             self.die()
         else:
-            center_of_coord = self.game.coordToScreenPos(coord)
-            if self.isPassedCenterCoord(self.pos,self.prev_pos,center_of_coord):
+            screenpos_of_coord = self.game.coordToScreenPos(coord)
+            if self.isPassedCenterCoord(self.pos,self.prev_pos,screenpos_of_coord):
                next_coord = self.game.nextOnPath(coord)
                self.direction = vec2d( next_coord[1] - coord[1], next_coord[0] - coord[0] ).normalized()
 
     def pointIsInside(self,point):
-        img_point = point - vec2d( int(self.pos.x-self.image_w/2), int(self.pos.y-self.image_h/2) )
+        w,h = self.image.get_size()
+        img_point = point - vec2d( int(self.pos.x-w/2), int(self.pos.y-h/2) )
         try:
             pix = self.image.get_at(img_point)
             return pix[3] > 0
@@ -128,6 +128,7 @@ class GridPath(object):
         # find path
         path_list = list(pf.compute_path(coord, self.goal) )
         # add path to cache
+        # self.path_cache[coord] = next coord
         for i, path_coord in enumerate(path_list):
             next_i = i if i==len(path_list)-1 else i+1
             self.path_cache[path_coord] = path_list[next_i]
