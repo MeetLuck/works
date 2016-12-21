@@ -3,7 +3,6 @@ from constants import *
 class Creep(pygame.sprite.Sprite):
 
     ALIVE, EXPLODING, DEAD = range(3)
-    explosion_img = pygame.image.load('../images/explosion1.png')#.convert_alpha()
 
     def __init__(self,screen,game,init_position,init_direction,speed):
         pygame.sprite.Sprite.__init__(self)
@@ -17,20 +16,37 @@ class Creep(pygame.sprite.Sprite):
         self.state = Creep.ALIVE
         self.health = 15
     def initImages(self):
-        creep_images = list()
-        creep_images = [
-                ( pygame.image.load(f1).convert_alpha(), pygame.image.load(f2).convert_alpha() )
-                  for f1,f2 in CREEP_FILENAMES ]
-        creep_images = choice(creep_images)
-        self.baseimage0 = creep_images[0]
-        self.baseimage45 = creep_images[1]
+        self.baseimage0,self.baseimage45 = creep_imgs
         self.image = self.baseimage0
         # list of image objects
-        self.explosion_img = self.explosion_img.convert_alpha()
+        self.explosion_img = explosion_img.convert_alpha()
         self.explosion_images = [ self.explosion_img, pygame.transform.rotate(self.explosion_img,90) ]
 
     def isAlive(self):
         return self.state in (Creep.ALIVE, Creep.EXPLODING)
+
+    def move(self,time_passed):
+        displacement = vec2d( self.direction.x * self.speed * time_passed, self.direction.y * self.speed * time_passed)
+        self.prev_pos = vec2d(self.pos)
+        self.pos += displacement
+
+    def isPassedCenterCoord(self,current,previous,screenpos_of_coord):
+        xo,yo = screenpos_of_coord
+        # x,y : screen position of coord(destination)
+        # return left_to_right or right_to_left or top_to_bottom or bottom_to_top
+        # ----xp---o---xc------ xo-xc<0, xo-xp>0  ==> (xo-xc)*(xo-xp)<0
+        return (xo-current.x)*(xo-previous.x) < 0 or (yo-current.y)*(yo-previous.y)<0
+
+    def computeDirection(self,time_passed):
+        ' check whether creep is passed center of coord '
+        coord = self.game.screenToCoord(self.pos)
+        if self.game.isGoalCoord(coord):
+            self.die()
+        else:
+            screenpos_of_coord = self.game.coordToScreenPos(coord)
+            if self.isPassedCenterCoord(self.pos,self.prev_pos,screenpos_of_coord):
+               next_coord = self.game.getNext(coord)
+               self.direction = vec2d( next_coord[1] - coord[1], next_coord[0] - coord[0] ).normalized()
 
     def update(self,time_passed):
         if self.state == Creep.ALIVE:
@@ -41,9 +57,7 @@ class Creep(pygame.sprite.Sprite):
                 self.image = pygame.transform.rotate(self.baseimage0, -self.direction.angle)
             else:
                 assert False
-            displacement = vec2d( self.direction.x * self.speed * time_passed, self.direction.y * self.speed * time_passed)
-            self.prev_pos = vec2d(self.pos)
-            self.pos += displacement
+            self.move(time_passed)
         elif self.state == Creep.EXPLODING:
             if self.explode_animation.active:
                 self.explode_animation.update(time_passed)
@@ -52,19 +66,6 @@ class Creep(pygame.sprite.Sprite):
         elif self.state == Creep.DEAD:
             pass
 
-    def draw(self):
-        if self.state == Creep.ALIVE:
-            self.draw_rect = self.image.get_rect()
-            self.draw_rect.center = self.pos
-            self.screen.blit(self.image,self.draw_rect)
-            health_bar_x = self.pos.x - 7
-            health_bar_y = self.pos.y - self.image.get_height()/2 - 6
-            # draw life bar
-            self.screen.fill(red, [health_bar_x,health_bar_y,15,4]) 
-            self.screen.fill(green,[health_bar_x, health_bar_y,self.health,4])
-        elif self.state == Creep.EXPLODING:
-            self.explode_animation.draw()
-
     def mouseClickEvent(self,pos):
         if self.pointIsInside( vec2d(pos) ):
             self.decreaseHealth(3)
@@ -72,25 +73,6 @@ class Creep(pygame.sprite.Sprite):
     def die(self):
         self.state = Creep.DEAD
         self.kill()
-
-    def isPassedCenterCoord(self,current,previous,screenpos_of_coord):
-        xo,yo = screenpos_of_coord
-        # x,y : screen position of coord(destination)
-        # return left_to_right or right_to_left or top_to_bottom or bottom_to_top
-        # ----xp---o---xc------ xo-xc<0, xo-xp>0  ==> (xo-xc)*(xo-xp)<0
-        return (xo-current.x)*(xo-previous.x) < 0 or (yo-current.y)*(yo-previous.y)<0
-
-
-    def computeDirection(self,time_passed):
-        ' check whether creep is passed center of coord '
-        coord = self.game.screenToCoord(self.pos)
-        if self.game.isGoalCoord(coord):
-            self.die()
-        else:
-            screenpos_of_coord = self.game.coordToScreenPos(coord)
-            if self.isPassedCenterCoord(self.pos,self.prev_pos,screenpos_of_coord):
-               next_coord = self.game.nextOnPath(coord)
-               self.direction = vec2d( next_coord[1] - coord[1], next_coord[0] - coord[0] ).normalized()
 
     def pointIsInside(self,point):
         w,h = self.image.get_size()
@@ -110,6 +92,19 @@ class Creep(pygame.sprite.Sprite):
         self.state = Creep.EXPLODING
         pos = self.pos.x - self.explosion_images[0].get_width()/2, self.pos.y - self.explosion_images[1].get_height()/2
         self.explode_animation = SimpleAnimation( self.screen, pos, self.explosion_images, 100, 300 )
+
+    def draw(self):
+        if self.state == Creep.ALIVE:
+            self.draw_rect = self.image.get_rect()
+            self.draw_rect.center = self.pos
+            self.screen.blit(self.image,self.draw_rect)
+            health_bar_x = self.pos.x - 7
+            health_bar_y = self.pos.y - self.image.get_height()/2 - 6
+            # draw life bar
+            self.screen.fill(red, [health_bar_x,health_bar_y,15,4]) 
+            self.screen.fill(green,[health_bar_x, health_bar_y,self.health,4])
+        elif self.state == Creep.EXPLODING:
+            self.explode_animation.draw()
                     
 
 class GridPath(object):
@@ -131,8 +126,7 @@ class GridPath(object):
 #       self.path_cache = {}
 
     def computePath(self,coord):
-        pf = PathFinder(self.map.successors, self.map.move_cost,
-                self.map.move_cost)
+        pf = PathFinder(self.map.successors, self.map.move_cost, self.map.move_cost)
         # find path
         path_list = list(pf.compute_path(coord, self.goal) )
         # add path to cache
@@ -162,7 +156,6 @@ class Game(object):
         self.field_rect = self.getFieldRect()
         self.creeps = pygame.sprite.Group()
         self.spawnNewCreep()
-        self.creep_spawn_timer = Timer(500, self.spawnNewCreep)
         self.createWalls()
         # create the grid path representation of the grid
         self.grid_nrows = FIELD_SIZE[1]/GRID_SIZE
@@ -171,7 +164,7 @@ class Game(object):
         self.gridpath = GridPath(self.grid_nrows,self.grid_ncols,self.goal_coord)
         for wall in self.walls:
             self.gridpath.set_blocked(wall)
-        self.options = dict( draw_grid=False )
+        self.options = dict( draw_grid=True )
 
     def createWalls(self):
         walls_list = list()
@@ -186,7 +179,7 @@ class Game(object):
             walls_list.append( (r,10) )
         self.walls = dict().fromkeys(walls_list,True)
 
-    def nextOnPath(self,coord):
+    def getNext(self,coord):
         return self.gridpath.getNext(coord)
 
     def screenToCoord(self,pos):
@@ -204,8 +197,7 @@ class Game(object):
         return coord == self.goal_coord
 
     def spawnNewCreep(self):
-        if self.spawned_creep_count >= MAX_N_CREEPS:
-            return
+#       if self.spawned_creep_count >= MAX_N_CREEPS: return
         self.creeps.add(
                 Creep( screen = self.screen, game = self,
                        init_position = (self.field_rect.left+GRID_SIZE/2, self.field_rect.top +GRID_SIZE/2),
@@ -244,11 +236,10 @@ class Game(object):
                     (self.field_rect.left + x*GRID_SIZE-1,self.field_rect.top),
                     (self.field_rect.left + x*GRID_SIZE-1,self.field_rect.bottom-1) )
     def drawWalls(self):
-        wallcolor = pygame.Color(40,40,40)
+        rect = wall_img.get_rect()
         for wall in self.walls:
-            rect = pygame.Rect(0,0,GRID_SIZE,GRID_SIZE)
             rect.center = self.coordToScreenPos(wall)
-            pygame.draw.rect(self.screen,wallcolor,rect)
+            self.screen.blit(wall_img,rect)
 
     def draw(self):
         self.drawBackground()
@@ -265,6 +256,8 @@ class Game(object):
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 self.paused = not self.paused
+            elif event.key == pygame.K_n:
+                self.spawnNewCreep()
             elif event.key == pygame.K_g:
                 if pygame.key.get_mods() & pygame.KMOD_CTRL:
                     self.options['draw_grid'] = not self.options['draw_grid']
@@ -281,7 +274,7 @@ class Game(object):
             for event in pygame.event.get():
                 self.onEvent(event)
             if not self.paused:
-                self.creep_spawn_timer.update(time_passed)
+#               self.creep_spawn_timer.update(time_passed)
                 # update and all creeps
                 for creep in self.creeps:
                     creep.update(time_passed)
