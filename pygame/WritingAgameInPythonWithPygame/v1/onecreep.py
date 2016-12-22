@@ -26,7 +26,7 @@ class Creep(pygame.sprite.Sprite):
         return self.state in (Creep.ALIVE, Creep.EXPLODING)
 
     def move(self,time_passed):
-        displacement = vec2d( self.direction.x * self.speed * time_passed, self.direction.y * self.speed * time_passed)
+        displacement =  self.direction * self.speed * time_passed
         self.prev_pos = vec2d(self.pos)
         self.pos += displacement
 
@@ -133,19 +133,9 @@ class GridPath(object):
         # self.path_cache[coord] = next coord
         self.path_cache[coord] = path_list[ path_list.index(coord)+1 ]
 
-class Game(object):
+class Game(GameHelper):
 
     spawned_creep_count = 0
-
-    def getFieldBox(self):
-        self.field_border_width = 4 
-        self.field_outer_width  = FIELD_SIZE[0] + 2 * self.field_border_width
-        self.field_outer_height = FIELD_SIZE[1] + 2 * self.field_border_width
-        self.field_rect_outer = pygame.Rect(20,60, self.field_outer_width, self.field_outer_height)
-        self.field_bgcolor = pygame.Color(109,41,1,100)
-        self.field_border_color = black
-        return Box(self.screen, rect=self.field_rect_outer, bgcolor= self.field_border_width,
-                border_color = self.field_border_color)
 
     def __init__(self):
         pygame.init()
@@ -154,7 +144,7 @@ class Game(object):
         self.clock = pygame.time.Clock()
         self.paused = False
         self.field_rect = self.getFieldRect()
-        self.creeps = pygame.sprite.Group()
+        self.creepgroup = pygame.sprite.Group()
         self.spawnNewCreep()
         self.createWalls()
         # create the grid path representation of the grid
@@ -165,19 +155,6 @@ class Game(object):
         for wall in self.walls:
             self.gridpath.set_blocked(wall)
         self.options = dict( draw_grid=True )
-
-    def createWalls(self):
-        walls_list = list()
-        for r in range(0,15):
-            walls_list.append( (r,6) )
-            if r != 7:
-                walls_list.append( (r,3) )
-                walls_list.append( (r,4) )
-            if r > 4:
-                walls_list.append( (r,1) )
-        for r in range(9,20):
-            walls_list.append( (r,10) )
-        self.walls = dict().fromkeys(walls_list,True)
 
     def getNext(self,coord):
         return self.gridpath.getNext(coord)
@@ -198,10 +175,9 @@ class Game(object):
 
     def spawnNewCreep(self):
 #       if self.spawned_creep_count >= MAX_N_CREEPS: return
-        self.creeps.add(
-                Creep( screen = self.screen, game = self,
+        self.creepgroup.add(  Creep( screen = self.screen, game = self,
                        init_position = (self.field_rect.left+GRID_SIZE/2, self.field_rect.top +GRID_SIZE/2),
-                       init_direction = (1,1), speed = 0.05 ) )
+                       init_direction = (1,1), speed = 0.05  ) )
         self.spawned_creep_count += 1
 
     def getFieldRect(self):
@@ -211,42 +187,12 @@ class Game(object):
         bgcolor = darkgray
         self.screen.fill(bgcolor)
 
-    def drawPostals(self):
-        self.entrance_rect = pygame.Rect(self.field_rect.left, self.field_rect.top,
-                                         2*GRID_SIZE,2*GRID_SIZE)
-        self.exit_rect = pygame.Rect(self.field_rect.right - 2*GRID_SIZE,
-                                     self.field_rect.bottom - 2*GRID_SIZE,
-                                     2*GRID_SIZE, 2*GRID_SIZE)
-        entrance = pygame.Surface( (self.entrance_rect.w, self.entrance_rect.h) )
-        entrance.fill(pygame.Color(80,200,80) )
-        entrance.set_alpha(150)
-        self.screen.blit(entrance,self.entrance_rect)
-        exit = pygame.Surface( (self.exit_rect.w,self.exit_rect.h) )
-        exit.fill( pygame.Color(200,80,80) )
-        exit.set_alpha(150)
-        self.screen.blit(exit,self.exit_rect)
-
-    def drawGrid(self):
-        for y in range(self.grid_nrows+1):
-            pygame.draw.line(self.screen, pygame.Color(50,50,50),
-                    (self.field_rect.left, self.field_rect.top+y*GRID_SIZE-1),
-                    (self.field_rect.right, self.field_rect.top + y*GRID_SIZE-1) )
-        for x in range(self.grid_ncols+1):
-            pygame.draw.line(self.screen,pygame.Color(50,50,50),
-                    (self.field_rect.left + x*GRID_SIZE-1,self.field_rect.top),
-                    (self.field_rect.left + x*GRID_SIZE-1,self.field_rect.bottom-1) )
-    def drawWalls(self):
-        rect = wall_img.get_rect()
-        for wall in self.walls:
-            rect.center = self.coordToScreenPos(wall)
-            self.screen.blit(wall_img,rect)
-
     def draw(self):
         self.drawBackground()
         self.field_box.draw()
         if self.options['draw_grid']: self.drawGrid()
         self.drawWalls()
-        for creep in self.creeps:
+        for creep in self.creepgroup:
             creep.draw()
         self.drawPostals()
 
@@ -264,7 +210,7 @@ class Game(object):
             elif event.key == pygame.K_ESCAPE:
                 self.quit()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            for creep in self.creeps:
+            for creep in self.creepgroup:
                 creep.mouseClickEvent(event.pos)
 
     def run(self):
@@ -276,7 +222,7 @@ class Game(object):
             if not self.paused:
 #               self.creep_spawn_timer.update(time_passed)
                 # update and all creeps
-                for creep in self.creeps:
+                for creep in self.creepgroup:
                     creep.update(time_passed)
                 self.draw()
             pygame.display.flip()
