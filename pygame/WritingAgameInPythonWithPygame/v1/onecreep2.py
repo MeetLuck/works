@@ -46,8 +46,10 @@ class Creep(pygame.sprite.Sprite):
         else:
             screenpos_of_coord = self.game.coordToScreenPos(coord)
             if self.isPassedCenterCoord(self.pos,self.prev_pos,screenpos_of_coord):
-               next_coord = self.game.getNext(coord)
-               self.direction = (Vector(next_coord) - Vector(coord)).getNormalized()
+               next_coord = self.game.getNext(coord) # r,c = y,x
+               tmp = (Vector(next_coord) - Vector(coord)).getNormalized()
+               self.direction = Vector(tmp.y,tmp.x)
+#              self.direction = Vector( next_coord[1] - coord[1], next_coord[0] - coord[0] ).getNormalized()
 
     def update(self,time_passed):
         if self.state == Creep.ALIVE:
@@ -67,17 +69,20 @@ class Creep(pygame.sprite.Sprite):
         elif self.state == Creep.DEAD:
             pass
 
-    def mouseClickEvent(self,pos): # mouse screen position
-        if self.pointIsInside(pos):
+    def mouseClickEvent(self,pos):
+        if self.pointIsInside( Vector(pos) ):
             self.decreaseHealth(3)
 
     def die(self):
         self.state = Creep.DEAD
         self.kill()
 
-    def pointIsInside(self,pos): # mouse position
+    def pointIsInside(self,point):
         w,h = self.image.get_size()
-        img_point = Vector(pos) - Vector(self.pos.x-w/2, self.pos.y-h/2)
+        # surface.get_at([x,y]) : x,y in surface dimension
+        # need to convert surface dimention not screen position
+        img_point = point - self.pos + Vector(w/2,h/2)
+        img_point = int(img_point.x), int(img_point.y)
         try:
             pix = self.image.get_at(img_point) # get the color value at a single pixel
             return pix[3] > 0
@@ -178,7 +183,7 @@ class Game(GameHelper):
 #       if self.spawned_creep_count >= MAX_N_CREEPS: return
         self.creepgroup.add(  Creep( screen = self.screen, game = self,
                        init_position = (self.field_rect.left+GRID_SIZE/2, self.field_rect.top +GRID_SIZE/2),
-                       init_direction = (1,1), speed = 0.05  ) )
+                       init_direction = (1,1), speed = 0.005  ) )
         self.spawned_creep_count += 1
 
     def getFieldRect(self):
