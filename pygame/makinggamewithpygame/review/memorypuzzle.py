@@ -1,4 +1,4 @@
-from parts import *
+from parts2 import *
 
 class App:
     def __init__(self):
@@ -10,9 +10,9 @@ class App:
         self.board.startGameAnimation(self.screen)
         self.running = True
     def onEvent(self,event):
-        if event.type == pygame.KEYDOWN and event.key = pygame.K_ESCAPE:
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.running = False
-        elif event.type = pygame.MOUSEMOTION:
+        elif event.type == pygame.MOUSEMOTION:
             self.mousepos = event.pos
         elif event.type == pygame.MOUSEBUTTONUP:
             self.mousepos = event.pos
