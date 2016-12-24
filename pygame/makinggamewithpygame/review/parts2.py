@@ -2,7 +2,7 @@ import pygame, sys, random, winsound
 #from pygame.locals import *
 import itertools, copy
 from constant import *
-fpsclock = pygame.time.Clock()
+clock = pygame.time.Clock()
 
 class boardCoord:
     def __init__(self,x,y):
@@ -17,15 +17,47 @@ def boardToScreen(boardcoord): # convert board coordinates to screen positions
     top  = boardcoord.y * (boxsize + gapsize) + ymargin
     return (left,top)
 
+class BoxImage:
+    def __init__(self):
+        self.image = pygame.Surface( [boxsize,boxsize] )
+        self.image.fill(boxcolor)
+        self.rect  = self.image.get_rect()
+    def drawDonut(self,half,quarter):
+#       pygame.draw.circle(self.image,self.color,self.rect.center,half-5)
+        print (half,half), self.rect.center
+        pygame.draw.circle(self.image,self.color,(half,half),half-5)
+        pygame.draw.circle(self.image,boxcolor,(half,half),quarter-5)
+    def drawSquare(self,half,quarter):
+        rect = quarter,quarter,boxsize-half,boxsize-half 
+        pygame.draw.rect(self.image,self.color,rect)
+    def drawDiamond(self,half,quarter):
+        pointList = (half, 0), (boxsize-1,half), (half,boxsize-1), (0,half)
+        pygame.draw.polygon(self.image,self.color,pointList)
+    def drawLines(self):
+        for i in range(0,boxsize,4):
+            pygame.draw.line(self.image,self.color,(0,i),(i,0))
+            pygame.draw.line(self.image,self.color,(i,boxsize-1),(boxsize-1,i))
+    def drawOval(self,half,quarter):
+        pygame.draw.ellipse(self.image,self.color, (0, quarter,boxsize,half) )
+    def drawIcon(self):
+        quarter,half = int(boxsize/4), int(boxsize/2)
+        # draw the shapes
+        if   self.shape == donut:   self.drawDonut(half,quarter)
+        elif self.shape == square:  self.drawSquare(half,quarter)
+        elif self.shape == diamond: self.drawDiamond(half,quarter)
+        elif self.shape == lines:   self.drawLines()
+        elif self.shape == oval:    self.drawOval(half,quarter)
 
-class Box:
+
+class Box(BoxImage):
 
     def __init__(self,tu): #shape,color):
         self.shape, self.color = tu #shape,color
         self.revealed = False
-        self.surface = pygame.Surface( [boxsize,boxsize] )
-        self.surface.fill(bgcolor)
-        self.rect  = self.surface.get_rect()
+        BoxImage.__init__(self)
+#       self.image = pygame.Surface( [boxsize,boxsize] )
+#       self.image.fill(boxcolor)
+#       self.rect  = self.image.get_rect()
 
     def __eq__(self,other):
         if isinstance(other,self.__class__):
@@ -38,56 +70,24 @@ class Box:
 
     def setboardCoord(self,boardcoord):
         self.screenpos = boardToScreen(boardcoord)
-        print self.screenpos
-        assert type(self.screenpos[0]) == int, self.screenpos[0]
-        assert type(self.screenpos[1]) == int, self.screenpos[1]
 
-#   def draw(self,surface):
-#       if self.revealed:
-#           self.drawIcon()
-#       else:
-#           self.drawCover()
-#       self.rect.center = self.screenpos
-#       surface.blit(self.surface,self.rect)
-#       print self.screenpos,self.revealed
-#       surface.blit(self.surface,self.screenpos)
+    def draw(self,surface):
+        if self.revealed:
+            self.drawIcon()
+        else:
+            self.image.fill(boxcolor)
+#       self.rect.topleft = self.screenpos
+        surface.blit(self.image,self.screenpos)
 
-    def drawDonut(self,half,quarter):
-        pygame.draw.circle(self.surface,self.color,self.rect.center,half-5)
-        pygame.draw.circle(self.surface,bgcolor,self.rect.center,quarter-5)
-
-    def drawSquare(self,half,quarter):
-        rect = quarter,quarter,boxsize-half,boxsize-half 
-        pygame.draw.rect(self.surface,self.color,rect)
-
-    def drawDiamond(self,half,quarter):
-        pointList = (half, 0), (boxsize-1,half), (half,boxsize-1), (0,half)
-        pygame.draw.polygon(self.surface,self.color,pointList)
-
-    def drawLines(self):
-        for i in range(0,boxsize,4):
-            pygame.draw.line(self.surface,self.color,(0,i),(i,0))
-            pygame.draw.line(self.surface,self.color,(i,boxsize-1),(boxsize-1,i))
-
-    def drawOval(self,half,quarter):
-        pygame.draw.ellipse(self.surface,self.color, (0, quarter,boxsize,half) )
-
-    def drawIcon(self):
-        quarter,half = int(boxsize/4), int(boxsize/2)
-        # draw the shapes
-        if   self.shape == donut:   self.drawDonut(half,quarter)
-        elif self.shape == square:  self.drawSquare(half,quarter)
-        elif self.shape == diamond: self.drawDiamond(half,quarter)
-        elif self.shape == lines:   self.drawLines()
-        elif self.shape == oval:    self.drawOval(half,quarter)
-
-    def drawCover(self):
-#       self.surface.fill(bgcolor)
-        print 'draw cover ...'
-        pygame.draw.rect(self.surface,boxcolor,(0,0,boxsize-1,boxsize-1))
+    def drawCover(self, surface, rect):
+        boxrect = pygame.Rect(rect)
+        boxrect.topleft = self.screenpos
+        pygame.draw.rect(surface,boxcolor,boxrect)
 
     def drawHighlight(self,surface):
+        x,y = self.screenpos
         rect = (x-5,y-5,boxsize+10,boxsize+10)
+#       print 'draw highlight ...',rect
         pygame.draw.rect(surface,highlightcolor,rect,4)
 
 
@@ -109,35 +109,42 @@ class Board:
         # need pairs, and not shallow copy
         boardhalf = boxes[:numOfIcons]
 #       board = boardhalf + copy.deepcopy(boardhalf)
-        board = boardhalf + copy.copy(boardhalf)
+        board = boardhalf[:]
+        for box in boardhalf:
+            board.append( Box( [box.shape,box.color] ) )
         random.shuffle(board)
         return board
     def drawBoard(self,surface):
         for box in self.board:
-            print box.shape,box.color,box.revealed
-            surface.blit(box.surface,box.screenpos)
+            box.draw(surface)
     def coverBoxesAnimation(self,surface,boxes):
+        print 'cover boxes...'
         coverages = range(1, boxsize, revealspeed)
         if boxsize not in coverages: coverages.append(boxsize)
         for coverage in coverages: 
             if coverage > boxsize: continue
             for box in boxes:
-                rect = box.pos,(coverage,boxsize)
+#               rect = box.screenpos,(coverage,boxsize)
+                rect = (0,0),(coverage,boxsize)
                 box.drawCover(surface,rect)
-#           pygame.display.update()
-            fpsclock.tick(2*fps)
+#               box.draw(surface)
+            pygame.display.update()
+            clock.tick(2*fps)
     def revealBoxesAnimation(self,surface,boxes):
+        print 'reveal boxes...'
         coverages = range(boxsize,0,-revealspeed)
         if 0 not in coverages: coverages.append(0)
         for coverage in coverages:
             for box in boxes:
-                box.draw(surface)
-                rect = box.pos,(coverage,boxsize)
+#               rect = box.screenpos,(coverage,boxsize)
+                rect = (0,0),(coverage,boxsize)
                 if coverage > 0:
                     box.drawCover(surface,rect)
-#           pygame.display.update()
-            fpsclock.tick(2*fps)
+                box.draw(surface)
+            pygame.display.update()
+            clock.tick(2*fps)
     def startGameAnimation(self,surface):
+        print 'start Game animation...'
         #surface.fill(bgcolor)
         self.drawBoard(surface)
         # shallow copy needed here
@@ -161,12 +168,14 @@ class Board:
             surface.fill(color1)
             self.drawBoard(surface)
 #           pygame.display.update()
-            pygame.time.wait(100)
+#           pygame.time.wait(100)
 
-    def getBoxAt(self,mouseX,mouseY):
+    def getBoxAt(self,mousepos):
         for box in self.board:
-            boxrect = pygame.Rect(*box.rect)
-            if boxrect.collidepoint(mouseX,mouseY):
+            boxrect = box.rect.copy()
+            boxrect.topleft = box.screenpos
+            assert boxrect is not box.rect,'should not same'
+            if boxrect.collidepoint(*mousepos):
                 return box
         # outside of Box
         return None
@@ -197,13 +206,14 @@ if __name__ == '__main__':
     screen.fill(bgcolor)
     board = Board()
     board.drawBoard(screen)
-#   box = Box( ['oval',red] )
-#   box.revealed = True
-#   box.setboardCoord( boardCoord(1,1))
-#   box1 = copy.deepcopy(box)
-#   box1.setboardCoord( boardCoord(1,1))
-#   box.draw(screen)
-#   box1.draw(screen)
+    box = Box( ['oval',red] )
+    box.revealed = True
+    box.setboardCoord( boardCoord(1,1))
+    box1 = copy.copy(box)
+    assert box is not box1,'iii'
+    box1.setboardCoord( boardCoord(1,1))
+    box.draw(screen)
+    box1.draw(screen)
     pygame.time.wait(5000)
     pygame.display.flip()
 
