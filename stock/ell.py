@@ -1,4 +1,5 @@
 import optparse
+from colorama import *
 parser = optparse.OptionParser()
 parser.add_option('-p','--price',type='float')#,dest='price')
 parser.add_option('-e','--estimate',type='float',nargs=2,metavar='<p1> <p2>')#,dest='wave')
@@ -6,16 +7,17 @@ parser.add_option('-c','--compute',type='float',nargs=6,metavar='<p1> <p2> <p3> 
 
 
 def print_percent():
-    one_percent     = int(opts.price*0.99)
-    two_percent     = int(opts.price*0.98)
-    three_percent   = int(opts.price*0.97)
-    five_percent    = int(opts.price*0.95)
-    ten_percent     = int(opts.price*0.90)
-    print '1% : ', one_percent
-    print '2% : ', two_percent
-    print '3% : ', three_percent
-    print '5% : ', five_percent
-    print '10% : ',ten_percent
+
+    def print_minus():
+        print Fore.RED + 'minus percent change'
+        for i in range(1,11):
+            delta = opts.price*(i * 0.01)
+            print Fore.GREEN +'-%d%% : %.1f' %(i, opts.price - delta) 
+        print Fore.GREEN +'-38.2%% : %.1f' %( opts.price*(1.0 - 0.382) )
+        print Fore.GREEN +'-50.0%% : %.1f' %( opts.price*(1.0 - 0.500) )
+        print Fore.GREEN +'-61.8%% : %.1f' %( opts.price*(1.0 - 0.618) )
+    print_minus()
+    
 
 def estimate_wave():
     p1,p2 = opts.estimate
@@ -23,8 +25,8 @@ def estimate_wave():
     a = p2 - p1
     ep3 = p1 + 2*a
     ep5 = p1 + 2.38*a
-    print 'estimate 3rd wave(p3), size(a,c)'
-    print 'p1 = %d, p2  = %d\t => %2.1f%%, a = %d' %( p1, p2, 100*a/p1,  a )
+    print Fore.RED + 'estimate 3rd wave(p3), size(a,c)'
+    print Fore.GREEN + 'p1 = %d, p2  = %d\t => %2.1f%%, a = %d' %( p1, p2, 100*a/p1,  a )
     print 'ep3 = %d         \t => %2.1f%%, c = %d' %( ep3, 100*2*a/p1,2*a)
     print 'ep5 = %d         \t => %2.1f%%, e = %d' %( ep5, 100*2.38*a/p1, a)
 
