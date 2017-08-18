@@ -34,7 +34,7 @@ row = col = g = bold = reverse = 0
 b = [curses.A_NORMAL, curses.A_BOLD]
 r = [curses.A_NORMAL, curses.A_REVERSE]
 while q < 0 or q in range(49,53) or q in [98,114]:
-    stdscr.clear()
+    #stdscr.clear()
     q = stdscr.getch()
     if q in range(49,53):
         g = q - 48 
@@ -42,7 +42,7 @@ while q < 0 or q in range(49,53) or q in [98,114]:
         bold = not bold
     elif q == 114:
         reverse = not reverse
-    stdscr.addstr(row,col,text,curses.color_pair(g) | b[bold] | r[reverse] )
+    stdscr.addstr(row,col,str(g),curses.color_pair(g) | b[bold] | r[reverse] )
     row += vertical
     col += horizontal
     if row == height: vertical = -1

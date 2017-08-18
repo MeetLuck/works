@@ -10,8 +10,6 @@ import curses, time
 stdscr = curses.initscr()
 stdscr.nodelay(1)
 dims = stdscr.getmaxyx()
-#dims = stdscr.getmaxyx()
-#height = dims[0]-1, width = dims[1]-1
 height,width = dims[0]-1, dims[1]-1
 text = 'Hello World!'
 x,y = 0,0

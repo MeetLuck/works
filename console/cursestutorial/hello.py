@@ -3,16 +3,41 @@ import curses
 >>> stdscr = curses.initscr()
 >>> stdscr.addstr(row,col,'text',curse.A_REVERSE)  
 '''
-stdscr = curses.initscr()
-stdscr.clear()
-stdscr.addstr(0,0,'Hello World!')
-stdscr.addstr(1,0,'Hello World!, curses.A_BLINK',curses.A_BLINK)
-stdscr.addstr(2,0,'Hello World!, curses.A_DIM',curses.A_DIM)
-stdscr.addstr(3,0,'Hello World!, curses.A_BOLD', curses.A_BOLD)
-stdscr.addstr(4,0,'Hello World!, curses.A_STANDOUT', curses.A_STANDOUT)
-stdscr.addstr(5,0,'Hello World!, curses.A_REVERSE', curses.A_REVERSE)
-stdscr.addstr(6,0,'Hello World!, curses.A_UNDERLINE', curses.A_UNDERLINE)
-stdscr.refresh()
-stdscr.getch()
-curses.endwin()
 
+from helper import *
+
+class Hello(object):
+
+    def __init__(self,screen):
+        self.screen = screen
+        self.windows= list()
+        self.windows.append(screen)
+        self.running = True
+        self.init_colors()
+        self.mainloop()
+
+    def update(self):
+        for win in self.windows:
+            win.refresh()
+
+    def mainloop(self):
+        self.screen.addstr(2,10,'window.addstr(row,col,text,curses.A_REVERSE)',self.white)
+        #self.screen.addstr(2,10,'works only curses.A_BOLD,curses.A_REVERSE',self.red)
+        msgwin = newwin(10,curses.COLS-10,5,5,self.green_w)
+        self.windows.append(msgwin)
+        msgwin.addstr(1,5,'Hello World!, curses.A_BLINK',curses.A_BLINK)
+        msgwin.addstr(2,5,'Hello World!, curses.A_DIM',curses.A_DIM)
+        msgwin.addstr(3,5,'Hello World!')
+        msgwin.addstr(4,5,'Hello World!, curses.A_BOLD', curses.A_BOLD)
+        msgwin.addstr(5,5,'Hello World!, curses.A_STANDOUT', curses.A_STANDOUT)
+        msgwin.addstr(6,5,'Hello World!, curses.A_REVERSE', curses.A_REVERSE)
+        msgwin.addstr(7,5,'Hello World!, curses.A_UNDERLINE', curses.A_UNDERLINE)
+
+        while self.running:
+            self.update()
+            if self.screen.getch():
+                self.running = False
+
+
+if __name__ == '__main__':
+    wrapper(Hello)

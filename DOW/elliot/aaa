@@ -1,0 +1,13 @@
+
+
+  4 def get_style(name='Arial',height=210, color='black',bold=False,pattern='solid',fgcolor='gray25', vertical='center', horizontal='right'):
+ 18 DEFAULT_STYLE = xl.easyxf( get_style() )
+ 69         row_title.write(3,wave.name2,xl.easyxf(get_style(height=240,color='dark_red',bold=True,horizontal='center')) )
+ 72         style = xl.easyxf( get_style(height=210,bold=True) + 'borders: bottom thin;')
+ 80         style = xl.easyxf( get_style(height=210,color='green',bold=True,horizontal='center') )
+ 93         style = xl.easyxf( get_style(height=210,bold=True,horizontal='center') + 'borders: bottom thin;')
+ 96         style = xl.easyxf( get_style(horizontal='center') )
+100         style = xl.easyxf( get_style(height=210,color='green',bold=True,horizontal='center') )
+108         style_n = xl.easyxf( get_style(bold=False,horizontal='center'))# + 'borders: bottom thin;')
+109         style_hl = xl.easyxf( get_style(bold=True,horizontal='center'))# + 'borders: bottom thin;')
+115         style_20 = xl.easyxf( get_style(bold=True,horizontal='center') + 'borders: bottom thin;')

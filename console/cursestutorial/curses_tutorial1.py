@@ -46,12 +46,14 @@ quote_window = curses.newwin(curses.LINES-4, curses.COLS-4,2,2)
 #Create a sub-window so as to cleanly display the quote without worrying
 # about overwriting the quote windowo's border
 quote_text_window = quote_window.subwin(curses.LINES-6, curses.COLS-6,3,3)
-c8 = ('*',)*8
+#c8 = ('*',)*8
 quote_text_window.addstr(2,2,'Press R to get your first quote')
 
 # Draw a border around the main quote window
-quote_text_window.border(*c8)
-quote_window.border(*tuple('+'*8 ) )
+quote_text_window.border()
+quote_window.border()
+#quote_text_window.border(*c8)
+#quote_window.border(*tuple('+'*8 ) )
 
 screen.getch()
 # Update the internal window data structures
