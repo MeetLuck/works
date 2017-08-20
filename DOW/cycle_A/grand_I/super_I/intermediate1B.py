@@ -8,7 +8,7 @@ from elliot70 import *
 from toXls import xl
 
 #--------------------------------------------#
-#  intermediate I of primaryI(of superI)     #
+#  intermediate I(B) of primaryI(of superI)  #
 #--------------------------------------------#
 
 class Intermediate(Impulse):
@@ -26,7 +26,7 @@ class Intermediate(Impulse):
         self.set_subwaves(minor1,minor2,minor3,minor4,minor5)
         minor1.create_subwaves(22180,22010,22060,21900,21970,21840,Impulse,Flat,Impulse,Flat,Impulse)
         minor2.create_subwaves(21840,22040,21970,22080,Impulse,Flat,Impulse)
-        minor3.create_subwaves(22180,21890,21940,21640,None,None,Impulse,Flat,Impulse,Flat,Impulse)
+        minor3.create_subwaves(22180,21890,21940,21640,21800,None,Impulse,Flat,Impulse,Flat,Impulse)
         #minor3.create_subwaves(22180,21820,21840,None,None,None,Impulse,Flat,Impulse,Flat,Impulse)
 
 intermidate1 = Intermediate(start=22180,end=None,level=-1,No=1,has_subwaves=True)
@@ -34,6 +34,6 @@ intermidate1 = Intermediate(start=22180,end=None,level=-1,No=1,has_subwaves=True
 if __name__ == '__main__':
     book = xl.Workbook()
     #intermidate1.analyze()
-    intermidate1.create_xls(book,'intermediate1.xls')
-    os.system('start intermediate1.xls')
+    intermidate1.create_xls(book,'intermediate1B.xls')
+    os.system('start intermediate1B.xls')
 

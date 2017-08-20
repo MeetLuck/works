@@ -40,20 +40,33 @@ def overview(wave):
     else:
         pass
         #print '{:^10}'.format('N/A')
+
 def get_fibs(wave):
     fibs = wave.fib(2,1), wave.fib(3,1), wave.fib(4,3), wave.fib(5,1), wave.fib20(), wave.fib238()
     fibs_list = list()
     for fib in fibs:
         fibs_list.append(round(fib,2))
     return fibs_list
+
 def get_prediction(wave):
-    p3_from_p1  = wave.predict_wave3(fib_ratio=2.0)
-    p5_from_p1  = wave.predict_wave5from1(fib_ratio=2.382)
-    p5_from_p2  = wave.predict_wave5from2()
-    p5_from_p3  = wave.predict_wave5from3(fib_ratio=0.382)
-    p5_from_p4  = wave.predict_wave5from4(fib_ratio=1.0)
-    p5_from_p4s  = wave.predict_wave5from4s(fib_ratio=1.0)
-    return int(p3_from_p1),int(p5_from_p1),int(p5_from_p2),int(p5_from_p3),int(p5_from_p4),int(p5_from_p4s)
+    p31  = wave.predict_wave3(fib_ratio=2.0)
+    p51  = wave.predict_wave5from1(fib_ratio=2.382)
+    p52  = wave.predict_wave5from2()
+    p53  = wave.predict_wave5from3(fib_ratio=0.382)
+    p54  = wave.predict_wave5from4(fib_ratio=1.0)
+    p54s  = wave.predict_wave5from4s(fib_ratio=0.618)
+    try: #if wave.ii.end is not None: 
+        fib31 = (p31-wave.ii.end)/wave.i.size
+    except:
+        fib31 = 0
+    def get_fib54(p5):
+        try: return (p5-wave.iv.end)/wave.i.size
+        except: return 0
+    fib51 = get_fib54(p51); fib52 = get_fib54(p52); fib53 = get_fib54(p53) 
+    fib54 = get_fib54(p54); fib54s = get_fib54(p54s) 
+
+    return int(p31),int(p51),int(p52),int(p53),int(p54),int(p54s),\
+           round(fib31,2), round(fib51,2), round(fib52,2), round(fib53,2), round(fib54,2),round(fib54s,2)
 
 def print_fibs(wave):
     if not wave.has_subwaves:
@@ -79,7 +92,7 @@ def print_fibs_interwaves(wave):
     print_data1(fg.WHITE,'V(3)/I(3)  ', sub_53to13)    
 
 def print_predictions(wave):
-    #--- predict wave 5 ---#
+    #--- predict wave 3 and 5 ---#
     if not wave.has_subwaves:
         print_subtitle(fg.YELLOW,'No subwaves, cannot predict waves for wave',wave.name)
         return

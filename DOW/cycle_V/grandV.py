@@ -5,7 +5,7 @@ sys.path.append(elliotdir)
 
 from elliot70 import *
 from grand_V import * 
-from toXls import ToXls,xl
+from toXls import WaveToXls,xl
 
 #------------------------------------#
 #          grandV of CycleV          #
